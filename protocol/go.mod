@@ -1,3 +1,3 @@
-module github.com/robotops-io/robotops-agent/protocol
+module github.com/NguyenVu1010/MechOps/protocol
 
 go 1.22

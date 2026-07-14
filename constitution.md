@@ -1,4 +1,4 @@
-# RobotOps Constitution — nguyên tắc bất khả thương lượng
+# MechOps Constitution — nguyên tắc bất khả thương lượng
 
 1. **TDD bắt buộc.** Không viết implementation trước khi test tồn tại và ĐỎ. Test đỏ = việc chưa xong, không phải thứ để skip.
 2. **Tick chỉ do máy.** test-status.* do track.py ghi. Mọi ✅ có evidence trỏ được (raw log + commit, hoặc biên bản [H] có ký tên).

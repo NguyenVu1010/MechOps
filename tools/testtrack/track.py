@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-track.py — RobotOps test tracker.
+track.py — MechOps test tracker.
 Nguồn sự thật: docs/test-status.json. Render: docs/test-status.md.
 KHÔNG sửa tay 2 file đó — mọi thay đổi đi qua script này kèm evidence.
 
@@ -148,7 +148,7 @@ def render(state):
     total = len(tests)
     done = sum(1 for t in tests.values() if t["status"] == "pass")
     lines = [
-        "# RobotOps — Test Status",
+        "# MechOps — Test Status",
         "",
         f"> ⚙️ File này do `tools/testtrack/track.py` sinh — **không sửa tay**.",
         f"> Cập nhật: {state['updated']} · commit `{state['commit']}` · "

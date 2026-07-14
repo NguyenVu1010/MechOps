@@ -1,12 +1,12 @@
 ---
 name: go-conventions
-description: Quy ước Go riêng của repo RobotOps. Đọc khi viết code Go mới, tạo package, viết query SQL, hoặc thêm logging. Trigger: Go, handler, sqlc, slog, package layout.
+description: Quy ước Go riêng của repo MechOps. Đọc khi viết code Go mới, tạo package, viết query SQL, hoặc thêm logging. Trigger: Go, handler, sqlc, slog, package layout.
 ---
 
-# Go Conventions — RobotOps
+# Go Conventions — MechOps
 
 ## Layout
-- `/agent` — robotops-agent (binary riêng, KHÔNG import code server)
+- `/agent` — mechops-agent (binary riêng, KHÔNG import code server)
 - `/server` — API + Fleet Manager
 - `/protocol` — struct message + topic constant + validate, import được từ cả hai phía. Đây là NƠI DUY NHẤT định nghĩa message.
 - `/probe` — ros2-probe (Python, không phải Go)

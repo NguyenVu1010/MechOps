@@ -1,4 +1,4 @@
-# RobotOps — Spec Management & Agent Workflow Plan
+# MechOps — Spec Management & Agent Workflow Plan
 
 > Bổ sung cho AUTOMATION-PLAN.md. Trả lời 3 câu: quản lý spec theo chuẩn nào, workflow agent chạy ra sao, bộ skill quản trị thế nào.
 > Nguyên tắc chọn: mượn pattern open-source đã được kiểm chứng, chỉ tự chế phần không ai làm sẵn.
@@ -73,7 +73,7 @@ Kết quả: sợi xích `constitution → ADR → contract → test ID → evid
 ### Cấu trúc 2 vòng
 
 **Vòng ngoài — mỗi feature/milestone (mượn Spec Kit):**
-Spec Kit chuẩn hóa flow `constitution → specify → clarify → plan → tasks → implement`, tích hợp Claude Code qua skills mode. Với RobotOps, docs 01–05 đã LÀ output của specify/plan cấp dự án — thứ còn thiếu là cấp **feature**: trước mỗi cụm việc (ví dụ "OTA v1" của M3), chạy một lượt:
+Spec Kit chuẩn hóa flow `constitution → specify → clarify → plan → tasks → implement`, tích hợp Claude Code qua skills mode. Với MechOps, docs 01–05 đã LÀ output của specify/plan cấp dự án — thứ còn thiếu là cấp **feature**: trước mỗi cụm việc (ví dụ "OTA v1" của M3), chạy một lượt:
 
 1. `specify`: mini-spec 1 trang cho feature — hành vi, ngoài scope, test ID nào cover (lấy từ catalog)
 2. `clarify`: agent liệt kê điểm mờ → founder trả lời → ghi vào mini-spec (đây là bước người-trong-vòng-lặp quan trọng nhất)

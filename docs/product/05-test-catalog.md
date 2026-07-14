@@ -1,4 +1,4 @@
-# RobotOps — Phase 0 Acceptance Test Catalog
+# MechOps — Phase 0 Acceptance Test Catalog
 
 > Vai trò: **định nghĩa "xong" cuối cùng** của Phase 0. Mỗi milestone chỉ đóng khi các test của nó pass. Mỗi test có ID cố định — dùng trong CI, trong PR description, và làm context cho Claude Code.
 > Ba tầng test:
@@ -23,7 +23,7 @@
 | ID | Tầng | Kịch bản | Kết quả mong đợi |
 |---|---|---|---|
 | ACL-01 | I | Agent A publish vào topic của agent B | Broker từ chối (disconnect hoặc drop theo cấu hình EMQX), có log |
-| ACL-02 | I | Agent A subscribe wildcard `robotops/v1/default/#` | Chỉ nhận được topic thuộc inventory của chính nó |
+| ACL-02 | I | Agent A subscribe wildcard `mechops/v1/default/#` | Chỉ nhận được topic thuộc inventory của chính nó |
 | ACL-03 | I | Client không có cert connect broker | Từ chối ở tầng TLS, không tới được tầng auth |
 | ACL-04 | I | Agent gửi payload > 64KB | Agent từ chối trước khi publish (theo protocol spec 9); server cũng drop nếu nhận được |
 

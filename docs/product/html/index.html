@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RobotOps — Toàn cảnh Phase 0</title>
+<title>MechOps — Toàn cảnh Phase 0</title>
 <style>
   :root{
     --bg:#0d1220; --panel:#151c2e; --panel2:#1a2338; --line:#2a3550;
@@ -107,7 +107,7 @@
 <div class="wrap">
 
 <header>
-  <div class="eyebrow">RobotOps · Bộ tài liệu hoàn chỉnh · 07/2026</div>
+  <div class="eyebrow">MechOps · Bộ tài liệu hoàn chỉnh · 07/2026</div>
   <h1>Robot Operations Platform — <span class="accent">toàn cảnh Phase 0</span></h1>
   <p class="sub">Lớp hạ tầng vận hành robot, PLC và Industrial IoT. Không điều khiển robot — vận hành robot. Một trang tổng hợp: chiến lược → kiến trúc → roadmap → milestone → định nghĩa "xong".</p>
 </header>
@@ -140,10 +140,10 @@
     <div class="ab"><b>Registry v2</b><small>kho image OTA</small></div>
     <div class="ab"><b>WireGuard</b><small>kênh dự phòng</small></div>
   </div>
-  <div class="avert"><div class="pipe up" style="--flow:var(--mqtt)"></div><span class="l">MQTT mTLS · robotops/v1/{tenant}/…</span><div class="pipe" style="--flow:var(--ota)"></div><span class="r">OTA pull theo digest</span></div>
+  <div class="avert"><div class="pipe up" style="--flow:var(--mqtt)"></div><span class="l">MQTT mTLS · mechops/v1/{tenant}/…</span><div class="pipe" style="--flow:var(--ota)"></div><span class="r">OTA pull theo digest</span></div>
   <div class="openz"><span class="zt">Open source · Apache 2.0</span>
     <div class="arow">
-      <div class="ab"><b>robotops-agent</b> <span class="badge open">Go</span><small>Mode A trên robot · Mode B trên gateway (1→N device) · buffer SQLite · PTY · OTA executor</small></div>
+      <div class="ab"><b>mechops-agent</b> <span class="badge open">Go</span><small>Mode A trên robot · Mode B trên gateway (1→N device) · buffer SQLite · PTY · OTA executor</small></div>
       <div class="ab"><b>Probe API v1</b><small>Unix socket · NDJSON · capability handshake</small></div>
       <div class="ab"><b>ros2-probe</b><small>rclpy · AMR profile · Phase 1+: modbus, rest, vda5050</small></div>
     </div>
@@ -209,7 +209,7 @@
   <div class="doc"><span class="no">—</span><div>html/architecture.html<small>sơ đồ kiến trúc chi tiết</small></div></div>
 </div>
 
-<footer>RobotOps · spec v2.0 · protocol v0.1 draft (đóng băng khi M1 bắt đầu) · Việc M0 còn lại: ACL SQL mẫu · codes.md · /schemas JSON Schema · test vectors</footer>
+<footer>MechOps · spec v2.0 · protocol v0.1 draft (đóng băng khi M1 bắt đầu) · Việc M0 còn lại: ACL SQL mẫu · codes.md · /schemas JSON Schema · test vectors</footer>
 
 </div>
 </body>

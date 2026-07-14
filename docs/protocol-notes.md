@@ -1,4 +1,4 @@
-# RobotOps Protocol Spec v0.1
+# MechOps Protocol Spec v0.1
 
 > Trạng thái: Draft — đóng băng khi M1 bắt đầu. File này là **hợp đồng** giữa agent ↔ server ↔ probe.
 > Thuộc phần **open source** cùng với agent (spec v2.0 mục 7).
@@ -16,15 +16,15 @@
 ### 1.1 Cấu trúc topic
 
 ```
-robotops/v1/{tenant}/agents/{agentId}/status        retained · LWT
-robotops/v1/{tenant}/agents/{agentId}/inventory     retained
-robotops/v1/{tenant}/agents/{agentId}/cmd           QoS 1 · server → agent
-robotops/v1/{tenant}/agents/{agentId}/cmd/res       QoS 1 · agent → server
-robotops/v1/{tenant}/agents/{agentId}/ota/state     QoS 1 · retained
-robotops/v1/{tenant}/devices/{deviceId}/telemetry   QoS 0
-robotops/v1/{tenant}/devices/{deviceId}/state       QoS 1 · retained
-robotops/v1/{tenant}/devices/{deviceId}/events      QoS 1
-robotops/v1/{tenant}/devices/{deviceId}/logs/{stream}  QoS 0 · chỉ khi bật
+mechops/v1/{tenant}/agents/{agentId}/status        retained · LWT
+mechops/v1/{tenant}/agents/{agentId}/inventory     retained
+mechops/v1/{tenant}/agents/{agentId}/cmd           QoS 1 · server → agent
+mechops/v1/{tenant}/agents/{agentId}/cmd/res       QoS 1 · agent → server
+mechops/v1/{tenant}/agents/{agentId}/ota/state     QoS 1 · retained
+mechops/v1/{tenant}/devices/{deviceId}/telemetry   QoS 0
+mechops/v1/{tenant}/devices/{deviceId}/state       QoS 1 · retained
+mechops/v1/{tenant}/devices/{deviceId}/events      QoS 1
+mechops/v1/{tenant}/devices/{deviceId}/logs/{stream}  QoS 0 · chỉ khi bật
 ```
 
 - `{tenant}`: Phase 0 luôn là `default`. Có mặt từ đầu để multi-tenant Phase 1 **không đổi topic layout** (chỉ đổi ACL).
@@ -44,12 +44,12 @@ robotops/v1/{tenant}/devices/{deviceId}/logs/{stream}  QoS 0 · chỉ khi bật
 ## 2. Danh tính & Provisioning
 
 ```
-robotops-agent enroll --server https://... --token <ENROLL_TOKEN>
+mechops-agent enroll --server https://... --token <ENROLL_TOKEN>
 ```
 
 1. Vendor tạo enroll token (TTL 24h, dùng 1 lần) trên dashboard.
 2. Agent sinh keypair, gửi CSR + token → server ký cert (CN = agentId, TTL 90 ngày), trả về CA chain + cấu hình MQTT.
-3. Agent lưu cert tại `/var/lib/robotops/identity/`, tự gia hạn khi còn < 30 ngày (qua API mTLS bằng cert hiện tại).
+3. Agent lưu cert tại `/var/lib/mechops/identity/`, tự gia hạn khi còn < 30 ngày (qua API mTLS bằng cert hiện tại).
 4. **ACL EMQX (backed by PostgreSQL):** agent chỉ được publish/subscribe topic chứa đúng `{agentId}` và các `{deviceId}` trong inventory của nó. Robot A không đọc được topic robot B — kiểm tra ở broker, không tin agent.
 
 ---
@@ -194,7 +194,7 @@ Bất kỳ state nào gặp lỗi không phục hồi → FAILED (không tự th
 
 ## 6. Hành vi offline
 
-- **Buffer:** SQLite tại `/var/lib/robotops/buffer.db`. Events + state: buffer **tất cả**, replay theo `seq` khi reconnect. Telemetry: buffer downsample 1 mẫu/30s, giữ tối đa 24h (đủ vẽ lại biểu đồ, không ngập băng thông khi reconnect).
+- **Buffer:** SQLite tại `/var/lib/mechops/buffer.db`. Events + state: buffer **tất cả**, replay theo `seq` khi reconnect. Telemetry: buffer downsample 1 mẫu/30s, giữ tối đa 24h (đủ vẽ lại biểu đồ, không ngập băng thông khi reconnect).
 - **Replay:** publish lại đúng topic gốc, `ts` gốc giữ nguyên — server phân biệt dữ liệu muộn nhờ `ts`/`seq`, không nhờ thời điểm nhận.
 - **Clock:** agent dùng monotonic clock cho `seq` và đo khoảng cách; `ts` từ system clock kèm cảnh báo event `agent.clock_skew` nếu lệch NTP > 30s (nhà máy hay có máy sai giờ — dữ liệu time-series sai giờ là nợ khó đòi).
 
@@ -202,7 +202,7 @@ Bất kỳ state nào gặp lỗi không phục hồi → FAILED (không tự th
 
 ## 7. Probe API — contract v1
 
-Kênh: probe **connect vào** Unix socket của agent `/run/robotops/agent.sock`. Khung tin: **NDJSON** (mỗi dòng một JSON object). Agent chấp nhận nhiều probe đồng thời.
+Kênh: probe **connect vào** Unix socket của agent `/run/mechops/agent.sock`. Khung tin: **NDJSON** (mỗi dòng một JSON object). Agent chấp nhận nhiều probe đồng thời.
 
 ### 7.1 Handshake
 
