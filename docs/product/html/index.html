@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RobotOps — Toàn cảnh Phase 0</title>
+<style>
+  :root{
+    --bg:#0d1220; --panel:#151c2e; --panel2:#1a2338; --line:#2a3550;
+    --text:#e8edf7; --muted:#8b97b0; --dim:#5c6883;
+    --mqtt:#5ca8ff; --ota:#ffb454; --open:#4ade80; --ros:#c084fc; --red:#f87171;
+    --mono:ui-monospace,'SF Mono','Cascadia Code','JetBrains Mono',Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--mono);padding:28px 16px 56px;line-height:1.5}
+  .wrap{max-width:1020px;margin:0 auto}
+  a{color:var(--mqtt);text-decoration:none}
+
+  header{margin-bottom:8px}
+  .eyebrow{color:var(--dim);font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+  h1{font-size:clamp(22px,3.6vw,30px);font-weight:600;margin-top:6px}
+  h1 .accent{color:var(--mqtt)}
+  .sub{color:var(--muted);font-size:13px;margin-top:6px;max-width:700px}
+
+  h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:40px 0 14px;display:flex;align-items:center;gap:10px}
+  h2::after{content:'';flex:1;height:1px;background:var(--line)}
+  h2 .n{color:var(--mqtt)}
+
+  .cards{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .card h3{font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+  .card p{font-size:12.5px;color:var(--text)}
+  .card small{display:block;color:var(--muted);font-size:11px;margin-top:6px}
+  .card.k{border-left:3px solid var(--mqtt)}
+  .card.o{border-left:3px solid var(--open)}
+  .card.a{border-left:3px solid var(--ota)}
+  .card.r{border-left:3px solid var(--ros)}
+
+  /* market strip */
+  .mkt{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .mkt .card b{color:var(--text);font-size:12.5px}
+  .vs{color:var(--red)}
+
+  /* mini architecture */
+  .arch{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:16px;font-size:12px}
+  .arow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .ab{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 12px}
+  .ab b{font-size:12px}
+  .ab small{display:block;color:var(--muted);font-size:10.5px}
+  .avert{display:flex;justify-content:center;gap:14px;padding:5px 0;color:var(--dim);font-size:10.5px;align-items:center}
+  .avert .l{color:var(--mqtt)} .avert .r{color:var(--ota)}
+  .pipe{position:relative;width:2px;height:26px;background:var(--line);overflow:hidden;border-radius:2px}
+  .pipe::after{content:'';position:absolute;left:-1px;width:4px;height:6px;border-radius:2px;background:var(--flow,#5ca8ff);animation:flow 1.5s linear infinite}
+  .pipe.up::after{animation-direction:reverse}
+  @keyframes flow{from{top:-7px}to{top:100%}}
+  @media (prefers-reduced-motion:reduce){.pipe::after{animation:none;top:40%}}
+  .openz{border:1.5px dashed color-mix(in srgb,var(--open) 55%,transparent);border-radius:10px;padding:14px 10px 10px;position:relative;margin-top:8px}
+  .openz .zt{position:absolute;top:-9px;left:12px;background:var(--panel);padding:0 8px;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--open)}
+  .arch .more{text-align:right;margin-top:10px;font-size:11px}
+
+  /* roadmap */
+  .phases{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(185px,1fr))}
+  .ph{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;position:relative}
+  .ph.now{border-color:color-mix(in srgb,var(--mqtt) 55%,var(--line));box-shadow:0 0 0 1px color-mix(in srgb,var(--mqtt) 25%,transparent)}
+  .ph .tag{font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase}
+  .ph.now .tag{color:var(--mqtt)}
+  .ph b{display:block;font-size:13px;margin:4px 0 6px}
+  .ph ul{list-style:none;font-size:11px;color:var(--muted)}
+  .ph li{padding:1.5px 0}
+  .ph li::before{content:'·';margin-right:6px;color:var(--dim)}
+  .gate{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px;font-size:10.5px;color:var(--ota)}
+  .gate::before{content:'⛩ gate: ';color:var(--dim)}
+
+  /* milestones */
+  .ms{border-left:2px solid var(--line);margin-left:8px;padding-left:18px;display:grid;gap:12px}
+  .m{position:relative}
+  .m::before{content:'';position:absolute;left:-24px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--panel2);border:2px solid var(--mqtt)}
+  .m.star::before{border-color:var(--ota);background:rgba(255,180,84,.25)}
+  .m b{font-size:12.5px}
+  .m .w{color:var(--dim);font-size:10.5px;margin-left:8px}
+  .m p{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .m .dod{color:var(--open);font-size:11px}
+  .m .dod::before{content:'DoD: ';color:var(--dim)}
+
+  /* tests */
+  .tgrid{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .tg{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:11.5px}
+  .tg b{font-size:12px}
+  .tg .cnt{float:right;color:var(--dim);font-size:10.5px}
+  .tg small{display:block;color:var(--muted);font-size:10.5px;margin-top:4px}
+  .tg.star{border-color:color-mix(in srgb,var(--ota) 45%,var(--line))}
+  .trules{margin-top:12px;font-size:11.5px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+  .trules b{color:var(--text)}
+
+  /* docs index */
+  .docs{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .doc{display:flex;gap:10px;align-items:baseline;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12px}
+  .doc .no{color:var(--dim);font-size:11px}
+  .doc small{display:block;color:var(--muted);font-size:10.5px}
+
+  footer{margin-top:34px;color:var(--dim);font-size:10.5px;border-top:1px solid var(--line);padding-top:14px}
+  .badge{display:inline-block;font-size:9.5px;padding:1px 7px;border-radius:99px;letter-spacing:.05em}
+  .badge.open{background:rgba(74,222,128,.12);color:var(--open)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">RobotOps · Bộ tài liệu hoàn chỉnh · 07/2026</div>
+  <h1>Robot Operations Platform — <span class="accent">toàn cảnh Phase 0</span></h1>
+  <p class="sub">Lớp hạ tầng vận hành robot, PLC và Industrial IoT. Không điều khiển robot — vận hành robot. Một trang tổng hợp: chiến lược → kiến trúc → roadmap → milestone → định nghĩa "xong".</p>
+</header>
+
+<!-- 1. CHIẾN LƯỢC -->
+<h2><span class="n">01</span> Chiến lược đã chốt</h2>
+<div class="cards">
+  <div class="card k"><h3>Beachhead</h3><p>Robot vendor / SI nội địa — white-label dashboard + OTA + remote support</p><small>Startup self-serve lùi Phase 1 · Design partner miễn phí từ tháng 3–4</small></div>
+  <div class="card o"><h3>Open-core</h3><p>Agent + Protocol spec: Apache 2.0. Server, dashboard, OTA orchestration: trả phí</p><small>Playbook Mender / balena / Grafana</small></div>
+  <div class="card a"><h3>Mô hình thu tiền</h3><p>License/năm theo instance — vendor tự host hoặc host hộ</p><small>Không per-robot → tránh chiến giá · Service là dòng tiền chính năm 1–2</small></div>
+  <div class="card r"><h3>Sản phẩm chủ lực</h3><p>OTA app-level: digest-pinned, staged rollout, auto-rollback tại agent</p><small>Thứ VnRobo và Foxglove không có</small></div>
+</div>
+
+<h2><span class="n">02</span> Vị trí trên thị trường</h2>
+<div class="mkt">
+  <div class="card"><b>Toàn cầu</b><p style="font-size:11.5px;color:var(--muted);margin-top:6px">Formant ~$250/robot/th, sales-gated · InOrbit cloud-first, edge yếu · AWS RoboMaker đã đóng (09/2025) · Foxglove: debug tốt, không OTA/ops</p></div>
+  <div class="card"><b class="vs">Việt Nam</b><p style="font-size:11.5px;color:var(--muted);margin-top:6px">VnRobo $29/th monitoring self-serve — <b style="color:var(--text)">không cạnh tranh phân khúc này</b> · VNX bundle SaaS theo phần cứng riêng</p></div>
+  <div class="card"><b>Khoảng trống ta chiếm</b><p style="font-size:11.5px;color:var(--muted);margin-top:6px">OTA tin cậy + edge on-premise (FDI ngại cloud) + white-label + VDA 5050 vào nhà máy — tầng khó, chưa ai nội địa chạm</p></div>
+</div>
+
+<!-- 3. KIẾN TRÚC -->
+<h2><span class="n">03</span> Kiến trúc Phase 0 — single-tenant</h2>
+<div class="arch">
+  <div class="arow"><div class="ab"><b>Dashboard</b><small>Next.js · SSE · white-label CSS vars</small></div></div>
+  <div class="avert"><div class="pipe up" style="--flow:#8b97b0"></div>HTTPS · REST + SSE</div>
+  <div class="arow">
+    <div class="ab"><b>API + Fleet Manager</b><small>Go · chi · pgx/sqlc</small></div>
+    <div class="ab"><b>EMQX</b><small>ACL per-device (PostgreSQL) · mTLS</small></div>
+    <div class="ab"><b>PostgreSQL 16</b><small>+ TimescaleDB</small></div>
+    <div class="ab"><b>Registry v2</b><small>kho image OTA</small></div>
+    <div class="ab"><b>WireGuard</b><small>kênh dự phòng</small></div>
+  </div>
+  <div class="avert"><div class="pipe up" style="--flow:var(--mqtt)"></div><span class="l">MQTT mTLS · robotops/v1/{tenant}/…</span><div class="pipe" style="--flow:var(--ota)"></div><span class="r">OTA pull theo digest</span></div>
+  <div class="openz"><span class="zt">Open source · Apache 2.0</span>
+    <div class="arow">
+      <div class="ab"><b>robotops-agent</b> <span class="badge open">Go</span><small>Mode A trên robot · Mode B trên gateway (1→N device) · buffer SQLite · PTY · OTA executor</small></div>
+      <div class="ab"><b>Probe API v1</b><small>Unix socket · NDJSON · capability handshake</small></div>
+      <div class="ab"><b>ros2-probe</b><small>rclpy · AMR profile · Phase 1+: modbus, rest, vda5050</small></div>
+    </div>
+  </div>
+  <div class="more"><a href="architecture.html">→ sơ đồ chi tiết (architecture.html)</a></div>
+</div>
+
+<!-- 4. ROADMAP -->
+<h2><span class="n">04</span> Roadmap & decision gates</h2>
+<div class="phases">
+  <div class="ph now"><span class="tag">Phase 0 · đang vào</span><b>Foundation</b>
+    <ul><li>Agent + probe</li><li>OTA + rollback</li><li>Alert · terminal</li><li>White-label installer</li></ul>
+    <div class="gate">partner prod 3 tháng · 0 brick · tiền nuôi ≥1 full-time</div></div>
+  <div class="ph"><span class="tag">Phase 1</span><b>Multi-tenant & Interop</b>
+    <ul><li>Self-serve SaaS</li><li>VDA 5050 probe→bridge</li><li>WebRTC view-only→teleop</li><li>Fleet map 2D</li></ul>
+    <div class="gate">5 khách trả phí · hợp đồng PLC ký</div></div>
+  <div class="ph"><span class="tag">Phase 2</span><b>Industrial</b>
+    <ul><li>OPC-UA · Modbus</li><li>Alarm center</li><li>Firmware OTA</li><li>IEC 62443 gap</li></ul>
+    <div class="gate">100 robot · khách kéo về data</div></div>
+  <div class="ph"><span class="tag">Phase 3</span><b>Data</b>
+    <ul><li>Retention phân tầng</li><li>Mission replay "hộp đen"</li><li>Dataset builder</li></ul>
+    <div class="gate">data tích lũy ≥ 1 năm</div></div>
+  <div class="ph"><span class="tag">Phase 4</span><b>AI</b>
+    <ul><li>Anomaly → predictive</li><li>Fleet optimization</li><li>Bán insight, không bán model</li></ul>
+    <div class="gate">—</div></div>
+</div>
+
+<!-- 5. MILESTONES -->
+<h2><span class="n">05</span> Phase 0 — M0→M6 (part-time ~15–20h/tuần)</h2>
+<div class="ms">
+  <div class="m"><b>M0 · Skeleton</b><span class="w">tuần 1–2</span><p>Monorepo + CI + compose chạy · <b style="color:var(--text)">protocol spec đóng băng</b> · JSON Schema + test vectors</p><span class="dod">docker compose up → login được</span></div>
+  <div class="m"><b>M1 · Agent v0 + Provisioning</b><span class="w">tuần 3–6</span><p>Heartbeat, telemetry, LWT · enroll bằng token → device cert · ACL EMQX</p><span class="dod">Jetson + Pi thật online/offline realtime</span></div>
+  <div class="m"><b>M2 · Dashboard + ros2-probe</b><span class="w">tuần 7–10</span><p>Device list/detail, RBAC · probe: node status + AMR profile · <b style="color:var(--text)">bắt đầu tiếp cận design partner</b></p><span class="dod">battery + node status robot thật trên dashboard</span></div>
+  <div class="m star"><b>M3 · OTA v1 ⭐</b><span class="w">tuần 11–16</span><p>Registry, manifest, health check, staged rollout · auto-rollback tại agent · test rút điện giữa chừng</p><span class="dod">deploy version lỗi → tự về version cũ, không can thiệp</span></div>
+  <div class="m"><b>M4 · Alert + Remote log</b><span class="w">tuần 17–20</span><p>Rule offline/battery/node · email + Telegram/Zalo · log tail có TTL</p><span class="dod">rút mạng → cảnh báo ≤ 1 phút</span></div>
+  <div class="m"><b>M5 · Terminal + White-label + Installer</b><span class="w">tuần 21–26</span><p>PTY + xterm.js + audit log · theming per-instance · install.sh idempotent</p><span class="dod">người ngoài team cài instance mới &lt; 30 phút</span></div>
+  <div class="m"><b>M6 · Hardening với design partner</b><span class="w">tuần 27+</span><p>Fleet thật ≥ 5 robot · load test 50 agent · security pass ACL/cert</p><span class="dod">30 ngày production, 0 brick — North Star tháng 9</span></div>
+</div>
+
+<!-- 6. TESTS -->
+<h2><span class="n">06</span> Test catalog — định nghĩa "xong" (40+ case, 3 tầng U/I/H)</h2>
+<div class="tgrid">
+  <div class="tg"><b>A · Provisioning</b><span class="cnt">5</span><small>enroll, cert xoay vòng, cert hết hạn 4 tháng</small></div>
+  <div class="tg"><b>B · ACL cách ly</b><span class="cnt">4</span><small>"bộ test bán hàng" — robot A không đọc được robot B</small></div>
+  <div class="tg"><b>C · Telemetry/offline</b><span class="cnt">7</span><small>LWT, buffer replay đúng seq, clock skew, 24h leak</small></div>
+  <div class="tg"><b>D · Probe API</b><span class="cnt">6</span><small>probe chết → degraded, agent sống; Mode B 2 probe</small></div>
+  <div class="tg star"><b>E · OTA ⭐</b><span class="cnt">12</span><small>rút điện giữa DOWNLOADING/SWITCHING · digest sai · disk đầy · lệnh quá hạn · ma trận Jetson+Pi bắt buộc</small></div>
+  <div class="tg"><b>F · Alert</b><span class="cnt">4</span><small>chống bão notification khi 50 robot offline cùng lúc</small></div>
+  <div class="tg"><b>G · Terminal/log</b><span class="cnt">4</span><small>audit log đầy đủ · viewer bị chặn · PTY không mồ côi</small></div>
+  <div class="tg"><b>H · Installer</b><span class="cnt">4</span><small>người thật cài &lt; 30 phút · backup/restore</small></div>
+  <div class="tg"><b>I · Tải & bền bỉ</b><span class="cnt">3</span><small>50 agent 72h · bão reconnect · 30 ngày fleet thật</small></div>
+</div>
+<div class="trules"><b>4 quy tắc vận hành:</b> mỗi PR khai báo test ID ảnh hưởng · test [H] có checklist ký tên trong /docs/hw-test-runs · bug mới → thêm test ID trước khi sửa · release agent = OTA-12 pass + CI xanh, không ngoại lệ.</div>
+
+<!-- 7. DOCS -->
+<h2><span class="n">07</span> Bộ tài liệu</h2>
+<div class="docs">
+  <div class="doc"><span class="no">01</span><div>spec-v2.md<small>chiến lược — bán cho ai, vì sao thắng</small></div></div>
+  <div class="doc"><span class="no">02</span><div>dev-plan-phase0.md<small>stack + milestone M0–M6</small></div></div>
+  <div class="doc"><span class="no">03</span><div>phase-plan-1-4.md<small>roadmap + gates</small></div></div>
+  <div class="doc"><span class="no">04</span><div>protocol-spec-v0.1.md<small>hợp đồng MQTT + Probe API — nạp cho Claude Code đầu tiên</small></div></div>
+  <div class="doc"><span class="no">05</span><div>test-catalog.md<small>định nghĩa "xong" từng milestone</small></div></div>
+  <div class="doc"><span class="no">—</span><div>html/architecture.html<small>sơ đồ kiến trúc chi tiết</small></div></div>
+</div>
+
+<footer>RobotOps · spec v2.0 · protocol v0.1 draft (đóng băng khi M1 bắt đầu) · Việc M0 còn lại: ACL SQL mẫu · codes.md · /schemas JSON Schema · test vectors</footer>
+
+</div>
+</body>
+</html>

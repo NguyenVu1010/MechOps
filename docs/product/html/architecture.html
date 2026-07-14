@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RobotOps — Kiến trúc Phase 0</title>
+<style>
+  :root{
+    --bg:#0d1220; --panel:#151c2e; --panel2:#1a2338; --line:#2a3550;
+    --text:#e8edf7; --muted:#8b97b0; --dim:#5c6883;
+    --mqtt:#5ca8ff; --ota:#ffb454; --open:#4ade80; --ros:#c084fc;
+    --mono:ui-monospace,'SF Mono','Cascadia Code','JetBrains Mono',Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--mono);padding:28px 16px 48px;line-height:1.45}
+  .wrap{max-width:980px;margin:0 auto}
+
+  header{margin-bottom:26px}
+  .eyebrow{color:var(--dim);font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+  h1{font-size:clamp(20px,3.4vw,28px);font-weight:600;margin-top:6px}
+  h1 .accent{color:var(--mqtt)}
+  .sub{color:var(--muted);font-size:13px;margin-top:6px;max-width:640px}
+
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:18px 0 24px;font-size:11px;color:var(--muted)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .dot{width:9px;height:9px;border-radius:2px;display:inline-block}
+
+  .layer{position:relative;border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:16px;margin:0 0 0}
+  .layer-tag{position:absolute;top:-9px;left:14px;background:var(--bg);padding:0 8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+
+  .boxes{display:grid;gap:10px}
+  .g5{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+
+  .box{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .box b{display:block;font-size:12.5px;font-weight:600}
+  .box small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+  .box.hl-ota{border-color:color-mix(in srgb,var(--ota) 45%,var(--line))}
+  .box.hl-mqtt{border-color:color-mix(in srgb,var(--mqtt) 45%,var(--line))}
+  .badge{display:inline-block;font-size:9.5px;padding:1px 6px;border-radius:99px;margin-top:6px;letter-spacing:.05em}
+  .badge.ota{background:rgba(255,180,84,.12);color:var(--ota)}
+  .badge.mqtt{background:rgba(92,168,255,.12);color:var(--mqtt)}
+  .badge.ros{background:rgba(192,132,252,.12);color:var(--ros)}
+  .badge.open{background:rgba(74,222,128,.12);color:var(--open)}
+
+  /* connectors between layers */
+  .conn{display:flex;justify-content:center;align-items:center;gap:10px;padding:6px 0;color:var(--muted);font-size:11px}
+  .pipe{position:relative;width:2px;height:34px;background:var(--line);overflow:hidden;border-radius:2px}
+  .pipe::after{content:'';position:absolute;left:-1px;width:4px;height:7px;border-radius:2px;background:var(--flow,#5ca8ff);animation:flow 1.6s linear infinite}
+  .pipe.up::after{animation-direction:reverse}
+  @keyframes flow{from{top:-8px}to{top:100%}}
+  @media (prefers-reduced-motion:reduce){.pipe::after{animation:none;top:40%}}
+  .conn .lbl{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:3px 10px}
+  .lbl.mqtt{color:var(--mqtt);border-color:color-mix(in srgb,var(--mqtt) 40%,var(--line))}
+  .lbl.ota{color:var(--ota);border-color:color-mix(in srgb,var(--ota) 40%,var(--line))}
+
+  /* open-source zone — signature element */
+  .open-zone{border:1.5px dashed color-mix(in srgb,var(--open) 55%,transparent);border-radius:12px;padding:18px 14px 14px;position:relative;margin-top:44px}
+  .open-zone>.zone-tag{position:absolute;top:-10px;left:14px;background:var(--bg);padding:0 8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--open)}
+  .closed-note{position:absolute;top:-10px;right:14px;background:var(--bg);padding:0 8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+
+  .modes{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:12px}
+  .mode{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:14px}
+  .mode h3{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:10px}
+  .mode h3 b{color:var(--text)}
+  .agent{border:1px solid color-mix(in srgb,var(--open) 40%,var(--line));background:var(--panel2);border-radius:8px;padding:10px 12px}
+  .agent b{font-size:12.5px}
+  .agent ul{list-style:none;margin-top:6px;font-size:11px;color:var(--muted)}
+  .agent li{padding:1.5px 0}
+  .agent li::before{content:'·';color:var(--open);margin-right:6px}
+
+  .probe-link{display:flex;align-items:center;gap:8px;margin:8px 0 8px 10px;color:var(--dim);font-size:10.5px}
+  .probe-link .vline{width:2px;height:18px;background:var(--line)}
+
+  .probes{display:grid;gap:8px}
+  .probe{border:1px solid color-mix(in srgb,var(--ros) 35%,var(--line));background:var(--panel2);border-radius:8px;padding:8px 12px;font-size:11.5px}
+  .probe small{color:var(--muted);display:block;font-size:10.5px;margin-top:2px}
+  .probe.future{border-style:dashed;opacity:.65}
+
+  .devices{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
+  .dev{font-size:10.5px;border:1px solid var(--line);border-radius:6px;padding:3px 8px;color:var(--muted)}
+
+  .ota-note{margin-top:26px;border-left:3px solid var(--ota);background:var(--panel);border-radius:0 8px 8px 0;padding:12px 14px;font-size:12px;color:var(--muted)}
+  .ota-note b{color:var(--ota)}
+  .ota-note .flow-steps{margin-top:6px;color:var(--text);font-size:11.5px}
+  .ota-note .flow-steps span{color:var(--dim)}
+
+  footer{margin-top:22px;color:var(--dim);font-size:10.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">RobotOps · Spec v2.0 · Phase 0</div>
+  <h1>Kiến trúc hệ thống <span class="accent">single-tenant</span></h1>
+  <p class="sub">Một instance mỗi vendor. Agent tách khỏi ROS 2 qua Probe API — cùng một binary chạy hai chế độ: trên robot hoặc trên gateway.</p>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--mqtt)"></i>MQTT / telemetry</span>
+    <span><i class="dot" style="background:var(--ota)"></i>OTA</span>
+    <span><i class="dot" style="background:var(--ros)"></i>Probe / adapter</span>
+    <span><i class="dot" style="background:var(--open)"></i>Open source (Apache 2.0)</span>
+  </div>
+</header>
+
+<!-- DASHBOARD -->
+<section class="layer">
+  <span class="layer-tag">Người vận hành</span>
+  <div class="boxes g5">
+    <div class="box"><b>Dashboard</b><small>Next.js · TypeScript · Tailwind · ECharts · xterm.js</small></div>
+    <div class="box"><b>Realtime qua SSE</b><small>Broker không bao giờ expose ra Internet</small></div>
+    <div class="box"><b>White-label</b><small>Logo + màu per-instance (CSS variables)</small></div>
+  </div>
+</section>
+
+<div class="conn"><div class="pipe up" style="--flow:#8b97b0"></div><span class="lbl">HTTPS · REST + SSE</span></div>
+
+<!-- SERVER INSTANCE -->
+<section class="layer">
+  <span class="layer-tag">Vendor instance · Docker Compose · closed source</span>
+  <div class="boxes g5">
+    <div class="box"><b>API Server + Fleet Manager</b><small>Go · chi · pgx/sqlc</small></div>
+    <div class="box hl-mqtt"><b>EMQX</b><small>ACL per-device qua PostgreSQL · MQTT 5</small><span class="badge mqtt">mTLS</span></div>
+    <div class="box"><b>PostgreSQL 16</b><small>+ TimescaleDB — relational lẫn time-series</small></div>
+    <div class="box hl-ota"><b>Docker Registry v2</b><small>Kho image OTA của vendor</small><span class="badge ota">OTA</span></div>
+    <div class="box"><b>WireGuard hub</b><small>Kênh dự phòng kỹ thuật viên</small></div>
+  </div>
+</section>
+
+<div class="conn">
+  <div class="pipe up" style="--flow:var(--mqtt)"></div>
+  <span class="lbl mqtt">MQTT · mTLS · device cert</span>
+  <div class="pipe" style="--flow:var(--ota)"></div>
+  <span class="lbl ota">OTA pull</span>
+</div>
+
+<!-- OPEN SOURCE ZONE -->
+<section class="open-zone">
+  <span class="zone-tag">Open source · Apache 2.0</span>
+  <span class="closed-note">Agent + Protocol spec + Probe API</span>
+
+  <div class="modes">
+    <!-- MODE A -->
+    <div class="mode">
+      <h3><b>Mode A</b> — agent chạy trên robot</h3>
+      <div class="agent">
+        <b>robotops-agent</b> <span class="badge open">Go · single binary</span>
+        <ul>
+          <li>Telemetry hệ thống (gopsutil) · LWT online/offline</li>
+          <li>OTA executor — swap container, health check, <b>auto-rollback cục bộ</b></li>
+          <li>PTY server (remote terminal, audit log)</li>
+          <li>Buffer offline vào SQLite, replay khi có mạng</li>
+        </ul>
+      </div>
+      <div class="probe-link"><div class="vline"></div>Probe API · Unix socket · contract versioned</div>
+      <div class="probes">
+        <div class="probe">ros2-probe <span class="badge ros">rclpy</span><small>node/topic status · AMR profile: battery, pose, mission</small></div>
+      </div>
+      <div class="devices"><span class="dev">AMR ROS 2</span><span class="dev">Jetson</span><span class="dev">Raspberry Pi</span><span class="dev">Industrial PC</span></div>
+    </div>
+
+    <!-- MODE B -->
+    <div class="mode">
+      <h3><b>Mode B</b> — agent chạy trên gateway (1 agent ⇢ N thiết bị)</h3>
+      <div class="agent">
+        <b>robotops-agent</b> <span class="badge open">cùng binary</span>
+        <ul>
+          <li>Đại diện nhiều thiết bị không cài được agent</li>
+          <li>Data model: 1 agent quản lý N deviceId</li>
+        </ul>
+      </div>
+      <div class="probe-link"><div class="vline"></div>Probe API · nhiều probe song song</div>
+      <div class="probes">
+        <div class="probe future">modbus-probe<small>PLC · AGV chạy Modbus/CAN — Phase 1+</small></div>
+        <div class="probe future">rest-probe<small>Robot hãng đóng kín có REST/SDK riêng — Phase 1+</small></div>
+        <div class="probe future">firmware OTA<small>artifactType: firmware-binary — ESP32/STM32</small></div>
+      </div>
+      <div class="devices"><span class="dev">PLC</span><span class="dev">AGV Modbus</span><span class="dev">AMR hãng khác</span><span class="dev">ESP32 / STM32</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- OTA FLOW -->
+<div class="ota-note">
+  <b>OTA flow — sản phẩm chủ lực Phase 0.</b> Quyết định rollback nằm ở agent, không ở server — vì robot có thể mất mạng đúng lúc update fail.
+  <div class="flow-steps">pull image <span>→</span> stop container cũ (giữ nguyên) <span>→</span> start mới <span>→</span> health check <span>→</span> <b style="color:var(--open)">pass:</b> dọn tag cũ sau N giờ · <b style="color:var(--ota)">fail:</b> tự rollback tại chỗ</div>
+</div>
+
+<footer>Phase 0 · Docker Compose single-tenant · Envelope schema phổ quát — pose/battery thuộc AMR profile, node/topic thuộc ROS profile · Multi-tenant, VDA 5050, WebRTC: Phase 1</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,9 @@
+name: nightly
+on:
+  schedule: [{cron: "0 18 * * *"}]
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "TODO(M1): compose up, make test-integration, bot-commit test-status"

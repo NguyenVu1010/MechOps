@@ -1,0 +1,8 @@
+name: pr
+on: [pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "TODO(M0): setup go+python, make verify, upload evidence artifact"

@@ -1,0 +1,24 @@
+# Go
+*.exe
+*.test
+*.out
+bin/
+dist/
+go.work.sum
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Env / secrets
+.env
+.env.*
+*.pem
+*.key

@@ -1,0 +1,28 @@
+asyncapi: 3.0.0
+info:
+  title: RobotOps Protocol
+  version: 0.1.0
+  description: >
+    Contract giữa robotops-agent và server qua MQTT 5 (mTLS).
+    Narrative (state machine, offline, luật cứng): docs/protocol-notes.md.
+  license: { name: Apache 2.0 }
+defaultContentType: application/json
+servers:
+  instance:
+    host: emqx:8883
+    protocol: mqtt
+    protocolVersion: "5"
+channels:
+  deviceTelemetry:
+    address: robotops/v1/{tenant}/devices/{deviceId}/telemetry
+    parameters:
+      tenant: { description: Phase 0 luôn "default" }
+      deviceId: {}
+    messages:
+      telemetry:
+        payload: { $ref: ./schemas/telemetry.schema.json }
+# TODO(M0): agents/status (LWT), inventory, cmd, cmd/res, ota/state, devices/state, events, logs
+operations:
+  publishTelemetry:
+    action: send
+    channel: { $ref: '#/channels/deviceTelemetry' }

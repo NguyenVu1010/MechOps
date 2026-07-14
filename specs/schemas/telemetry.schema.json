@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://robotops.io/schemas/telemetry.schema.json",
+  "title": "Telemetry",
+  "type": "object",
+  "required": ["v", "ts", "seq", "metrics"],
+  "properties": {
+    "v": { "const": 1 },
+    "ts": { "type": "integer", "description": "epoch ms UTC" },
+    "seq": { "type": "integer", "minimum": 0 },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "cpuPct": { "type": "number" }, "memPct": { "type": "number" },
+        "diskPct": { "type": "number" }, "tempC": { "type": "number" }
+      },
+      "additionalProperties": true
+    },
+    "profiles": {
+      "type": "object",
+      "properties": {
+        "amr": { "$ref": "#/$defs/amrProfile" },
+        "ros": { "$ref": "#/$defs/rosProfile" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "amrProfile": {
+      "type": "object",
+      "properties": {
+        "batteryPct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "charging": { "type": "boolean" },
+        "pose": {
+          "type": "object",
+          "required": ["x", "y", "yaw"],
+          "properties": {
+            "x": { "type": "number" }, "y": { "type": "number" },
+            "yaw": { "type": "number" }, "frame": { "type": "string" }
+          }
+        },
+        "missionId": { "type": "string" }, "missionState": { "type": "string" }
+      }
+    },
+    "rosProfile": {
+      "type": "object",
+      "properties": {
+        "nodesUp": { "type": "integer" }, "nodesTotal": { "type": "integer" }
+      }
+    }
+  }
+}

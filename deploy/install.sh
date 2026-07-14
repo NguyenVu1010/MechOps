@@ -1,0 +1,4 @@
+#!/bin/sh
+# TODO(M5): installer idempotent (INS-01/02)
+set -e
+echo "robotops install — chưa triển khai"

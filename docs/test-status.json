@@ -1,0 +1,447 @@
+{
+  "updated": "2026-07-13T10:14:36Z",
+  "commit": "c732f36",
+  "tests": {
+    "PRV-01": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Enroll token hợp lệ",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "PRV-02": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Token đã dùng/hết hạn",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "PRV-03": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Cert tự gia hạn <30 ngày",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "PRV-04": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Cert hết hạn hoàn toàn",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "PRV-05": {
+      "status": "pending",
+      "tier": "H",
+      "desc": "Enroll Jetson+Pi <5 phút",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "ACL-01": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Agent A publish topic B → từ chối",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "ACL-02": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Subscribe wildcard bị giới hạn",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "ACL-03": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Không cert → chặn tầng TLS",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "ACL-04": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Payload >64KB bị từ chối",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "TEL-01": {
+      "status": "pending",
+      "tier": "U",
+      "desc": "Test vectors validate đúng",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "TEL-02": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "24h không leak, seq liền",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "TEL-03": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "LWT khi rút mạng",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "TEL-04": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Replay đúng seq/ts sau reconnect",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "TEL-05": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Buffer 24h+ downsample",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "TEL-06": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Clock skew >30s có event",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "TEL-07": {
+      "status": "pending",
+      "tier": "H",
+      "desc": "Field lạ không gây lỗi",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "PRB-01": {
+      "status": "pending",
+      "tier": "U",
+      "desc": "apiVersion sai → từ chối sạch",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "PRB-02": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "AMR profile lên dashboard",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "PRB-03": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Probe chết → degraded, agent sống",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "PRB-04": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Probe restart không nhân đôi",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "PRB-05": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "2 probe Mode B hợp nhất inventory",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "PRB-06": {
+      "status": "pending",
+      "tier": "H",
+      "desc": "Kill node ROS thật → alarm ≤10s",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "OTA-01": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Deploy pass toàn state machine",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "OTA-02": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Health fail → tự rollback",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "OTA-03": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Crash-loop → tự rollback",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "OTA-04": {
+      "status": "pending",
+      "tier": "H",
+      "desc": "Rút điện giữa DOWNLOADING",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "OTA-05": {
+      "status": "pending",
+      "tier": "H",
+      "desc": "Rút điện giữa SWITCHING",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "OTA-06": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Rút mạng giữa download",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "OTA-07": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Digest sai → không start",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "OTA-08": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Lệnh quá hạn → rejected",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "OTA-09": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Staged rollout dừng khi wave fail",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "OTA-10": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Deploy chồng → từ chối",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "OTA-11": {
+      "status": "pending",
+      "tier": "H",
+      "desc": "Disk đầy → fail sạch",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "OTA-12": {
+      "status": "pending",
+      "tier": "H",
+      "desc": "Ma trận Jetson+Pi đủ OTA-01→05",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "ALT-01": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Offline → notify ≤60s",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "ALT-02": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Raised/cleared không spam",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "ALT-03": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "50 robot offline → gộp tin",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "ALT-04": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Webhook chết → retry giới hạn",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "TRM-01": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "PTY + audit log đầy đủ",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "TRM-02": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Viewer bị chặn terminal",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "TRM-03": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Rớt mạng → phiên đóng sạch",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "TRM-04": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Log tail tự tắt theo TTL",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "WLB-01": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Theming không cần rebuild",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "INS-01": {
+      "status": "pending",
+      "tier": "H",
+      "desc": "Người ngoài cài <30 phút",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "INS-02": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "install.sh idempotent",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "INS-03": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Backup/restore Postgres",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "LOD-01": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "50 agent 72h không mất QoS1",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "LOD-02": {
+      "status": "pending",
+      "tier": "I",
+      "desc": "Bão reconnect có backpressure",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    },
+    "LOD-03": {
+      "status": "pending",
+      "tier": "H",
+      "desc": "30 ngày fleet thật, 0 brick",
+      "lastRun": null,
+      "commit": null,
+      "evidence": null,
+      "runs": 0
+    }
+  }
+}

@@ -1,0 +1,7 @@
+# Vendor instance — Phase 0 skeleton. TODO(M0): điền image/tag, healthcheck, volumes, TLS.
+services:
+  emqx:      { image: emqx/emqx:5, ports: ["8883:8883"] }
+  postgres:  { image: timescale/timescaledb:latest-pg16, environment: { POSTGRES_PASSWORD: change-me } }
+  registry:  { image: registry:2 }
+  server:    { build: ../server, depends_on: [emqx, postgres] }
+  dashboard: { build: ../dashboard, ports: ["3000:3000"] }

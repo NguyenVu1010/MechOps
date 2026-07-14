@@ -1,0 +1,5 @@
+{ "v": 1, "ts": 1752051600000, "seq": 48213,
+  "metrics": { "cpuPct": 41.2, "memPct": 63.0 },
+  "profiles": { "amr": { "batteryPct": 84, "charging": false,
+    "pose": { "x": 12.4, "y": 8.5, "yaw": 1.57, "frame": "map" } },
+    "ros": { "nodesUp": 14, "nodesTotal": 15 } } }
