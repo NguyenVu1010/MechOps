@@ -1,0 +1,9 @@
+{"Time":"2026-07-15T02:30:11.515172203+07:00","Action":"start","Package":"github.com/NguyenVu1010/MechOps/agent/cmd/mechops-agent"}
+{"Time":"2026-07-15T02:30:11.515306483+07:00","Action":"output","Package":"github.com/NguyenVu1010/MechOps/agent/cmd/mechops-agent","Output":"?   \tgithub.com/NguyenVu1010/MechOps/agent/cmd/mechops-agent\t[no test files]\n"}
+{"Time":"2026-07-15T02:30:11.515325667+07:00","Action":"skip","Package":"github.com/NguyenVu1010/MechOps/agent/cmd/mechops-agent","Elapsed":0}
+{"Time":"2026-07-15T02:30:11.522025044+07:00","Action":"start","Package":"github.com/NguyenVu1010/MechOps/protocol"}
+{"Time":"2026-07-15T02:30:11.522056169+07:00","Action":"output","Package":"github.com/NguyenVu1010/MechOps/protocol","Output":"?   \tgithub.com/NguyenVu1010/MechOps/protocol\t[no test files]\n"}
+{"Time":"2026-07-15T02:30:11.522063292+07:00","Action":"skip","Package":"github.com/NguyenVu1010/MechOps/protocol","Elapsed":0}
+{"Time":"2026-07-15T02:30:11.522088096+07:00","Action":"start","Package":"github.com/NguyenVu1010/MechOps/server/cmd/server"}
+{"Time":"2026-07-15T02:30:11.522112479+07:00","Action":"output","Package":"github.com/NguyenVu1010/MechOps/server/cmd/server","Output":"?   \tgithub.com/NguyenVu1010/MechOps/server/cmd/server\t[no test files]\n"}
+{"Time":"2026-07-15T02:30:11.522116777+07:00","Action":"skip","Package":"github.com/NguyenVu1010/MechOps/server/cmd/server","Elapsed":0}
