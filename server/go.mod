@@ -1,3 +1,3 @@
-module github.com/robotops-io/robotops-server
+module github.com/NguyenVu1010/MechOps/server
 
 go 1.22

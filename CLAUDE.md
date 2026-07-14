@@ -1,6 +1,6 @@
 # ĐỌC TRƯỚC: constitution.md — 9 nguyên tắc bất biến.
 
-# CLAUDE.md — RobotOps
+# CLAUDE.md — MechOps
 
 Luật làm việc trong repo này. Đọc trước khi làm bất kỳ việc gì.
 
@@ -16,7 +16,8 @@ Luật làm việc trong repo này. Đọc trước khi làm bất kỳ việc g
 2. Viết test trước (đỏ) — naming: `Test<ID bỏ gạch>_<MôTả>`, ví dụ `TestOTA07_DigestMismatch`
 3. Implement tối thiểu để xanh
 4. `make verify` — lệnh DUY NHẤT để cập nhật tracker
-5. Commit message có dòng `Implements: <ID>, <ID>`
+5. Trước khi commit: LUÔN chạy subagent spec-guardian rồi test-auditor (hoặc /audit)
+6. Commit message có dòng `Implements: <ID>, <ID>`
 
 ## Cấm tuyệt đối
 - Sửa `docs/test-status.md` / `.json` trực tiếp (hook sẽ chặn — đây là chủ đích, không phải lỗi)
@@ -25,7 +26,8 @@ Luật làm việc trong repo này. Đọc trước khi làm bất kỳ việc g
 - Thêm thư viện ngoài stack đã chốt mà không hỏi
 - Tick test [H] — chỉ người chạy `make hw-test` mới tick được
 
-## Lệnh
+## Lệnh (chi tiết cho người: docs/DEVELOPMENT.md)
+- Slash commands: /feature · /task · /audit (định nghĩa trong .claude/commands/)
 - `make verify` — fmt + vet + unit test + cập nhật tracker
 - `make test-integration` — cần `docker compose up -d` trước
 - `make hw-test ID=OTA-04 TESTER=Ng` — biên bản test phần cứng (người chạy)

@@ -1,9 +1,9 @@
 asyncapi: 3.0.0
 info:
-  title: RobotOps Protocol
+  title: MechOps Protocol
   version: 0.1.0
   description: >
-    Contract giữa robotops-agent và server qua MQTT 5 (mTLS).
+    Contract giữa mechops-agent và server qua MQTT 5 (mTLS).
     Narrative (state machine, offline, luật cứng): docs/protocol-notes.md.
   license: { name: Apache 2.0 }
 defaultContentType: application/json
@@ -14,7 +14,7 @@ servers:
     protocolVersion: "5"
 channels:
   deviceTelemetry:
-    address: robotops/v1/{tenant}/devices/{deviceId}/telemetry
+    address: mechops/v1/{tenant}/devices/{deviceId}/telemetry
     parameters:
       tenant: { description: Phase 0 luôn "default" }
       deviceId: {}

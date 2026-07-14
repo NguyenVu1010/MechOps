@@ -1,4 +1,4 @@
-# RobotOps Platform — Product Spec v2.0
+# MechOps Platform — Product Spec v2.0
 
 > Phiên bản: 2.0 · Cập nhật: 07/2026
 > Thay đổi so với v1.0: chốt beachhead, thu gọn tech stack, định nghĩa lại OTA, thêm VDA 5050, chiến lược open-core, mô hình thu tiền, và scope Phase 0 khớp với nguồn lực thực tế.
@@ -7,9 +7,9 @@
 
 ## 1. Vision (giữ nguyên tinh thần v1.0)
 
-RobotOps là **Robot Operations Platform** — lớp hạ tầng trung gian giúp doanh nghiệp triển khai, giám sát, cập nhật và vận hành đội robot, PLC và thiết bị Industrial IoT trên cùng một nền tảng.
+MechOps là **Robot Operations Platform** — lớp hạ tầng trung gian giúp doanh nghiệp triển khai, giám sát, cập nhật và vận hành đội robot, PLC và thiết bị Industrial IoT trên cùng một nền tảng.
 
-RobotOps **không** điều khiển robot (không thay thế navigation/motion control). RobotOps **vận hành** robot — tương tự quan hệ Kubernetes với container.
+MechOps **không** điều khiển robot (không thay thế navigation/motion control). MechOps **vận hành** robot — tương tự quan hệ Kubernetes với container.
 
 Mục tiêu dài hạn: hạ tầng tiêu chuẩn cho hệ sinh thái Robotics tại Việt Nam và Đông Nam Á.
 
@@ -100,7 +100,7 @@ Tuyển **1 vendor design partner** dùng miễn phí từ tháng 3–4 của Ph
 - Chạy trên Ubuntu/Debian: Jetson, Pi, Industrial PC
 - Ngôn ngữ: Go (single binary, dễ deploy, footprint thấp)
 
-**Deploy:** Docker Compose single-tenant. Một file `docker-compose.yml` + script cài đặt → vendor tự host hoặc RobotOps host hộ trên VPS.
+**Deploy:** Docker Compose single-tenant. Một file `docker-compose.yml` + script cài đặt → vendor tự host hoặc MechOps host hộ trên VPS.
 
 **Trong scope Phase 0:** Agent, OTA app-level, dashboard, alert, remote terminal, user login (RBAC 2 role: admin/viewer), theming cơ bản cho white-label (logo, màu).
 
@@ -139,7 +139,7 @@ Vendor Instance (Docker Compose)
 └── WireGuard hub (remote terminal/tunnel)
 
 Robot (Jetson / Pi / IPC)
-└── robotops-agent (Go, single binary, open source)
+└── mechops-agent (Go, single binary, open source)
     ├── Telemetry → MQTT
     ├── OTA client (Docker container swap + rollback)
     ├── WireGuard client
@@ -166,7 +166,7 @@ Lý do: mỗi công nghệ thêm vào là chi phí vận hành vĩnh viễn vớ
 
 | Thành phần | License | Lý do |
 |---|---|---|
-| `robotops-agent` | Apache 2.0, public GitHub | Chạy trên robot của khách — vendor sẽ audit; open tạo lòng tin + lan truyền trong cộng đồng ROS 2 (kênh marketing chi phí 0) |
+| `mechops-agent` | Apache 2.0, public GitHub | Chạy trên robot của khách — vendor sẽ audit; open tạo lòng tin + lan truyền trong cộng đồng ROS 2 (kênh marketing chi phí 0) |
 | Protocol spec (MQTT topics, schema) | Open | Cho phép cộng đồng viết adapter |
 | Server, Dashboard, OTA orchestration, Fleet Manager | Closed, trả phí | Phần thu tiền |
 
@@ -177,7 +177,7 @@ Playbook tham chiếu: Mender, balena, Grafana.
 ## 8. Business Model (đã chốt)
 
 ### Vendor white-label — nguồn thu chính năm 1–2
-- **License/năm theo instance** (vendor tự host hoặc RobotOps host hộ)
+- **License/năm theo instance** (vendor tự host hoặc MechOps host hộ)
 - Không tính per-robot → tránh chiến giá với VnRobo, vendor dễ dự toán
 - Gợi ý khung giá (cần validate với design partner): tier theo số robot tối đa (≤10 / ≤50 / không giới hạn)
 - Kèm: phí setup + adapter development + training (professional service)

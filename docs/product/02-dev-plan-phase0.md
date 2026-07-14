@@ -1,4 +1,4 @@
-# RobotOps — Phase 0 Development Plan
+# MechOps — Phase 0 Development Plan
 
 > Đi kèm spec v2.0 · Phạm vi: Phase 0 (Foundation)
 > Nguyên tắc xuyên suốt: team part-time → mỗi lựa chọn công nghệ phải tối thiểu hóa chi phí vận hành, không phải tối đa hóa độ "xịn".
@@ -43,7 +43,7 @@ Một database duy nhất cho cả relational (users, devices, deployments) lẫ
 Vấn đề kỹ thuật quan trọng nhất của agent: **Go không nói chuyện DDS/ROS 2 tự nhiên** (rclgo chưa production-ready). Giải pháp 2 tầng:
 
 ```
-robotops-agent (Go, single binary, systemd service)
+mechops-agent (Go, single binary, systemd service)
 ├── Telemetry hệ thống: CPU/RAM/disk/net (gopsutil), battery
 ├── MQTT client (mTLS, device cert)
 ├── OTA executor (Docker SDK for Go)
@@ -82,12 +82,12 @@ Loại phương án SSH qua WireGuard: phải quản lý SSH key per-user per-ro
 ## 2. Thiết kế protocol MQTT (khung — chi tiết hóa ở M0)
 
 ```
-robotops/{deviceId}/telemetry        ← agent đẩy, QoS 0, 1–5s/lần
-robotops/{deviceId}/status           ← retained: online/offline (LWT)
-robotops/{deviceId}/ros              ← trạng thái node/topic từ probe, QoS 0
-robotops/{deviceId}/ota/command      → server đẩy lệnh deploy/rollback, QoS 1
-robotops/{deviceId}/ota/progress     ← agent báo tiến độ, QoS 1
-robotops/{deviceId}/logs/{stream}    ← khi user bật log tail
+mechops/{deviceId}/telemetry        ← agent đẩy, QoS 0, 1–5s/lần
+mechops/{deviceId}/status           ← retained: online/offline (LWT)
+mechops/{deviceId}/ros              ← trạng thái node/topic từ probe, QoS 0
+mechops/{deviceId}/ota/command      → server đẩy lệnh deploy/rollback, QoS 1
+mechops/{deviceId}/ota/progress     ← agent báo tiến độ, QoS 1
+mechops/{deviceId}/logs/{stream}    ← khi user bật log tail
 ```
 - Payload: JSON Phase 0 (dễ debug); cân nhắc CBOR khi có số đo băng thông thực tế
 - Offline-first: agent buffer telemetry vào SQLite local khi mất mạng, replay khi reconnect
@@ -104,7 +104,7 @@ robotops/{deviceId}/logs/{stream}    ← khi user bật log tail
 
 ### M1 · Tuần 3–6 — Agent v0 + provisioning
 - Agent: heartbeat, telemetry hệ thống, LWT online/offline
-- Provisioning: sinh device cert, lệnh `robotops-agent enroll --token XXX`
+- Provisioning: sinh device cert, lệnh `mechops-agent enroll --token XXX`
 - Chạy thật trên Jetson + Pi
 - DoD: dashboard thấy 2 thiết bị thật online/offline realtime
 

@@ -4,7 +4,7 @@ package protocol
 
 import "fmt"
 
-const ns = "robotops/v1"
+const ns = "mechops/v1"
 
 func TopicAgentStatus(tenant, agentID string) string {
 	return fmt.Sprintf("%s/%s/agents/%s/status", ns, tenant, agentID)

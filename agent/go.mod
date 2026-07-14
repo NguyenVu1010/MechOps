@@ -1,3 +1,3 @@
-module github.com/robotops-io/robotops-agent
+module github.com/NguyenVu1010/MechOps/agent
 
 go 1.22

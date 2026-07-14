@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RobotOps — Kiến trúc Phase 0</title>
+<title>MechOps — Kiến trúc Phase 0</title>
 <style>
   :root{
     --bg:#0d1220; --panel:#151c2e; --panel2:#1a2338; --line:#2a3550;
@@ -92,7 +92,7 @@
 <div class="wrap">
 
 <header>
-  <div class="eyebrow">RobotOps · Spec v2.0 · Phase 0</div>
+  <div class="eyebrow">MechOps · Spec v2.0 · Phase 0</div>
   <h1>Kiến trúc hệ thống <span class="accent">single-tenant</span></h1>
   <p class="sub">Một instance mỗi vendor. Agent tách khỏi ROS 2 qua Probe API — cùng một binary chạy hai chế độ: trên robot hoặc trên gateway.</p>
   <div class="legend">
@@ -144,7 +144,7 @@
     <div class="mode">
       <h3><b>Mode A</b> — agent chạy trên robot</h3>
       <div class="agent">
-        <b>robotops-agent</b> <span class="badge open">Go · single binary</span>
+        <b>mechops-agent</b> <span class="badge open">Go · single binary</span>
         <ul>
           <li>Telemetry hệ thống (gopsutil) · LWT online/offline</li>
           <li>OTA executor — swap container, health check, <b>auto-rollback cục bộ</b></li>
@@ -163,7 +163,7 @@
     <div class="mode">
       <h3><b>Mode B</b> — agent chạy trên gateway (1 agent ⇢ N thiết bị)</h3>
       <div class="agent">
-        <b>robotops-agent</b> <span class="badge open">cùng binary</span>
+        <b>mechops-agent</b> <span class="badge open">cùng binary</span>
         <ul>
           <li>Đại diện nhiều thiết bị không cài được agent</li>
           <li>Data model: 1 agent quản lý N deviceId</li>

@@ -1,4 +1,4 @@
-# RobotOps — Phase 1→4 Plan
+# MechOps — Phase 1→4 Plan
 
 > Đi kèm spec v2.0 và dev plan Phase 0.
 > Nguyên tắc viết plan: **độ chi tiết giảm dần theo khoảng cách thời gian.** Phase 1 chi tiết gần bằng Phase 0 (sẽ build trong 12–18 tháng tới); Phase 2–4 là định hướng có kiến trúc — đủ để quyết định hôm nay không khóa cửa ngày mai, nhưng không giả vờ biết trước thị trường 3 năm nữa. Mỗi phase có **decision gate**: điều kiện phải đạt trước khi bơm nguồn lực vào phase kế.
@@ -18,24 +18,24 @@
 │  Single-tenant Docker Compose per vendor     │
 │  License/năm · vendor tự host hoặc host hộ   │
 ├─ Kênh self-serve (mới) ─────────────────────┤
-│  1 deployment multi-tenant do RobotOps host  │
+│  1 deployment multi-tenant do MechOps host  │
 │  Freemium ≤2 robot → trả phí theo bậc        │
 └─ Control Plane (mới, nhẹ) ──────────────────┘
    License registry · usage report · signup/billing
 ```
 
 - **Tenant isolation:** row-level (cột `tenant_id` + Postgres RLS) cho self-serve — không schema-per-tenant (đau migration), không instance-per-user (đắt hạ tầng). Kênh vendor đã cách ly vật lý sẵn.
-- **MQTT isolation:** topic prefix `robotops/{tenantId}/{deviceId}/…` + ACL EMQX theo tenant. Đây là lý do chọn EMQX từ Phase 0.
+- **MQTT isolation:** topic prefix `mechops/{tenantId}/{deviceId}/…` + ACL EMQX theo tenant. Đây là lý do chọn EMQX từ Phase 0.
 - **Auth:** đến lúc đưa **Keycloak** vào (đã hoãn từ Phase 0) — SSO, org/team, invite flow. Agent giữ device cert, không đổi.
 - **Billing:** Stripe cho quốc tế + chuyển khoản/VietQR thủ công cho VN (đừng tự động hóa billing VN sớm — số lượng khách chưa đáng).
 - **Control plane license:** instance vendor gọi về kiểm tra license định kỳ, **grace period 30 ngày offline** — không được chết khi mất mạng (khách on-premise là lý do tồn tại của sản phẩm).
 
 ### 1.2 VDA 5050 Adapter (ưu tiên #2)
 
-VDA 5050 chuẩn hóa giao tiếp master control ↔ AGV qua MQTT (topics: `order`, `instantActions`, `state`, `visualization`, `connection`, `factsheet`). RobotOps đứng được ở **hai phía**, build theo thứ tự:
+VDA 5050 chuẩn hóa giao tiếp master control ↔ AGV qua MQTT (topics: `order`, `instantActions`, `state`, `visualization`, `connection`, `factsheet`). MechOps đứng được ở **hai phía**, build theo thứ tự:
 
-1. **vda5050-probe (làm trước):** RobotOps *nói chuyện với* robot đã tuân thủ VDA 5050 — nhà máy FDI có sẵn AGV chuẩn này chỉ việc kết nối, không cài agent lên robot. Đây là Mode B gateway, đúng seam đã thiết kế từ Phase 0.
-2. **VDA 5050 bridge (làm sau, khi có khách cần):** phơi robot ROS 2 trong RobotOps *ra ngoài* như thiết bị VDA 5050 — để vendor của ta bán robot vào nhà máy yêu cầu chuẩn này trong gói thầu. Đây là feature bán hàng cho vendor, giá trị thương mại cao.
+1. **vda5050-probe (làm trước):** MechOps *nói chuyện với* robot đã tuân thủ VDA 5050 — nhà máy FDI có sẵn AGV chuẩn này chỉ việc kết nối, không cài agent lên robot. Đây là Mode B gateway, đúng seam đã thiết kế từ Phase 0.
+2. **VDA 5050 bridge (làm sau, khi có khách cần):** phơi robot ROS 2 trong MechOps *ra ngoài* như thiết bị VDA 5050 — để vendor của ta bán robot vào nhà máy yêu cầu chuẩn này trong gói thầu. Đây là feature bán hàng cho vendor, giá trị thương mại cao.
 
 Envelope schema Phase 0 cần map sạch sang `state` message của VDA 5050 — kiểm tra chéo khi viết protocol spec v0.1 (việc của M0, không phải Phase 1).
 

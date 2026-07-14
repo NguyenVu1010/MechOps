@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://robotops.io/schemas/telemetry.schema.json",
+  "$id": "https://mechops.io/schemas/telemetry.schema.json",
   "title": "Telemetry",
   "type": "object",
   "required": ["v", "ts", "seq", "metrics"],
