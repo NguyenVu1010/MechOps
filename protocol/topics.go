@@ -12,4 +12,5 @@ func TopicAgentStatus(tenant, agentID string) string {
 func TopicDeviceTelemetry(tenant, deviceID string) string {
 	return fmt.Sprintf("%s/%s/devices/%s/telemetry", ns, tenant, deviceID)
 }
+
 // TODO(M0): bổ sung đủ theo specs/asyncapi.yaml — inventory, cmd, cmd/res, ota/state, state, events, logs.
