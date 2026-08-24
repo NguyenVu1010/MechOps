@@ -248,7 +248,15 @@ def main():
         if not (a.result and a.evidence):
             sys.exit("--hw cần cả --result và --evidence")
         changed = set_hw(state, a.hw, a.result, a.evidence)
-    save(state)
+    if a.render and not (a.go_json or a.hw):
+        # `--render` = render lại .md TỪ .json, không đụng gì tới .json.
+        # save() đặt updated/commit mới nên mỗi lần --render lại sinh một diff;
+        # bước "Tracker không bị sửa tay" của CI dùng chính lệnh này để chứng
+        # minh .md khớp .json, nên nó phải idempotent — nếu không CI đỏ oan
+        # ngay PR đầu tiên và người ta sẽ học cách bỏ qua nó.
+        render(state)
+    else:
+        save(state)
     for tid, res in changed:
         print(f"{ICON[res]} {tid} → {res}")
     if not changed and not a.render:
