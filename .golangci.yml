@@ -1,0 +1,97 @@
+# golangci-lint — chạy qua `./mo lint`, và trong CI mỗi PR.
+#
+# Ba linter dưới đây không phải để "code đẹp": chúng biến nguyên tắc trong
+# constitution.md thành lỗi biên dịch được. Đó là lý do chính file này tồn tại.
+#   depguard  -> constitution #7 (agent không import server)
+#   forbidigo -> quy ước slog trong skill go-conventions
+#   gosec     -> sản phẩm quản trị fleet + OTA, digest/path là rủi ro thật
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  disable-all: true
+  enable:
+    - depguard
+    - forbidigo
+    - errcheck
+    - errorlint
+    - govet
+    - staticcheck
+    - ineffassign
+    - unused
+    - bodyclose
+    - contextcheck
+    - sqlclosecheck
+    - rowserrcheck
+    - gosec
+    - revive
+  # Cố tình KHÔNG bật misspell: comment trong repo này là tiếng Việt,
+  # misspell sẽ báo sai hàng loạt. Nhiễu làm người ta tắt lint — đắt hơn lợi.
+
+linters-settings:
+  depguard:
+    rules:
+      agent-khong-import-server:
+        files:
+          - "**/agent/**"
+        deny:
+          - pkg: github.com/NguyenVu1010/MechOps/server
+            desc: >-
+              constitution #7 — chiều phụ thuộc là server -> protocol <- agent,
+              không bao giờ ngược. Cần dùng chung thì đưa vào /protocol.
+      server-khong-import-agent:
+        files:
+          - "**/server/**"
+        deny:
+          - pkg: github.com/NguyenVu1010/MechOps/agent
+            desc: constitution #7 — server không import agent. Dùng chung thì đưa vào /protocol.
+
+  forbidigo:
+    forbid:
+      - p: ^fmt\.Print.*$
+        msg: Dùng slog (skill go-conventions), không fmt.Print*. Log phải là JSON và kèm deviceId/agentId/cmdId.
+      - p: ^log\.(Print|Fatal|Panic).*$
+        msg: Dùng log/slog, không package log cũ.
+    analyze-types: true
+
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+
+  errorlint:
+    errorf: true
+
+  revive:
+    rules:
+      - name: context-as-argument      # go-conventions: ctx là tham số đầu
+      - name: error-strings
+      - name: error-return
+      - name: indent-error-flow
+      - name: unexported-return
+      - name: var-naming
+
+  gosec:
+    excludes:
+      - G104   # trùng errcheck
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-rules:
+    # File sinh từ schema — sửa schema, không sửa file (skill contract-guard luật 1).
+    - path: \.gen\.go$
+      linters: [depguard, forbidigo, errcheck, revive, gosec, staticcheck, unused]
+
+    # main() được phép in ra stdout: đó là giao diện CLI, không phải log ứng dụng.
+    - path: cmd/.*/main\.go$
+      linters: [forbidigo]
+
+    # Test: assert lỗi rõ ràng hơn errcheck, và không phải bề mặt tấn công.
+    - path: _test\.go$
+      linters: [errcheck, gosec, contextcheck]
+
+    # tools/ là script nội bộ chạy trong CI, không phải sản phẩm giao cho vendor.
+    - path: ^tools/
+      linters: [gosec, forbidigo]

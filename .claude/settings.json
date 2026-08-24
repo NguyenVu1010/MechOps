@@ -1,13 +1,39 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "statusLine": {
+    "type": "command",
+    "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/statusline.sh\""
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git show:*)",
+      "Bash(./mo doctor)",
+      "Bash(./mo status)",
+      "Bash(./mo progress:*)",
+      "Bash(./mo trace)",
+      "Bash(./mo gen)",
+      "Bash(./mo lint)",
+      "Bash(./mo verify)",
+      "Bash(./mo up)",
+      "Bash(bash ./mo:*)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Edit|Write|MultiEdit",
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
         "hooks": [
-          {
-            "type": "command",
-            "command": "python3 -c \"import json,sys; d=json.load(sys.stdin); p=d.get('tool_input',{}).get('file_path',''); sys.exit(2 if 'test-status' in p else 0)\" || { echo 'BLOCKED: test-status.* chỉ do track.py ghi. Chạy: make verify' >&2; exit 2; }"
-          }
+          { "type": "command", "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-tracker.sh\"" }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/record-risky.sh\"" }
         ]
       }
     ],
@@ -15,10 +41,15 @@
       {
         "matcher": "Edit|Write|MultiEdit",
         "hooks": [
-          {
-            "type": "command",
-            "command": "python3 -c \"import json,sys; d=json.load(sys.stdin); p=d.get('tool_input',{}).get('file_path',''); print(p if p.endswith('.go') else '')\" | xargs -r -I{} sh -c 'gofmt -w {} && go vet ./... 2>&1 | head -20'"
-          }
+          { "type": "command", "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/mark-dirty-go.sh\"" }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/session-start.sh\"" }
         ]
       }
     ],
@@ -26,7 +57,15 @@
       {
         "matcher": "",
         "hooks": [
-          { "type": "command", "command": "python3 tools/testtrack/track.py --render && head -5 docs/test-status.md | tail -2" }
+          { "type": "command", "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/on-stop.sh\"" }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-compact.sh\"" }
         ]
       }
     ]
