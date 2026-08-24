@@ -22,3 +22,6 @@ __pycache__/
 .env.*
 *.pem
 *.key
+
+# Claude Code — cache phiên (statusline, handoff, danh sách file .go vừa sửa)
+.claude/cache/

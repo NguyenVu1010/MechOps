@@ -1,9 +1,60 @@
 name: nightly
+
 on:
   schedule: [{cron: "0 18 * * *"}]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # bot commit tracker sau khi chạy test [I]
+
 jobs:
   integration:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "TODO(M1): compose up, make test-integration, bot-commit test-status"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install jsonschema pyyaml
+
+      # Test [I] cần EMQX + Postgres + registry thật.
+      - name: Dựng hạ tầng
+        run: |
+          docker compose -f deploy/docker-compose.yml up -d
+          docker compose -f deploy/docker-compose.yml ps
+
+      - name: Integration test
+        run: ./mo --native test-integration
+
+      - name: Sinh PROGRESS.md
+        if: always()
+        run: ./mo --native progress
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evidence-nightly-${{ github.run_id }}
+          path: docs/evidence/ci/
+          retention-days: 90
+
+      # Tracker do máy ghi (constitution #2) — nightly là "máy", nên được commit.
+      # Người không bao giờ gõ tay vào hai file này.
+      - name: Commit tracker
+        if: always()
+        run: |
+          git config user.name  "mechops-bot"
+          git config user.email "bot@mechops.local"
+          git add docs/test-status.json docs/test-status.md docs/PROGRESS.md docs/evidence/ci
+          git diff --cached --quiet && { echo "không có gì đổi"; exit 0; }
+          git commit -m "nightly: cập nhật tracker từ integration test
+
+          Implements: none"
+          git push
+
+      - name: Log hạ tầng khi thất bại
+        if: failure()
+        run: docker compose -f deploy/docker-compose.yml logs --tail=200

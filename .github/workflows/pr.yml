@@ -1,8 +1,87 @@
 name: pr
-on: [pull_request]
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "TODO(M0): setup go+python, make verify, upload evidence artifact"
+        with:
+          fetch-depth: 0   # cần đủ lịch sử để quét commit message của PR
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install jsonschema pyyaml
+
+      # Cài đúng cách và đúng phiên bản như docker/dev.Dockerfile. Không dùng
+      # golangci-lint-action: nó chạy lint theo cách riêng của nó, còn ở đây lint
+      # phải đi qua cùng một Makefile với máy dev (ADR-0010) — nếu không thì
+      # "xanh trên máy tôi" lại mất nghĩa.
+      - name: Cài golangci-lint (phiên bản khớp container dev)
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
+            | sh -s -- -b "$(go env GOPATH)/bin" "$(cat .golangci-version)"
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      # Chốt chặn 1 — tracker không bị sửa tay.
+      # Render lại .md từ .json: nếu khác file đã commit thì có người gõ tay vào đó
+      # (constitution #2). Chạy TRƯỚC verify, vì verify được phép làm tracker đổi.
+      - name: Tracker không bị sửa tay
+        run: |
+          python3 tools/testtrack/track.py --render
+          git diff --exit-code docs/test-status.md \
+            || { echo "::error::docs/test-status.md lệch so với .json — file này chỉ do track.py ghi."; exit 1; }
+
+      # Chốt chặn 2 — mỗi commit khai test ID nó chạm (catalog quy tắc #1).
+      - name: Commit message khai Implements
+        run: python3 tools/checks/commit_msg.py --range origin/${{ github.base_ref }}..HEAD
+
+      # Chốt chặn 3 — contract: mọi test vector validate được với schema.
+      - name: Validate contract
+        run: ./mo --native gen
+
+      # Chốt chặn 4 — lint, gồm depguard (constitution #7) và forbidigo (slog).
+      - name: Lint
+        run: ./mo --native lint
+
+      # Chốt chặn 5 — test + sinh evidence.
+      - name: Verify
+        run: ./mo --native verify
+
+      # Chốt chặn 6 — traceability: ID mồ côi, skill trỏ ADR đã supersede, milestone lệch catalog.
+      - name: Trace
+        run: ./mo --native trace
+
+      - name: Sinh PROGRESS.md
+        run: ./mo --native progress
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evidence-${{ github.sha }}
+          path: |
+            docs/evidence/ci/
+            docs/test-status.json
+            docs/PROGRESS.md
+          retention-days: 30
+
+      # Founder review trong 5 phút cần một chỗ để nhìn — đây là chỗ đó.
+      - name: Đăng PR digest
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 tools/report/pr_digest.py \
+            --base origin/${{ github.base_ref }} --head HEAD > /tmp/digest.md
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --body-file /tmp/digest.md --edit-last --create-if-none
