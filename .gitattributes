@@ -1,0 +1,22 @@
+# Dev trên Windows, verify trong container Linux (ADR 0010).
+# Không có file này thì core.autocrlf=true sinh CRLF ở working tree, và gofmt
+# trong container báo MỌI file .go là "chưa format" — verify không bao giờ xanh.
+# Nguy hiểm hơn: script bash có CRLF sẽ lỗi `\r: command not found` trong container.
+* text=auto eol=lf
+
+*.go        text eol=lf
+*.py        text eol=lf
+*.sh        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.json      text eol=lf
+*.md        text eol=lf
+*.sql       text eol=lf
+Makefile    text eol=lf
+mo          text eol=lf
+.githooks/* text eol=lf
+
+*.png binary
+*.jpg binary
+*.pem binary
+*.key binary
