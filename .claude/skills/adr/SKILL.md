@@ -1,6 +1,6 @@
 ---
 name: adr
-description: Đọc khi đưa ra hoặc thay đổi quyết định kiến trúc, chọn thư viện/công nghệ, hoặc user hỏi "vì sao dùng X". Trigger: ADR, decision, quyết định, chọn công nghệ, thay thế, supersede.
+description: Đọc khi đưa ra hoặc thay đổi quyết định kiến trúc, chọn thư viện/công nghệ, hoặc user hỏi "vì sao dùng X". Trigger — ADR, decision, quyết định, chọn công nghệ, thay thế, supersede.
 ---
 # ADR
 - Mọi lựa chọn giữa ≥2 phương án có hệ quả dài hạn → 1 file docs/adr/NNNN-*.md theo TEMPLATE.md.

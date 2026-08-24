@@ -1,7 +1,10 @@
 ---
 name: go-conventions
-description: Quy ước Go riêng của repo MechOps. Đọc khi viết code Go mới, tạo package, viết query SQL, hoặc thêm logging. Trigger: Go, handler, sqlc, slog, package layout.
-adr: [0009]
+description: Quy ước Go riêng của repo MechOps. Đọc khi viết code Go mới, tạo package, viết query SQL, hoặc thêm logging. Trigger — Go, handler, sqlc, slog, package layout.
+paths:
+  - "**/*.go"
+metadata:
+  adr: [0009]
 ---
 
 # Go Conventions — MechOps
