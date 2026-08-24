@@ -1,9 +1,11 @@
 # MechOps — Test Status
 
 > ⚙️ File này do `tools/testtrack/track.py` sinh — **không sửa tay**.
-> Cập nhật: 2026-07-14T19:30:11Z · commit `544e2a4` · **0/49 ✅** (0%)
+> Cập nhật: 2026-08-24T17:49:02Z · commit `9f5be49` · **0/49 ✅** (0%)
 
-## A · Provisioning — 0/5 `░░░░░`
+> **Milestone đang mở: M1** — 0/16 ✅ · Việc tiếp theo: `PRV-01` [I] Enroll token hợp lệ
+
+## A · Provisioning · M1 — 0/5 `░░░░░`
 
 | | ID | Tầng | Mô tả | Lần cuối | Evidence |
 |---|---|---|---|---|---|
@@ -13,7 +15,7 @@
 | ⬜ | PRV-04 | [I] | Cert hết hạn hoàn toàn | — | — |
 | ⬜ | PRV-05 | [H] | Enroll Jetson+Pi <5 phút | — | — |
 
-## B · ACL cách ly — 0/4 `░░░░`
+## B · ACL cách ly · M1 — 0/4 `░░░░`
 
 | | ID | Tầng | Mô tả | Lần cuối | Evidence |
 |---|---|---|---|---|---|
@@ -22,7 +24,7 @@
 | ⬜ | ACL-03 | [I] | Không cert → chặn tầng TLS | — | — |
 | ⬜ | ACL-04 | [I] | Payload >64KB bị từ chối | — | — |
 
-## C · Telemetry/offline — 0/7 `░░░░░░░`
+## C · Telemetry/offline · M1–M2 — 0/7 `░░░░░░░`
 
 | | ID | Tầng | Mô tả | Lần cuối | Evidence |
 |---|---|---|---|---|---|
@@ -34,7 +36,7 @@
 | ⬜ | TEL-06 | [I] | Clock skew >30s có event | — | — |
 | ⬜ | TEL-07 | [H] | Field lạ không gây lỗi | — | — |
 
-## D · Probe API — 0/6 `░░░░░░`
+## D · Probe API · M2 — 0/6 `░░░░░░`
 
 | | ID | Tầng | Mô tả | Lần cuối | Evidence |
 |---|---|---|---|---|---|
@@ -45,7 +47,7 @@
 | ⬜ | PRB-05 | [I] | 2 probe Mode B hợp nhất inventory | — | — |
 | ⬜ | PRB-06 | [H] | Kill node ROS thật → alarm ≤10s | — | — |
 
-## E · OTA ⭐ — 0/12 `░░░░░░░░░░░░`
+## E · OTA ⭐ · M3 — 0/12 `░░░░░░░░░░░░`
 
 | | ID | Tầng | Mô tả | Lần cuối | Evidence |
 |---|---|---|---|---|---|
@@ -62,7 +64,7 @@
 | ⬜ | OTA-11 | [H] | Disk đầy → fail sạch | — | — |
 | ⬜ | OTA-12 | [H] | Ma trận Jetson+Pi đủ OTA-01→05 | — | — |
 
-## F · Alert — 0/4 `░░░░`
+## F · Alert · M4 — 0/4 `░░░░`
 
 | | ID | Tầng | Mô tả | Lần cuối | Evidence |
 |---|---|---|---|---|---|
@@ -71,7 +73,7 @@
 | ⬜ | ALT-03 | [I] | 50 robot offline → gộp tin | — | — |
 | ⬜ | ALT-04 | [I] | Webhook chết → retry giới hạn | — | — |
 
-## G · Terminal/log — 0/4 `░░░░`
+## G · Terminal/log · M4–M5 — 0/4 `░░░░`
 
 | | ID | Tầng | Mô tả | Lần cuối | Evidence |
 |---|---|---|---|---|---|
@@ -80,7 +82,7 @@
 | ⬜ | TRM-03 | [I] | Rớt mạng → phiên đóng sạch | — | — |
 | ⬜ | TRM-04 | [I] | Log tail tự tắt theo TTL | — | — |
 
-## H · White-label/Installer — 0/4 `░░░░`
+## H · White-label/Installer · M5 — 0/4 `░░░░`
 
 | | ID | Tầng | Mô tả | Lần cuối | Evidence |
 |---|---|---|---|---|---|
@@ -89,7 +91,7 @@
 | ⬜ | INS-02 | [I] | install.sh idempotent | — | — |
 | ⬜ | INS-03 | [I] | Backup/restore Postgres | — | — |
 
-## I · Tải & bền bỉ — 0/3 `░░░`
+## I · Tải & bền bỉ · M6 — 0/3 `░░░`
 
 | | ID | Tầng | Mô tả | Lần cuối | Evidence |
 |---|---|---|---|---|---|

@@ -2,12 +2,19 @@
 """
 trace.py — traceability check (Lớp 3, docs/product/06-spec-management.md).
 
-Hai nhiệm vụ:
+Sáu nhiệm vụ:
 1. Mỗi test ID trong catalog phải xuất hiện ở >=1 file spec (dòng covers:)
    và >=1 file test Go (naming Test<ID bỏ gạch>_...). ID mồ côi = CẢNH BÁO.
    covers: trỏ tới ID không có trong catalog = LỖI (chặn typo).
-2. Skill frontmatter `adr: [NNNN, ...]` — ADR không tồn tại hoặc đã
+2. Skill frontmatter `metadata.adr: [NNNN, ...]` — ADR không tồn tại hoặc đã
    superseded mà skill chưa cập nhật = LỖI (luật đồng bộ skill<->ADR).
+3. CATALOG (track.py) khớp bảng ID trong 05-test-catalog.md, cả hai chiều = LỖI.
+   MILESTONE trong track.py khớp tiêu đề nhóm trong file đó = LỖI nếu lệch.
+4. Frontmatter của mọi skill/rule là YAML hợp lệ, key có thật, rule có `paths:`.
+5. Nhật ký .steering/ truy vết được: INDEX khớp entries, test_ids có thật,
+   promoted_to điền khi đóng; mục còn `open` = CẢNH BÁO.
+6. Plan .steering/plans/ nối đúng: covers -> catalog, adr -> ADR chưa supersede,
+   tasks.md không dùng ID ngoài covers.
 
 Exit 0 nếu chỉ có cảnh báo; exit 1 nếu có lỗi.
 """
@@ -16,15 +23,23 @@ import os, re, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, os.path.join(ROOT, "tools", "testtrack"))
-from track import CATALOG  # một nguồn sự thật, không parse lại catalog md
+from track import CATALOG, GROUPS, MILESTONE  # một nguồn sự thật, không parse lại catalog md
 
-SPEC_DIRS = ["specs", os.path.join("docs", "adr")]
+CATALOG_MD = os.path.join("docs", "product", "05-test-catalog.md")
+
+# Plan của feature đã chuyển từ specs/features/ sang .steering/plans/ — specs/ trở
+# lại đúng vai hợp đồng máy-đọc-được, còn plan là quá trình. `covers:` ở cả hai nơi
+# đều tính, nếu không thì dời nhà xong là mọi ID thành mồ côi.
+SPEC_DIRS = ["specs", os.path.join("docs", "adr"), os.path.join(".steering", "plans")]
+PLANS_DIR = os.path.join(".steering", "plans")
 SKILL_DIR = os.path.join(".claude", "skills")
 ADR_DIR = os.path.join("docs", "adr")
 
 COVERS_RE = re.compile(r'"?[Cc]overs"?\s*:\s*\[?\s*"?([A-Z]{3}-\d{2}(?:[",\s]+[A-Z]{3}-\d{2})*)', re.M)
 ID_IN_LIST_RE = re.compile(r"[A-Z]{3}-\d{2}")
-ADR_FM_RE = re.compile(r"^adr:\s*\[([0-9,\s]+)\]", re.M)
+# `adr:` nằm dưới `metadata:` trong frontmatter (chỗ dành cho key riêng của repo,
+# theo spec skill). Cho phép thụt đầu dòng để bắt cả dạng cũ lẫn dạng mới.
+ADR_FM_RE = re.compile(r"^\s*adr:\s*\[([0-9,\s]+)\]", re.M)
 
 
 def walk_files(reldir, exts):
@@ -42,6 +57,10 @@ def collect_covers():
     found = {}
     for d in SPEC_DIRS:
         for path in walk_files(d, (".md", ".yaml", ".yml", ".json")):
+            # TEMPLATE.md chứa `covers:` làm ví dụ — tính nó vào thì ID trong ví dụ
+            # trông như đã được spec cover, đúng kiểu hỏng im lặng trace sinh ra để chặn.
+            if os.path.basename(path) == "TEMPLATE.md":
+                continue
             text = open(path, encoding="utf-8").read()
             rel = os.path.relpath(path, ROOT)
             for m in COVERS_RE.finditer(text):
@@ -75,8 +94,351 @@ def adr_status():
     return st
 
 
+SKILL_FM_KEYS = {
+    "name", "description", "argument-hint", "arguments", "disable-model-invocation",
+    "user-invocable", "allowed-tools", "disallowed-tools", "model", "effort",
+    "context", "agent", "background", "hooks", "paths", "shell", "metadata",
+    "license", "compatibility",
+}
+
+
+def check_frontmatter():
+    """Frontmatter của skill/rule phải là YAML hợp lệ và chỉ dùng key có thật.
+
+    Bẫy đã dính một lần: description không trích dẫn mà chứa "Trigger: ..." —
+    dấu hai chấm giữa scalar làm YAML hỏng. Claude Code hiện đọc lỏng nên skill
+    vẫn nạp được, nhưng đó là kiểu hỏng im lặng: nó sẽ vỡ ở phiên bản sau hoặc khi
+    đóng gói skill, và không ai biết vì sao skill ngừng trigger.
+    """
+    import yaml  # chỉ trace cần yaml; giữ import cục bộ để các script khác không lệ thuộc
+
+    errs = []
+    targets = []
+    skill_root = os.path.join(ROOT, SKILL_DIR)
+    if os.path.isdir(skill_root):
+        for n in sorted(os.listdir(skill_root)):
+            p = os.path.join(skill_root, n, "SKILL.md")
+            if os.path.exists(p):
+                targets.append((p, True))
+    rule_root = os.path.join(ROOT, ".claude", "rules")
+    if os.path.isdir(rule_root):
+        for n in sorted(os.listdir(rule_root)):
+            if n.endswith(".md"):
+                targets.append((os.path.join(rule_root, n), False))
+
+    for path, is_skill in targets:
+        rel = os.path.relpath(path, ROOT)
+        text = open(path, encoding="utf-8").read()
+        if not text.startswith("---"):
+            errs.append(f"{rel}: thiếu frontmatter")
+            continue
+        try:
+            fm = yaml.safe_load(text.split("---", 2)[1]) or {}
+        except yaml.YAMLError as e:
+            first = str(e).splitlines()[0]
+            errs.append(f"{rel}: frontmatter không phải YAML hợp lệ — {first}. "
+                        "Thường do dấu ':' trong description chưa trích dẫn.")
+            continue
+        if not isinstance(fm, dict):
+            errs.append(f"{rel}: frontmatter phải là map")
+            continue
+        if is_skill:
+            unknown = set(fm) - SKILL_FM_KEYS
+            if unknown:
+                errs.append(f"{rel}: key lạ trong frontmatter: {sorted(unknown)} "
+                            "(key riêng của repo phải nằm dưới `metadata:`)")
+            if not fm.get("description"):
+                errs.append(f"{rel}: thiếu description — skill không trigger được")
+        elif not fm.get("paths"):
+            errs.append(f"{rel}: rule thiếu `paths:` — sẽ nạp vào MỌI phiên, "
+                        "đúng thứ .claude/rules/ sinh ra để tránh")
+    return errs
+
+
+def check_steering():
+    """Nhật ký .steering/ phải truy vết được: INDEX khớp entries, test ID có thật.
+
+    Trả về (errors, warns). Mục `open` là CẢNH BÁO chứ không phải LỖI — mở một mục
+    rồi chưa đóng là chuyện bình thường giữa chừng; chỉ đáng nhắc, không đáng chặn.
+    """
+    errs, warns = [], []
+    entries_dir = os.path.join(ROOT, ".steering", "entries")
+    index_md = os.path.join(ROOT, ".steering", "INDEX.md")
+    if not os.path.isdir(entries_dir):
+        return errs, warns
+
+    KINDS = {"attempt", "wrong", "discovery", "decision", "risky"}
+    AREAS = {"agent", "server", "protocol", "probe", "dashboard", "specs", "infra", "flow"}
+    OUTCOMES = {"open", "kept", "reverted", "superseded"}
+    BODY_MAX = 30
+    sid_re = re.compile(r"^(S\d{4})-([a-z]+)-")
+
+    names = sorted(n for n in os.listdir(entries_dir) if n.endswith(".md"))
+    idx = open(index_md, encoding="utf-8").read() if os.path.exists(index_md) else ""
+
+    seen_ids, open_n = {}, 0
+    entries = {}
+
+    for n in names:
+        rel = f".steering/entries/{n}"
+        m = sid_re.match(n)
+        if not m:
+            errs.append(f"{rel}: tên file phải theo dạng S0007-<kind>-<slug>.md")
+            continue
+
+        text = open(os.path.join(entries_dir, n), encoding="utf-8").read()
+        if not text.startswith("---") or "\n---\n" not in text:
+            errs.append(f"{rel}: thiếu frontmatter")
+            continue
+        head, body = text.split("\n---\n", 1)
+        fm = {}
+        for line in head.lstrip("-\n").splitlines():
+            if ":" in line:
+                k, v = line.split(":", 1)
+                fm[k.strip()] = v.strip().strip('"')
+        entries[fm.get("id", n)] = fm
+
+        # id: duy nhất và khớp tên file — id là thứ mục khác trỏ tới, sai thì
+        # cả chuỗi supersedes mất nghĩa.
+        sid = fm.get("id", "")
+        if sid != m.group(1):
+            errs.append(f"{rel}: id trong frontmatter ({sid!r}) khác tên file ({m.group(1)})")
+        if sid in seen_ids:
+            errs.append(f"{rel}: id {sid} trùng với {seen_ids[sid]}")
+        seen_ids[sid] = n
+        if fm.get("kind") != m.group(2):
+            errs.append(f"{rel}: kind trong frontmatter ({fm.get('kind')!r}) khác tên file")
+
+        if fm.get("kind") not in KINDS:
+            errs.append(f"{rel}: kind không hợp lệ: {fm.get('kind')!r}")
+        if fm.get("area") not in AREAS:
+            errs.append(f"{rel}: area không hợp lệ: {fm.get('area')!r}")
+        if fm.get("outcome") not in OUTCOMES:
+            errs.append(f"{rel}: outcome không hợp lệ: {fm.get('outcome')!r}")
+
+        for tid in ID_IN_LIST_RE.findall(fm.get("test_ids", "")):
+            if tid not in CATALOG:
+                errs.append(f"{rel}: test_ids trỏ ID không có trong catalog: {tid}")
+
+        if fm.get("outcome") == "open":
+            open_n += 1
+        else:
+            # "Đã nâng thành" là ô buộc trả lời câu "vậy lần sau thì sao".
+            # Bỏ trống thì nhật ký chỉ còn là kể chuyện.
+            if not fm.get("promoted_to"):
+                errs.append(f"{rel}: đã đóng nhưng `promoted_to` trống — "
+                            "trả lời bằng test ID / ADR / dòng skill, hoặc `none`")
+            if "<điền khi đóng" in body:
+                errs.append(f"{rel}: đã đóng nhưng thân còn chỗ trống chưa điền")
+
+        n_body = len([l for l in body.splitlines() if l.strip()])
+        if n_body > BODY_MAX:
+            warns.append(f"{rel}: thân {n_body} dòng (trần {BODY_MAX}) — "
+                         "dài thế này thì nó là ADR hoặc là test, không phải nhật ký")
+
+        if n not in idx:
+            errs.append(f"{rel}: chưa có trong INDEX.md — chạy `./mo steer index`")
+
+    # supersedes phải trỏ tới mục có thật, nếu không chuỗi truy vết đứt.
+    for sid, fm in entries.items():
+        for ref in re.findall(r"S\d{4}", fm.get("supersedes", "")):
+            if ref not in entries:
+                errs.append(f".steering: {sid} supersedes {ref} — mục đó không tồn tại")
+
+    if open_n:
+        warns.append(f"{open_n} mục .steering/ còn `open` — đóng bằng "
+                     "`./mo steer close <id> --outcome ... --why ... --promoted ...`")
+    return errs, warns
+
+
+def _fm_status(path):
+    if not os.path.exists(path):
+        return "?"
+    t = open(path, encoding="utf-8").read()
+    m = re.search(r"^status:\s*(\S+)", t, re.M)
+    return m.group(1) if m else "?"
+
+
+def _tracker_pass():
+    """{ID: True/False} từ tracker — nguồn duy nhất để phán 'đã xong'."""
+    import json
+    p = os.path.join(ROOT, "docs", "test-status.json")
+    if not os.path.exists(p):
+        return {}
+    return {k: v.get("status") == "pass"
+            for k, v in json.load(open(p, encoding="utf-8"))["tests"].items()}
+
+
+def check_plans(adr_st):
+    """Plan trong .steering/plans/ phải nối đúng lên yêu cầu và xuống test ID.
+
+    Ba mối nối, mỗi mối đứt một kiểu:
+      covers → catalog   : ID ma thì tracker không bao giờ tick, hỏng im lặng
+      adr    → docs/adr/ : plan dựa trên ADR đã supersede là plan đang làm theo
+                           quyết định cũ mà không ai biết
+      tasks  → covers    : task ngoài scope đã thoả thuận
+    """
+    errs, warns = [], []
+    tests_pass = _tracker_pass()
+    root = os.path.join(ROOT, PLANS_DIR)
+    if not os.path.isdir(root):
+        return errs, warns
+
+    for name in sorted(os.listdir(root)):
+        d = os.path.join(root, name)
+        if not os.path.isdir(d):
+            continue
+        rel = f"{PLANS_DIR}/{name}"
+
+        missing = [f for f in ("spec.md", "clarify.md", "plan.md", "testcases.md", "tasks.md")
+                   if not os.path.exists(os.path.join(d, f))]
+        if missing:
+            errs.append(f"{rel}: thiếu {', '.join(missing)} — bốn file là bắt buộc "
+                        "(.steering/plans/TEMPLATE.md)")
+        spec = os.path.join(d, "spec.md")
+        if not os.path.exists(spec):
+            continue
+
+        fm = {}
+        text = open(spec, encoding="utf-8").read()
+        if text.startswith("---") and "\n---\n" in text:
+            for line in text.split("\n---\n", 1)[0].lstrip("-\n").splitlines():
+                if ":" in line:
+                    k, v = line.split(":", 1)
+                    fm[k.strip()] = v.strip()
+
+        # `status` giờ là của TỪNG artifact: draft -> locked -> frozen (clarify: open/answered).
+        VALID = {"spec": {"draft", "locked", "frozen"},
+                 "plan": {"draft", "locked", "frozen"},
+                 "testcases": {"draft", "locked", "frozen"},
+                 "tasks": {"draft", "locked", "frozen"},
+                 "clarify": {"open", "answered", "frozen"}}
+        for key, allowed in VALID.items():
+            s = _fm_status(os.path.join(d, f"{key}.md"))
+            if s != "?" and s not in allowed:
+                errs.append(f"{rel}/{key}.md: status {s!r} không hợp lệ "
+                            f"(cho phép: {', '.join(sorted(allowed))})")
+
+        covers = set(ID_IN_LIST_RE.findall(fm.get("covers", "")))
+        if not covers:
+            errs.append(f"{rel}/spec.md: `covers:` rỗng — feature không cover test ID nào "
+                        "là feature không hợp lệ")
+        for tid in covers:
+            if tid not in CATALOG:
+                errs.append(f"{rel}/spec.md: covers trỏ ID không có trong catalog: {tid}")
+
+        for num in re.findall(r"\d{4}", fm.get("adr", "")):
+            if num not in adr_st:
+                errs.append(f"{rel}/spec.md: adr trỏ tới ADR-{num} không tồn tại")
+            elif adr_st[num] == "superseded":
+                errs.append(f"{rel}/spec.md: dựa trên ADR-{num} đã superseded — "
+                            "cập nhật plan hoặc viết plan mới")
+
+        tasks = os.path.join(d, "tasks.md")
+        if os.path.exists(tasks) and covers:
+            body = open(tasks, encoding="utf-8").read()
+            body = body.split("\n---\n", 1)[-1]
+            extra = set(ID_IN_LIST_RE.findall(body)) - covers
+            if extra:
+                warns.append(f"{rel}/tasks.md: có ID ngoài `covers:` của spec.md: "
+                             f"{', '.join(sorted(extra))} — hoặc mở rộng covers, hoặc bỏ task")
+
+            # Chống tick tay. Dấu tích trong tasks.md phải suy được từ tracker;
+            # nếu không, nó thành nguồn "đã xong" thứ hai và sẽ mâu thuẫn với
+            # docs/test-status.md — đúng thứ constitution #2 chặn.
+            for line in body.splitlines():
+                m = re.match(r"^\s*-\s*\[([xX])\](\s+.*)$", line)
+                if not m:
+                    continue
+                ids = ID_IN_LIST_RE.findall(m.group(2))
+                red = [i for i in ids if tests_pass.get(i) is not True]
+                if not ids:
+                    errs.append(f"{rel}/tasks.md: task tick [x] mà không có test ID: "
+                                f"{line.strip()[:60]}")
+                elif red:
+                    errs.append(f"{rel}/tasks.md: task tick [x] nhưng {', '.join(red)} "
+                                "chưa xanh trong tracker — dấu tích chỉ do "
+                                "`./mo steer plan sync` điền, không tick tay")
+
+        # Cổng chốt tuần tự: không thể chốt cái sau khi cái trước còn draft.
+        order = ["spec", "plan", "testcases", "tasks"]
+        st = {k: _fm_status(os.path.join(d, f"{k}.md")) for k in order}
+        for i in range(1, len(order)):
+            if st[order[i]] == "locked" and st[order[i - 1]] == "draft":
+                errs.append(f"{rel}: {order[i]}.md đã chốt nhưng {order[i-1]}.md còn draft "
+                            "— gate tuần tự bị lách, chốt lại theo thứ tự")
+
+        tc = os.path.join(d, "testcases.md")
+        if os.path.exists(tc) and covers:
+            heads = set(ID_IN_LIST_RE.findall(" ".join(
+                l for l in open(tc, encoding="utf-8").read().splitlines()
+                if l.startswith("## "))))
+            miss = sorted(covers - heads)
+            if miss and st.get("testcases") == "locked":
+                errs.append(f"{rel}/testcases.md: đã chốt nhưng thiếu thiết kế test cho "
+                            f"{', '.join(miss)}")
+            elif miss:
+                warns.append(f"{rel}/testcases.md: chưa có mục `## <ID>` cho {', '.join(miss)}")
+    return errs, warns
+
+
+def check_milestones():
+    """MILESTONE trong track.py phải khớp tiêu đề nhóm trong 05-test-catalog.md.
+
+    Catalog là thứ người đọc và sửa; MILESTONE là thứ máy dùng để tính "việc tiếp
+    theo". Hai chỗ nói khác nhau thì tracker sẽ chỉ sai việc — im lặng và tin được,
+    kiểu sai tệ nhất. Nối chúng bằng chữ cái nhóm (A, B, C...).
+    """
+    errs = []
+    path = os.path.join(ROOT, CATALOG_MD)
+    if not os.path.exists(path):
+        return [f"không tìm thấy {CATALOG_MD} để đối chiếu milestone"]
+
+    md = open(path, encoding="utf-8").read()
+
+    # CATALOG (track.py) phải khớp bảng trong catalog.md, cả hai chiều.
+    # Quy tắc catalog #3 buộc sửa hai chỗ CÙNG một commit; quên một bên thì
+    # track.py bỏ qua ID đó im lặng — test xanh mà không bao giờ được tick.
+    in_md = set(re.findall(r"^\|\s*([A-Z]{3}-\d{2})\s*\|", md, re.M))
+    only_md = sorted(in_md - set(CATALOG))
+    only_py = sorted(set(CATALOG) - in_md)
+    if only_md:
+        errs.append(f"{CATALOG_MD} có ID mà CATALOG của track.py thiếu: {', '.join(only_md)} "
+                    "— tracker sẽ bỏ qua chúng")
+    if only_py:
+        errs.append(f"track.py có ID mà {CATALOG_MD} thiếu: {', '.join(only_py)}")
+
+    # "## A. Provisioning & danh tính (M1)" / "## I. Tải & bền bỉ (M6 — hardening)"
+    head_re = re.compile(r"^##\s+([A-Z])\.\s+[^(\n]*\((M\d(?:–M\d)?)", re.M)
+    from_md = {m.group(1): m.group(2) for m in head_re.finditer(md)}
+
+    for gname, prefix in GROUPS:
+        letter = gname.split(" ")[0]              # "A · Provisioning" -> "A"
+        prefixes = prefix if isinstance(prefix, tuple) else (prefix,)
+        if letter not in from_md:
+            errs.append(f"catalog thiếu tiêu đề nhóm {letter} có ghi milestone dạng (M1)")
+            continue
+        for p in prefixes:
+            if MILESTONE.get(p) != from_md[letter]:
+                errs.append(
+                    f"milestone lệch cho nhóm {letter} ({p}): track.py ghi "
+                    f"{MILESTONE.get(p)!r}, {CATALOG_MD} ghi {from_md[letter]!r}"
+                )
+    return errs
+
+
 def main():
     errors, warns = [], []
+    statuses = adr_status()
+
+    errors += check_milestones()
+    errors += check_frontmatter()
+    steer_errs, steer_warns = check_steering()
+    errors += steer_errs
+    warns += steer_warns
+    plan_errs, plan_warns = check_plans(statuses)
+    errors += plan_errs
+    warns += plan_warns
 
     covers = collect_covers()
     test_ids = collect_test_ids()
@@ -94,8 +456,7 @@ def main():
     if no_test:
         warns.append(f"{len(no_test)}/{len(CATALOG)} ID chưa có test Go: {', '.join(sorted(no_test)[:8])}{'…' if len(no_test) > 8 else ''}")
 
-    # skill <-> ADR
-    statuses = adr_status()
+    # skill <-> ADR  (statuses đã lấy ở đầu main, dùng chung với check_plans)
     for path in walk_files(SKILL_DIR, ("SKILL.md",)):
         rel = os.path.relpath(path, ROOT)
         m = ADR_FM_RE.search(open(path, encoding="utf-8").read())
