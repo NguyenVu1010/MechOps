@@ -1,0 +1,21 @@
+# Toolchain dev (ADR 0010). KHÔNG phải file deploy — instance vendor ở deploy/docker-compose.yml.
+name: mechops-dev
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: docker/dev.Dockerfile
+    volumes:
+      - .:/w
+      - go-build:/cache/go-build
+      - go-mod:/cache/go-mod
+    working_dir: /w
+    # Container ấm: `docker compose exec` mất ~200ms, `run --rm` mất 1-2s.
+    # Hook chạy mỗi lượt nên khác biệt đó là khác biệt giữa dùng được và không.
+    command: sleep infinity
+    init: true
+
+volumes:
+  go-build:
+  go-mod:
