@@ -1,6 +1,9 @@
 ---
 name: test-evidence
-description: BẮT BUỘC đọc khi viết test, chạy test, hoặc làm việc với test-status/tracker/evidence. Trigger với từ khóa: test, tick, xanh, evidence, catalog, coverage, TestXXX.
+description: BẮT BUỘC đọc khi viết test, chạy test, hoặc làm việc với test-status/tracker/evidence. Trigger — test, tick, xanh, evidence, catalog, coverage, TestXXX.
+paths:
+  - "**/*_test.go"
+  - "tools/testtrack/**"
 ---
 
 # Test & Evidence
@@ -12,8 +15,8 @@ description: BẮT BUỘC đọc khi viết test, chạy test, hoặc làm việ
 
 ## Tier
 - [U]: file `*_test.go` thường, chạy mọi PR.
-- [I]: build tag `//go:build integration`, cần compose up. Chạy `make test-integration`.
-- [H]: KHÔNG viết test Go cho tier này. Người chạy `make hw-test`. Claude không bao giờ tick [H].
+- [I]: build tag `//go:build integration`, cần compose up. Chạy `./mo test-integration`.
+- [H]: KHÔNG viết test Go cho tier này. Người chạy `./mo hw-test`. Claude không bao giờ tick [H].
 
 ## Cấm
 - `t.Skip` để né test đỏ. Test đỏ = việc chưa xong.
@@ -21,4 +24,8 @@ description: BẮT BUỘC đọc khi viết test, chạy test, hoặc làm việ
 - Ghi vào docs/test-status.* — hook chặn, và đó là chủ đích.
 
 ## Lệnh duy nhất để tick
-`make verify` → chạy test với `-json`, pipe vào track.py, evidence tự lưu vào docs/evidence/ci/.
+`./mo verify` → chạy test với `-json`, pipe vào track.py, evidence tự lưu vào docs/evidence/ci/.
+
+## Quy trình chạy từng tầng
+Build tag của [I], cách soạn checklist [H], subtest nhiều ID, và cách xử khi tracker
+không tick: đọc `reference.md` cùng thư mục.
