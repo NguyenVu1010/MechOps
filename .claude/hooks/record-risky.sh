@@ -14,6 +14,11 @@ cd "${CLAUDE_PROJECT_DIR:-.}" || exit 0
 cmd=$(cat | json_str command)
 [ -z "$cmd" ] && exit 0
 
+# Chỉ soi phần LỆNH, cắt bỏ nội dung heredoc. Không cắt thì một commit message
+# nhắc tới `rm -rf` bị ghi thành lệnh phá hoại — đã dính đúng lỗi này (S0010), và
+# cảnh báo oan là cảnh báo người ta học cách bỏ qua.
+scan=${cmd%%<<*}
+
 # Ghi ý định, không ghi kết quả — PostToolUse chỉ chạy khi lệnh THÀNH CÔNG, mà
 # lệnh phá hoại thất bại cũng đáng biết.
 # Khớp theo CỜ nguy hiểm, không theo cụm hai từ: `git commit --amend` và
@@ -24,13 +29,13 @@ for pat in -- --amend --no-verify --hard --force --force-with-lease \
            "rm -rf" "stash drop" "stash clear" "git clean" "git restore" \
            "git rebase" "down -v" "volume rm" "DROP TABLE" "TRUNCATE"; do
   [ "$pat" = "--" ] && continue
-  case "$cmd" in *"$pat"*) risky=1; break ;; esac
+  case "$scan" in *"$pat"*) risky=1; break ;; esac
 done
 # `--force` cũng có trong `docker compose up --force-recreate` — vô hại, bỏ qua
 # nếu đó là lần khớp duy nhất.
-case "$cmd" in
+case "$scan" in
   *--force-recreate*)
-    case "$cmd" in
+    case "$scan" in
       *--amend*|*--no-verify*|*--hard*|*"rm -rf"*|*"volume rm"*|*"down -v"*) ;;
       *) risky=0 ;;
     esac ;;

@@ -2,7 +2,7 @@
 id: S0010
 date: 2026-08-25T19:31:37Z
 kind: risky
-outcome: open
+outcome: reverted
 title: "cd /c/Users/AnhND0904/workspace/MechOps ; git add -A ; git commit -F -"
 decision: ""
 reversible: yes
@@ -16,7 +16,7 @@ supersedes: []
 branch: "feat/ai-flow"
 commit: 2e7338f
 evidence: "docs/evidence/ci/2026-07-14T193011Z-544e2a4"
-promoted_to: ""
+promoted_to: "record-risky.sh: scan=${cmd%%<<*} + _lib.sh json_str xu ly dau escape; ma tran 20 ca trong scratchpad"
 source: hook
 ---
 
@@ -31,7 +31,9 @@ cd /c/Users/AnhND0904/workspace/MechOps\ngit add -A\ngit commit -F - <<'MSG'\n.s
 ```
 
 ## Kết luận
-<điền khi đóng>
+**reverted** — Bao oan: hook khop chu 'rm -rf' trong noi dung heredoc cua commit message, khong phai lenh that. Da cat heredoc truoc khi khop, va sua tiep lo json_str cat chuoi o dau ngoac kep dau tien.
+
+_Đóng 2026-08-25T19:34:06Z · commit `ce0a263`_
 
 ## Đã nâng thành
-<điền khi đóng: test ID / ADR-00NN / dòng trong skill nào / none>
+record-risky.sh: scan=${cmd%%<<*} + _lib.sh json_str xu ly dau escape; ma tran 20 ca trong scratchpad
