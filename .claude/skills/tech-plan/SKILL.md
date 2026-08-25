@@ -21,6 +21,11 @@ nhất để quyết định.
    Field mới **phải optional** (forward-compat, TEL-07). Có bất kỳ đổi nghĩa hoặc
    xoá field nào → **DỪNG, hỏi founder** (constitution #4). Đọc skill `contract-guard`.
 
+   Xong mục này thì khai luôn danh sách file vào `contract:` của `spec.md` —
+   `./mo steer plan contract <x> --add specs/...`. Văn xuôi ở đây không ai kiểm
+   được; `contract:` mới là thứ CI đối chiếu với diff `specs/` của PR. Sửa file
+   hợp đồng chưa khai = CI đỏ.
+
 2. **State machine** — nếu feature có trạng thái (OTA, provisioning, phiên terminal).
    Vẽ bằng chữ: `state → sự kiện → state`. Chỉ rõ **trạng thái nào ghi xuống SQLite
    và ghi ở thời điểm nào** — với `agent/`, luật là ghi TRƯỚC hành động, không có

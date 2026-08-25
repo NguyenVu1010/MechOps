@@ -65,6 +65,7 @@ case "$cmd" in
     run python3 tools/report/progress.py --cache .claude/cache/progress.txt
     # tasks.md + STATUS.md của plan suy từ tracker — sync ở đây để không bao giờ cũ
     run python3 tools/steering/steer.py plan sync
+    run python3 tools/steering/steer.py plan triage --cache .claude/cache/triage.txt
     ;;
   progress)
     if [ "${1:-}" = "--cache-only" ]; then
@@ -82,6 +83,9 @@ case "$cmd" in
   check-commit)
     run python3 tools/checks/commit_msg.py "$@"
     ;;
+  check-contract)
+    run python3 tools/checks/contract_touch.py "$@"
+    ;;
   next)
     run python3 tools/report/next.py
     ;;
@@ -92,7 +96,12 @@ case "$cmd" in
   hooks-install)
     git config core.hooksPath .githooks
     chmod +x .githooks/* 2>/dev/null || true
-    info "git hooks đã trỏ vào .githooks/ — commit-msg sẽ kiểm dòng 'Implements:'."
+    # `merge=ours` trong .gitattributes chỉ có tác dụng khi driver được khai báo.
+    # Thiếu dòng này thì git im lặng bỏ qua thuộc tính và trộn file máy sinh như
+    # file thường — đúng thứ nó sinh ra để tránh.
+    git config merge.ours.driver true
+    info "git hooks đã trỏ vào .githooks/ — commit-msg kiểm 'Implements:',"
+    info "post-merge sinh lại .steering/, post-checkout báo plan đang treo."
     ;;
 
   doctor)
@@ -131,6 +140,11 @@ case "$cmd" in
     echo "Lệnh: up down shell doctor hooks-install"
     echo "      gen lint verify test-integration trace"
     echo "      status progress digest check-commit steer hw-test fmt-dirty"
+    echo
+    echo "Steering: ./mo steer plan triage        plan/quyết định đang treo"
+    echo "          ./mo steer plan keep <x>      trả lời: vẫn làm tiếp"
+    echo "          ./mo steer plan abandon <x>   bỏ, KHÔNG xoá thư mục"
+    echo "          ./mo steer renumber <mốc>     gỡ trùng id sau merge"
     ;;
   *)
     die "lệnh không biết: $cmd (thử ./mo help)"

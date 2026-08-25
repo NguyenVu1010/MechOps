@@ -135,8 +135,16 @@ Mọi hệ trước `.steering/` chỉ ghi **thứ sống sót**. `.steering/` g
 | `docs/evidence/` | kết quả `go test -json` thô | `track.py` | không |
 | `docs/test-status.*` · `PROGRESS.md` | trạng thái hiện tại | `track.py` · `progress.py` | không (hook chặn) |
 | `docs/adr/` | quyết định kiến trúc | người | không (supersede) |
-| **`.steering/plans/`** | **định làm gì**: spec · clarify · plan · tasks | agent + người | được, tới khi `freeze` |
+| **`.steering/plans/`** | **định làm gì**: spec · clarify · plan · tasks | agent + người | được, tới khi `freeze`/`abandon` |
 | **`.steering/entries/`** | **đã xảy ra gì**, kể cả thứ bị vứt bỏ | agent + hook | không (mục mới `supersedes`) |
+| **`.steering/HISTORY.md`** | **dòng thời gian** của mọi quyết định: plan mở/đóng, cổng chốt, đáp án clarify của founder, mục nhật ký, ADR | `steer.py` | không (máy sinh) |
+
+**Quyết định đang treo là loại quyết định dễ mất nhất** — không ai xoá, không ai
+đóng, chỉ im lặng trôi khỏi tầm nhìn. `./mo steer plan triage` đi tìm đúng loại im
+lặng đó và hiện ra ở bốn chỗ: `SessionStart`, `post-checkout` (đổi nhánh), `./mo next`
+(đứng **trước** mọi việc mới), và một bước thông tin trong CI. Mỗi mục treo kèm hai
+lệnh để chọn — `plan keep --why` hoặc `plan abandon --why` — vì một cảnh báo không
+có cửa ra là một cảnh báo người ta sẽ học cách bỏ qua.
 
 Quy tắc phân nhà: một sự kiện chỉ có **một** nhà.
 

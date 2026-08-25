@@ -17,8 +17,19 @@ fails=$(grep -c '^| ❌' docs/test-status.md 2>/dev/null | head -1)
 fails=${fails:-0}
 dirty=$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')
 
+# Plan đang treo: đọc CACHE, không gọi python — context phải có mặt kể cả khi
+# Docker chưa lên. Cache do `./mo status` / post-merge / post-checkout ghi.
+triage=""
+if [ -s .claude/cache/triage.txt ]; then
+  triage=$(printf '\n- ⚠️ CẦN NGƯỜI QUYẾT (%s mục, có thể hơi cũ — `./mo steer plan triage` để chắc):\n%s' \
+    "$(wc -l < .claude/cache/triage.txt | tr -d ' ')" \
+    "$(sed 's/^/  · /' .claude/cache/triage.txt)")
+fi
+# Làm mới cache ở nền cho phiên sau; phiên này không chờ.
+( bash ./mo steer plan triage --cache .claude/cache/triage.txt --quiet >/dev/null 2>&1 & ) 2>/dev/null
+
 ctx="Trạng thái MechOps đầu phiên (hook SessionStart nạp, không phải người gõ):
-- Nhánh: ${branch} · ${dirty} file chưa commit
+- Nhánh: ${branch} · ${dirty} file chưa commit${triage}
 - Tracker: ${tracker:-chưa có}
 - ${mstone:-Milestone: chưa xác định}
 - Test đang đỏ: ${fails}

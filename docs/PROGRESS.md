@@ -1,7 +1,7 @@
 # MechOps — Tiến độ
 
 > ⚙️ Sinh bởi `tools/report/progress.py` từ `docs/test-status.json` — **không sửa tay**.
-> Cập nhật: 2026-08-24T18:16:48Z · **0/49** (0%)
+> Cập nhật: 2026-08-25T19:29:37Z · **0/49** (0%)
 
 ## Việc tiếp theo
 

@@ -41,7 +41,9 @@ Chỉ đọc và báo cáo. Không tự sửa artifact — sửa spec là quyế
    Còn treo → **DỪNG**, đây là gate người, không được tự trả lời thay.
 
 6. **Đụng chạm hợp đồng**: task nào sửa `specs/` thì `plan.md` mục 1 phải đã liệt kê
-   delta đó. Sửa contract ngoài kế hoạch là cách spec-drift bắt đầu.
+   delta đó, **và** file đó phải nằm trong `contract:` của `spec.md`. Sửa contract
+   ngoài kế hoạch là cách spec-drift bắt đầu. Kiểm nhanh:
+   `./mo check-contract --range origin/main..HEAD` — đúng chốt chặn CI sẽ chạy.
 
 ## Báo cáo
 

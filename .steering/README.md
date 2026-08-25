@@ -11,7 +11,9 @@ phải nhảy qua lại mới truy vết được.
 ```
 .steering/
 ├── README.md              luật + format (file này)
-├── INDEX.md               mục lục: plan trước, nhật ký sau — máy sinh
+├── INDEX.md               BÂY GIỜ THẾ NÀO — plan đang mở, plan đã đóng, nhật ký
+├── HISTORY.md             ĐÃ ĐI QUA GÌ — một dòng thời gian: plan, cổng chốt,
+│                          mục nhật ký, ADR. Máy sinh, mới nhất trên đầu.
 ├── plans/
 │   ├── TEMPLATE.md
 │   └── m3-ota-v1/
@@ -23,7 +25,7 @@ phải nhảy qua lại mới truy vết được.
 │       ├── tasks.md       THỨ TỰ        ← dấu tích do MÁY điền từ tracker
 │       └── JOURNAL.md     ĐÃ XẢY RA GÌ  ← máy sinh, gom entries có plan: m3-ota-v1
 └── entries/
-    └── S0007-…md          mục nhật ký, bất biến sau khi đóng
+    └── 2026-08-23T063715Z-S0007-…md   mục nhật ký, bất biến sau khi đóng
 ```
 
 **Hai vòng đời khác nhau, đừng lẫn:**
@@ -37,7 +39,132 @@ phải nhảy qua lại mới truy vết được.
 `freeze` từ chối chạy nếu feature còn mục nhật ký `open` — đóng băng kèm nợ là
 đóng băng một nửa sự thật.
 
+### Plan bỏ giữa đường: `abandon`, không phải `rm -rf`
+
+`draft → locked → frozen` chỉ mô tả plan **đi tới cùng**. Plan bị vứt bỏ cũng cần
+một cửa ra, nếu không thì cửa duy nhất là xoá thư mục — và thư mục xoá không để
+lại gì, kể cả trong git nếu chưa từng commit. Đã mất một plan đúng theo kiểu đó
+(xem `S0007`), nên giờ có:
+
+```
+./mo steer plan abandon <x> --why "vì sao dừng" [--next <plan/ADR/test ID>]
+```
+
+Nó **không xoá gì**: 5 artifact chuyển `status: abandoned`, `spec.md` nhận
+`closed`/`closed_as`/`why_closed`, và một mục nhật ký được mở-rồi-đóng ngay để lý
+do nằm trong `JOURNAL.md` của chính plan đó. `--why` là bắt buộc — người sau chỉ
+còn ô đó để hiểu vì sao dừng, và `./mo trace` báo lỗi nếu nó rỗng.
+
+Plan làm lại hướng cũ thì khai `--supersedes <plan cũ>` lúc `plan new`. Chuỗi chỉ
+ghi **một chiều** (plan mới trỏ plan cũ); chiều ngược INDEX tự suy — vì plan cũ có
+thể đã `frozen`, mà `frozen` nghĩa là không sửa được nữa. `./mo trace` chặn nếu
+`supersedes` trỏ vào một plan không còn tồn tại: đó chính là dấu hiệu có người xoá.
+
+**Không có plan nào bị xoá.** Cả plan sai, plan bỏ, plan chỉ viết được nửa spec —
+tất cả nằm nguyên trong `plans/`, gắn nhãn `abandoned`, và hiện ở bảng "Plan đã
+đóng" của `INDEX.md`.
+
 ---
+
+## `contract:` — plan nối vào hợp đồng bằng thứ máy kiểm được
+
+`plan.md` mục 1 ("Delta hợp đồng") là **văn xuôi**: không gì kiểm được rằng file
+`specs/` vừa đổi đã từng nằm trong kế hoạch. Đó là đúng cách spec-drift bắt đầu —
+một field thêm vào giữa lúc implement, không ai duyệt, sáu tháng sau không ai biết
+nó từ đâu ra.
+
+`contract:` khai trước, ở `spec.md`. Nhận **file** (`specs/asyncapi.yaml`) hoặc
+**thư mục** kết thúc bằng `/` (`specs/schemas/` — cho file plan sẽ TẠO). Chỉ đường
+dẫn trong `specs/`: cho khai ngoài đó thì field này thành "danh sách file tôi sẽ
+sửa", mà đó là việc của `git diff`.
+
+`tools/checks/contract_touch.py` (bước trong CI) đối chiếu `git diff --name-only ...
+-- specs` với `contract:` của mọi plan chưa `abandoned`. File không ai khai → **đỏ**,
+kèm hai cách xử lý.
+
+**Cổng tự bật.** Chưa plan nào khai `contract:` thì bỏ qua — M0 đang dựng `specs/`
+từ đầu, chặn lúc này thì chốt chặn bị tắt trước khi nó kịp có ích. Có plan đầu tiên
+khai là cổng có hiệu lực.
+
+**Mở rộng scope được, nhưng không im lặng.** Lúc implement mới thấy phải sửa thêm
+một schema là chuyện thật:
+
+```
+./mo steer plan contract <x> --add specs/schemas/alert.schema.json --why "..."
+```
+
+`spec.md` còn `draft` thì chỉ thêm vào field. Đã `locked` thì `--why` là **bắt buộc**
+và lệnh sinh một mục nhật ký — mở rộng hợp đồng sau khi chốt spec là quyết định.
+
+**Cửa thứ hai: trailer `Contract:`** — cho thay đổi hợp đồng không thuộc feature nào
+(dọn scaffolding cũ, đổi tổ chức thư mục, dọn sau một ADR). Bắt những việc đó mượn
+một plan thì `contract:` của plan thành nói dối về scope của nó.
+
+```
+Contract: specs/features/ — plan chuyển sang .steering/plans/, thư mục này
+không còn là hợp đồng (ADR-0011)
+```
+
+Trailer nằm ở commit message nào cũng được trong range của PR, khớp theo đường dẫn
+hoặc tiền tố (`specs/abc/`). Nó không im lặng: nằm trong `git log` vĩnh viễn, người
+duyệt PR đọc thấy, và buộc nêu lý do ngay cạnh đường dẫn.
+
+## Plan đi lạc: `triage` hỏi, người trả lời
+
+Plan không bị xoá cũng chưa chắc còn sống. Nó **im lặng trôi ra khỏi tầm nhìn** —
+không ai đóng, không ai làm, tới lúc có người mở lại nhánh cũ thì plan bỏ giữa
+đường trông hệt plan đang làm dở. `./mo steer plan triage` đi tìm đúng loại im
+lặng đó:
+
+| Dấu hiệu | Ngưỡng | Nghĩa là |
+|---|---|---|
+| nhánh trong `branch:` không còn | ngay | plan mồ côi — nhánh đã merge hoặc đã xoá |
+| mọi ID trong `covers` đã xanh mà plan chưa đóng | ngay | việc xong ở chỗ khác, plan **bị vượt** |
+| `milestone` của plan thấp hơn milestone đang mở | ngay | plan quá hạn, milestone đã đi qua |
+| `clarify` còn `open` | 7 ngày | treo ở gate người — founder chưa trả lời |
+| không chốt cổng nào, không mục nhật ký nào | 14 ngày | **lạc** |
+| mục có `revisit` tới hạn | ngày đã hẹn | quyết định tạm cần quyết lại |
+| hai mục cùng `id` | ngay | merge hai nhánh — `./mo steer renumber` |
+
+Mỗi mục treo đi kèm **hai lệnh để chọn**, không phải một lời than:
+
+```
+./mo steer plan abandon <x> --why "..."      # bỏ, giữ nguyên thư mục
+./mo steer plan keep    <x> --why "..."      # vẫn làm tiếp
+```
+
+`keep` đóng vòng lặp: nó stamp `reviewed:` + `reviewed_why:` và cập nhật `branch:`
+sang nhánh hiện tại, nên triage im trong 14 ngày nữa. Không có nó thì triage hỏi
+lại đúng câu ấy mỗi phiên cho tới khi người ta thôi đọc — và một cảnh báo bị bỏ
+qua thì tệ hơn không có cảnh báo.
+
+**Nó hiện ra ở bốn chỗ**, không phải chờ ai gõ lệnh: `SessionStart` (đọc cache
+`.claude/cache/triage.txt`), `post-checkout` (đổi nhánh là báo ngay), `./mo next` →
+`CẦN NGƯỜI QUYẾT` (đứng trước mọi việc mới), và một bước thông tin trong CI.
+
+## Nhiều nhánh, nhiều người
+
+Ba chỗ vỡ khi hai nhánh chạy song song, và cách xử lý từng chỗ:
+
+**1. Trùng `id`.** `next_id()` quét `git log --all` — mọi nhánh, kể cả remote đã
+fetch và mục về sau bị xoá — nên nhánh mở sau không cấp lại số của nhánh mở trước.
+Trường hợp thật sự đồng thời (hai nhánh cùng cấp `S0008` mà chưa thấy nhau) thì
+`trace` chặn lúc merge, `triage` nêu tên, và `./mo steer renumber <mốc thời gian>`
+gỡ: đổi số, **giữ nguyên mốc** (mốc là lúc sự việc xảy ra, không phải lúc đánh số
+lại), sinh một mục nhật ký ghi việc đổi — đây là ngoại lệ duy nhất của luật "mục đã
+đóng thì bất biến", nên nó không được im lặng.
+
+Mục khác đang trỏ `supersedes: [S0008]` thì máy **không tự sửa**, chỉ in ra để người
+kiểm: sau merge có hai mục từng mang số đó, nên đoán sai còn tệ hơn hỏi.
+
+**2. Conflict ở file máy sinh.** `INDEX.md`, `HISTORY.md`, `STATUS.md`, `JOURNAL.md`
+là **hàm** của `entries/` + `plans/`. Trộn hai nửa bảng markdown chỉ cho ra một bảng
+sai mà không ai thấy. Nên `.gitattributes` đặt `merge=ours` (driver bật trong
+`./mo hooks-install`), hook `post-merge` sinh lại từ nguồn, và CI có chốt chặn
+`.steering không lệch` cho trường hợp hook không chạy.
+
+**3. Không biết nhánh này đang làm plan nào.** `spec.md` khai `branch:` lúc `plan
+new`; `post-checkout` in ngay danh sách treo của nhánh vừa vào.
 
 ## Năm hệ hồ sơ
 
@@ -65,7 +192,8 @@ Bốn file bắt buộc, cùng một frontmatter (`plan new` sinh sẵn):
 ---
 plan: m3-ota-v1                       # trùng tên thư mục
 milestone: M3
-status: open                          # open | frozen
+status: draft                         # của TỪNG artifact: draft|locked|frozen|abandoned
+created: 2026-08-24T18:30:03Z         # mốc UTC, máy
 covers: [OTA-01, OTA-02, OTA-07]      # BẮT BUỘC — trace kiểm với catalog
 adr: [0005]                           # ADR làm căn cứ; trace kiểm tồn tại + chưa supersede
 requirements:                         # truy ngược lên yêu cầu gốc
@@ -73,11 +201,30 @@ requirements:                         # truy ngược lên yêu cầu gốc
 ---
 ```
 
+Bốn field dưới đây **chỉ có ở `spec.md`** — vòng đời của cả plan khai một chỗ, khai
+năm chỗ thì có năm phiên bản sự thật về việc plan này còn sống hay đã chết:
+
+```yaml
+contract: [specs/asyncapi.yaml, specs/schemas/]   # file specs/ plan sẽ chạm
+supersedes: [m3-ota-v0]               # plan này thay cho plan nào (một chiều)
+branch: feat/OTA-07-digest            # nhánh mở plan; triage báo nếu nhánh mất
+reviewed: 2026-08-25T18:43:20Z        # lần cuối trả lời triage bằng `plan keep`
+reviewed_why: "còn chờ founder"       # ...và vì sao vẫn giữ
+closed: 2026-08-25T18:28:07Z          # mốc đóng; rỗng = còn đang làm
+closed_as: abandoned                  # frozen (xong) | abandoned (bỏ)
+why_closed: "chờ ADR về digest"       # BẮT BUỘC khi đã đóng — trace kiểm
+```
+
+Mỗi lần `plan lock` thành công, artifact đó nhận thêm `locked: <mốc UTC>`. Không có
+mốc thì `status: locked` chỉ nói *đang thế nào*, không nói *đã đi qua những gì* —
+và `HISTORY.md` dựng dòng thời gian từ đúng những mốc này.
+
 Ba mối nối này là lý do plan tồn tại ở dạng máy đọc được, không phải văn xuôi:
 
 | Nối | Đứt thì sao | Ai canh |
 |---|---|---|
 | `covers` → catalog | ID ma thì tracker không bao giờ tick — hỏng im lặng | `./mo trace` |
+| `contract` → `specs/` | file hợp đồng đổi mà không ai kế hoạch trước — spec-drift | `contract_touch.py` (CI) |
 | `adr` → `docs/adr/` | plan dựa trên quyết định đã bị supersede mà không ai biết | `./mo trace` |
 | `tasks.md` → `covers` | task ngoài scope đã thoả thuận | `./mo trace` (cảnh báo) |
 
@@ -127,20 +274,49 @@ tên test — cộng mục "ID đề xuất thêm" cho hành vi chưa có ID. Ch
 Một mục = một file trong `entries/`. Tên file:
 
 ```
-S0007-wrong-golangci-lint-chay-duoc-voi-trong-gowork.md
-└─┬─┘ └─┬─┘ └──────────────────┬──────────────────┘
-  id   kind          slug ASCII (không dấu)
+2026-08-23T063715Z-S0007-wrong-golangci-lint-chay-duoc-voi-trong-gowork.md
+└────────┬───────┘ └─┬─┘ └─┬─┘ └──────────────────┬──────────────────┘
+    mốc UTC          id   kind          slug ASCII (không dấu)
 ```
 
+**Mốc thời gian đứng trước** để `ls entries/` đọc ra được dòng thời gian của cả
+quá trình mà không phải mở file nào, và để thứ tự file trên đĩa trùng thứ tự sự
+việc. Dạng mốc y hệt `docs/evidence/ci/` — một quy ước cho mọi thứ có dấu thời
+gian trong repo, không phải hai. Bỏ dấu `:` vì Windows cấm ký tự đó trong tên file.
+
+Mốc và `date:` trong frontmatter do **cùng một lần gọi đồng hồ** sinh ra; `./mo trace`
+chặn nếu hai chỗ lệch nhau — tên file lệch nghĩa là đã có người đổi tên bằng tay,
+và tên đang nói dối về lúc sự việc xảy ra.
+
 `id` tăng dần, bất biến, cùng quy ước với ADR (`0001-…`) để tham chiếu được trong
-hội thoại, trong commit, và trong chính mục khác: *"xem S0007"*.
+hội thoại, trong commit, và trong chính mục khác: *"xem S0007"* — tham chiếu vẫn
+là `S0007`, không ai phải gõ lại mốc thời gian.
+
+### Bốn field làm nên "bản tin quyết định"
+
+Phần thân kể chuyện; bốn field này để **lọc và nhắc** — thứ văn xuôi không làm được:
+
+| Field | Giá trị | Vì sao có |
+|---|---|---|
+| `decision` | một câu thể khẳng định | **Bắt buộc với `kind: decision`.** Không nói được đã quyết gì thì nó là ghi chép, không phải quyết định — `./mo trace` chặn. |
+| `reversible` | `yes` · `costly` · `no` | Trả lời "có đáng tranh luận lại không". `no` thì tranh luận lại là vô nghĩa; `costly` thì phải cân trước khi đổi. |
+| `deciders` | `agent` · `founder` · `agent+founder` · `hook` | `source` nói ai **ghi**; cái này nói ai **quyết**. Constitution #9 chỉ ràng buộc chuyện thứ hai. |
+| `revisit` | `YYYY-MM-DD` | Quyết định **tạm**. Tới hạn thì `triage` nhắc — không có ô này thì "tạm" nghĩa là vĩnh viễn. |
+
+Và một mục thân mới: **`## Đã cân nhắc`** — phương án khác đã nghĩ tới, kèm *vì sao
+không chọn*. Đây là phần người sau cần nhất và cũng là phần biến mất đầu tiên: sáu
+tháng sau, cái đã bị loại trông như cái chưa ai nghĩ tới, nên nó được thử lại.
 
 ### Frontmatter — máy đọc
 
 ```yaml
 ---
-id: S0007                       # bất biến, do máy cấp
+id: S0007                       # bất biến, do máy cấp — quét cả git log --all
 date: 2026-08-23T06:37:15Z      # UTC, máy
+decision: "..."                 # BẮT BUỘC với kind: decision
+reversible: costly              # yes | costly | no
+deciders: agent+founder         # ai QUYẾT (khác source: ai GHI)
+revisit: 2026-09-30             # quyết định tạm; triage nhắc khi tới hạn
 kind: wrong                     # attempt | wrong | discovery | decision | risky
 outcome: reverted               # open | kept | reverted | superseded
 title: "…"                      # LUÔN trích dẫn — dấu ':' không trích dẫn làm vỡ YAML

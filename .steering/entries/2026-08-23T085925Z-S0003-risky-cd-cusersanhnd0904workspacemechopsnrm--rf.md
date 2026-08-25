@@ -4,6 +4,10 @@ date: 2026-08-23T08:59:25Z
 kind: risky
 outcome: reverted
 title: "cd /c/Users/AnhND0904/workspace/MechOps/nrm -rf docs/evidence/ci/2026-"
+decision: ""
+reversible: yes
+deciders: hook
+revisit:
 area: infra
 plan: 
 milestone: M1

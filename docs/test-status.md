@@ -1,7 +1,7 @@
 # MechOps — Test Status
 
 > ⚙️ File này do `tools/testtrack/track.py` sinh — **không sửa tay**.
-> Cập nhật: 2026-08-24T17:49:02Z · commit `9f5be49` · **0/49 ✅** (0%)
+> Cập nhật: 2026-08-25T19:15:40Z · commit `2e7338f` · **0/49 ✅** (0%)
 
 > **Milestone đang mở: M1** — 0/16 ✅ · Việc tiếp theo: `PRV-01` [I] Enroll token hợp lệ
 

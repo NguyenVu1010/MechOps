@@ -23,4 +23,4 @@
 | `TEL-01` | ⬜ |
 | `TEL-07` | ⬜ |
 
-- Nhật ký: [0 mục](JOURNAL.md)
+- Nhật ký: [2 mục](JOURNAL.md) · ⚠️ **1 chưa đóng**
