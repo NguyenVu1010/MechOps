@@ -2,7 +2,7 @@
 id: S0011
 date: 2026-08-25T19:34:04Z
 kind: risky
-outcome: open
+outcome: reverted
 title: "cd /c/Users/AnhND0904/workspace/MechOps ; bash ./mo steer close S0010"
 decision: ""
 reversible: yes
@@ -16,7 +16,7 @@ supersedes: []
 branch: "feat/ai-flow"
 commit: ce0a263
 evidence: "docs/evidence/ci/2026-07-14T193011Z-544e2a4"
-promoted_to: ""
+promoted_to: "record-risky.sh: bo gia tri --why/--title/--promoted/-m... ; ma tran 24 ca"
 source: hook
 ---
 
@@ -31,7 +31,9 @@ cd /c/Users/AnhND0904/workspace/MechOps\nbash ./mo steer close S0010 --outcome r
 ```
 
 ## Kết luận
-<điền khi đóng>
+**reverted** — Bao oan lan hai: cum tu nguy hiem nam trong van xuoi cua co --why. Da bo gia tri cua cac co chi chua van xuoi truoc khi khop.
+
+_Đóng 2026-08-25T19:35:07Z · commit `f98fbf8`_
 
 ## Đã nâng thành
-<điền khi đóng: test ID / ADR-00NN / dòng trong skill nào / none>
+record-risky.sh: bo gia tri --why/--title/--promoted/-m... ; ma tran 24 ca

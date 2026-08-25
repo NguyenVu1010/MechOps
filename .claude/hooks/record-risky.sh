@@ -18,6 +18,12 @@ cmd=$(cat | json_str command)
 # nhắc tới `rm -rf` bị ghi thành lệnh phá hoại — đã dính đúng lỗi này (S0010), và
 # cảnh báo oan là cảnh báo người ta học cách bỏ qua.
 scan=${cmd%%<<*}
+# ...và bỏ GIÁ TRỊ của những cờ chỉ chứa văn xuôi. `./mo steer close --why "cửa
+# duy nhất là rm -rf"` là một câu kể, không phải một lệnh xoá. Danh sách này cố ý
+# hẹp: `-c` của psql KHÔNG có trong đây, nên `psql -c "DROP TABLE ..."` vẫn bị soi.
+scan=$(printf '%s' "$scan" | sed -E \
+  's/(--why|--title|--promoted|--decision|--context|--proof|--alt|--reason|--message|-m)[[:space:]]+"[^"]*"/\1 X/g;
+   s/(--why|--title|--promoted|--decision|--context|--proof|--alt|--reason|--message|-m)[[:space:]]+'"'"'[^'"'"']*'"'"'/\1 X/g')
 
 # Ghi ý định, không ghi kết quả — PostToolUse chỉ chạy khi lệnh THÀNH CÔNG, mà
 # lệnh phá hoại thất bại cũng đáng biết.
