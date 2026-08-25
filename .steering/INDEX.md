@@ -1,7 +1,7 @@
 # .steering — mục lục
 
 > ⚙️ Sinh bởi `tools/steering/steer.py` — **không sửa tay**. Luật và format: `.steering/README.md`.
-> 1 plan · 11 mục nhật ký · 1 chưa đóng · decision 3 · discovery 1 · risky 5 · wrong 2
+> 1 plan · 11 mục nhật ký · 0 chưa đóng · decision 3 · discovery 1 · risky 5 · wrong 2
 
 ## Plan đang mở
 
@@ -9,17 +9,11 @@
 |---|---|---|---|---|---|---|
 | [m1-contract-v01](plans/m1-contract-v01/) | M1 | 0/4 chốt | TEL-01, TEL-07 | 0001 | — | [3 mục](plans/m1-contract-v01/JOURNAL.md) |
 
-## ⚠️ Chưa đóng — nợ chưa trả
-
-| id | Loại | Tầng | Tiêu đề |
-|---|---|---|---|
-| [S0011](entries/2026-08-25T193404Z-S0011-risky-cd-cusersanhnd0904workspacemechops-bash-mo.md) | risky | infra | cd /c/Users/AnhND0904/workspace/MechOps ; bash ./mo steer close S0010 |
-
 ## M1
 
 | id | Ngày | Loại | Kết cục | Tầng | Test ID | Đã nâng thành | Tiêu đề |
 |---|---|---|---|---|---|---|---|
-| [S0011](entries/2026-08-25T193404Z-S0011-risky-cd-cusersanhnd0904workspacemechops-bash-mo.md) | 2026-08-25 | risky | open | infra | — | — | cd /c/Users/AnhND0904/workspace/MechOps ; bash ./mo steer close S0010 |
+| [S0011](entries/2026-08-25T193404Z-S0011-risky-cd-cusersanhnd0904workspacemechops-bash-mo.md) | 2026-08-25 | risky | reverted | infra | — | record-risky.sh: bo gia tri --why/--title/--promoted/-m... ; ma tran 24 ca | cd /c/Users/AnhND0904/workspace/MechOps ; bash ./mo steer close S0010 |
 | [S0010](entries/2026-08-25T193137Z-S0010-risky-cd-cusersanhnd0904workspacemechops-git-add.md) | 2026-08-25 | risky | reverted | infra | — | record-risky.sh: scan=${cmd%%<<*} + _lib.sh json_str xu ly dau escape; ma tran 20 ca trong scratchpad | cd /c/Users/AnhND0904/workspace/MechOps ; git add -A ; git commit -F - |
 | [S0009](entries/2026-08-25T191339Z-S0009-decision-contract-noi-plan-vao-specs-bang-thu-may-k.md) | 2026-08-25 | decision | kept | specs | — | tools/checks/contract_touch.py + buoc CI 'specs/ doi phai co plan khai truoc' | contract: noi plan vao specs bang thu may kiem duoc |
 | [S0008](entries/2026-08-25T184817Z-S0008-decision-bo-sung-format-quyet-dinh-dong-bo-nhieu-nh.md) | 2026-08-25 | decision | kept | flow | — | trace.py: enum + decision bat buoc; next.py: pha CAN NGUOI QUYET; pr.yml: chot chan .steering khong lech | Bo sung format quyet dinh, dong bo nhieu nhanh, va triage plan treo |

@@ -1,10 +1,11 @@
 # .steering — dòng thời gian
 
 > ⚙️ Sinh bởi `tools/steering/steer.py` — **không sửa tay**. Trạng thái hiện tại: `INDEX.md`.
-> 33 sự việc · plan · cổng chốt · mục nhật ký · ADR, mới nhất trên đầu
+> 34 sự việc · plan · cổng chốt · mục nhật ký · ADR, mới nhất trên đầu
 
 | Mốc (UTC) | Loại | Việc |
 |---|---|---|
+| `2026-08-25T19:35:07Z` | risky | đóng [S0011](entries/2026-08-25T193404Z-S0011-risky-cd-cusersanhnd0904workspacemechops-bash-mo.md) **reverted** → record-risky.sh: bo gia tri --why/--title/--promoted/-m... ; ma tran 24 ca |
 | `2026-08-25T19:34:06Z` | risky | đóng [S0010](entries/2026-08-25T193137Z-S0010-risky-cd-cusersanhnd0904workspacemechops-git-add.md) **reverted** → record-risky.sh: scan=${cmd%%<<*} + _lib.sh json_str xu ly dau escape; ma tran 20 ca trong scratchpad |
 | `2026-08-25T19:34:04Z` | risky | mở [S0011](entries/2026-08-25T193404Z-S0011-risky-cd-cusersanhnd0904workspacemechops-bash-mo.md) — cd /c/Users/AnhND0904/workspace/MechOps ; bash ./mo steer close S0010 |
 | `2026-08-25T19:31:37Z` | risky | mở [S0010](entries/2026-08-25T193137Z-S0010-risky-cd-cusersanhnd0904workspacemechops-git-add.md) — cd /c/Users/AnhND0904/workspace/MechOps ; git add -A ; git commit -F - |
