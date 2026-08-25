@@ -18,7 +18,7 @@ Sáu nhiệm vụ:
 
 Exit 0 nếu chỉ có cảnh báo; exit 1 nếu có lỗi.
 """
-import os, re, sys
+import os, re, subprocess, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -520,10 +520,41 @@ def check_milestones():
     return errs
 
 
+# File được GỌI THẲNG (không qua `bash x.sh`), nên bit thực thi phải nằm trong git.
+# Dev trên Windows có core.fileMode=false: chmod tại máy không vào index, nên
+# runner Linux và mọi bản clone khác nhận file 644. `./mo` -> "Permission denied";
+# git hook thì không chạy và KHÔNG báo gì cả — chốt chặn biến mất im lặng.
+MUST_EXEC = ["mo", ".githooks/commit-msg", ".githooks/post-merge",
+             ".githooks/post-checkout", ".claude/statusline.sh"]
+
+
+def check_exec_bits():
+    errs = []
+    out = subprocess.run(["git", "ls-files", "-s"] + MUST_EXEC,
+                         capture_output=True, text=True, cwd=ROOT)
+    if out.returncode != 0:
+        return errs
+    seen = set()
+    for line in out.stdout.splitlines():
+        parts = line.split(maxsplit=3)
+        if len(parts) < 4:
+            continue
+        mode, path = parts[0], parts[3]
+        seen.add(path)
+        if mode != "100755":
+            errs.append(f"{path}: mode {mode} trong git, phải là 100755 — "
+                        f"sửa: git update-index --chmod=+x {path}")
+    for p in MUST_EXEC:
+        if p not in seen and os.path.exists(os.path.join(ROOT, p)):
+            errs.append(f"{p}: có trên đĩa nhưng chưa được git theo dõi")
+    return errs
+
+
 def main():
     errors, warns = [], []
     statuses = adr_status()
 
+    errors += check_exec_bits()
     errors += check_milestones()
     errors += check_frontmatter()
     steer_errs, steer_warns = check_steering()
