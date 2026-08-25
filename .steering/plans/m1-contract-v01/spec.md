@@ -2,6 +2,15 @@
 plan: m1-contract-v01
 milestone: M1
 status: draft
+created: 2026-08-24T18:30:03Z
+contract: [specs/asyncapi.yaml, specs/schemas/, specs/testvectors/]
+supersedes: []
+branch: feat/ai-flow
+reviewed:
+reviewed_why:
+closed:
+closed_as:
+why_closed:
 covers: [TEL-01, TEL-07]
 adr: [0001]
 requirements:

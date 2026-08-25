@@ -4,6 +4,10 @@ date: 2026-08-23T06:37:15Z
 kind: wrong
 outcome: reverted
 title: "golangci-lint chay duoc voi ./... trong go.work"
+decision: ""
+reversible: yes
+deciders: agent
+revisit:
 area: infra
 milestone: M1
 test_ids: []

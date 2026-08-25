@@ -171,7 +171,26 @@ def check_steering():
     AREAS = {"agent", "server", "protocol", "probe", "dashboard", "specs", "infra", "flow"}
     OUTCOMES = {"open", "kept", "reverted", "superseded"}
     BODY_MAX = 30
-    sid_re = re.compile(r"^(S\d{4})-([a-z]+)-")
+    # <mốc UTC>-<id>-<kind>-<slug>. Mốc đứng trước để `ls entries/` đọc ra được
+    # dòng thời gian mà không phải mở file nào.
+    sid_re = re.compile(r"^(\d{4}-\d{2}-\d{2}T\d{6}Z)-(S\d{4})-([a-z]+)-")
+
+    # Plan đang mở, gom theo nhánh — để bắt mục nhật ký quên khai `plan:`.
+    plans_by_branch = {}
+    proot = os.path.join(ROOT, PLANS_DIR)
+    for pn in (sorted(os.listdir(proot)) if os.path.isdir(proot) else []):
+        sp = os.path.join(proot, pn, "spec.md")
+        if not os.path.exists(sp):
+            continue
+        txt = open(sp, encoding="utf-8").read()
+        pfm = {}
+        if txt.startswith("---") and "\n---\n" in txt:
+            for line in txt.split("\n---\n", 1)[0].lstrip("-\n").splitlines():
+                if ":" in line:
+                    k, v = line.split(":", 1)
+                    pfm[k.strip()] = v.strip().strip('"')
+        if not pfm.get("closed", "").strip():
+            plans_by_branch.setdefault(pfm.get("branch", "").strip(), []).append(pn)
 
     names = sorted(n for n in os.listdir(entries_dir) if n.endswith(".md"))
     idx = open(index_md, encoding="utf-8").read() if os.path.exists(index_md) else ""
@@ -183,7 +202,8 @@ def check_steering():
         rel = f".steering/entries/{n}"
         m = sid_re.match(n)
         if not m:
-            errs.append(f"{rel}: tên file phải theo dạng S0007-<kind>-<slug>.md")
+            errs.append(f"{rel}: tên file phải theo dạng "
+                        "2026-08-23T063715Z-S0007-<kind>-<slug>.md")
             continue
 
         text = open(os.path.join(entries_dir, n), encoding="utf-8").read()
@@ -201,18 +221,54 @@ def check_steering():
         # id: duy nhất và khớp tên file — id là thứ mục khác trỏ tới, sai thì
         # cả chuỗi supersedes mất nghĩa.
         sid = fm.get("id", "")
-        if sid != m.group(1):
-            errs.append(f"{rel}: id trong frontmatter ({sid!r}) khác tên file ({m.group(1)})")
+        if sid != m.group(2):
+            errs.append(f"{rel}: id trong frontmatter ({sid!r}) khác tên file ({m.group(2)})")
         if sid in seen_ids:
             errs.append(f"{rel}: id {sid} trùng với {seen_ids[sid]}")
         seen_ids[sid] = n
-        if fm.get("kind") != m.group(2):
+        if fm.get("kind") != m.group(3):
             errs.append(f"{rel}: kind trong frontmatter ({fm.get('kind')!r}) khác tên file")
+        # Mốc trong tên file là thứ người đọc tin khi lướt `ls`. Nó lệch `date:`
+        # nghĩa là file đã bị đổi tên bằng tay — tên nói dối về lúc sự việc xảy ra.
+        if fm.get("date", "").replace(":", "") != m.group(1):
+            errs.append(f"{rel}: mốc thời gian trong tên file khác `date:` "
+                        f"({fm.get('date')!r}) — tên file do máy đặt, đừng sửa tay")
 
         if fm.get("kind") not in KINDS:
             errs.append(f"{rel}: kind không hợp lệ: {fm.get('kind')!r}")
         if fm.get("area") not in AREAS:
             errs.append(f"{rel}: area không hợp lệ: {fm.get('area')!r}")
+
+        # Mục không khai `plan:` trong khi nhánh đó ĐANG có plan mở: nó rơi ra
+        # ngoài JOURNAL.md của feature, nên mở thư mục plan ra sẽ không thấy thứ
+        # đã thử rồi bỏ. Cảnh báo, không chặn — có quyết định thật sự không thuộc
+        # feature nào (hạ tầng, quy trình), và đó là chuyện bình thường.
+        # `flow` và `infra` là bộ máy của repo, không phải feature — quyết định ở
+        # hai tầng đó không thuộc plan nào là chuyện bình thường, cảnh báo chúng
+        # chỉ tạo tiếng ồn (5 mục đầu tiên của repo này đều thuộc loại đó).
+        if not fm.get("plan", "").strip() and fm.get("area") not in ("flow", "infra"):
+            same = plans_by_branch.get(fm.get("branch", "").strip(), [])
+            if same:
+                warns.append(f"{rel}: không gắn `plan:` mà nhánh "
+                             f"{fm.get('branch')!r} đang mở plan {', '.join(same)} "
+                             "— mục này sẽ không xuất hiện trong JOURNAL.md của plan")
+
+        # Bốn field làm nên "bản tin quyết định" chứ không chỉ "ghi chép". Chúng
+        # tuỳ chọn với mục cũ, nhưng đã khai thì phải khai đúng — sai giá trị thì
+        # không lọc được, mà không lọc được thì cũng như không có.
+        if fm.get("reversible") and fm["reversible"] not in {"yes", "costly", "no"}:
+            errs.append(f"{rel}: reversible {fm['reversible']!r} không hợp lệ "
+                        "(yes | costly | no)")
+        if fm.get("deciders") and fm["deciders"] not in {"agent", "founder",
+                                                         "agent+founder", "hook"}:
+            errs.append(f"{rel}: deciders {fm['deciders']!r} không hợp lệ "
+                        "(agent | founder | agent+founder | hook)")
+        if fm.get("revisit") and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", fm["revisit"]):
+            errs.append(f"{rel}: revisit {fm['revisit']!r} phải là ngày YYYY-MM-DD")
+        # `kind: decision` mà không nói được quyết định là gì thì nó là ghi chép.
+        if fm.get("kind") == "decision" and not fm.get("decision", "").strip():
+            errs.append(f"{rel}: kind decision mà `decision:` rỗng — một câu khẳng "
+                        "định nói rõ đã quyết cái gì")
         if fm.get("outcome") not in OUTCOMES:
             errs.append(f"{rel}: outcome không hợp lệ: {fm.get('outcome')!r}")
 
@@ -308,16 +364,53 @@ def check_plans(adr_st):
                     fm[k.strip()] = v.strip()
 
         # `status` giờ là của TỪNG artifact: draft -> locked -> frozen (clarify: open/answered).
-        VALID = {"spec": {"draft", "locked", "frozen"},
-                 "plan": {"draft", "locked", "frozen"},
-                 "testcases": {"draft", "locked", "frozen"},
-                 "tasks": {"draft", "locked", "frozen"},
-                 "clarify": {"open", "answered", "frozen"}}
+        # `abandoned` = bỏ giữa đường. Nó là một cửa ra HỢP LỆ: không có nó thì
+        # cách duy nhất để bỏ một plan là xoá thư mục, và thư mục xoá không để
+        # lại gì để truy vết.
+        VALID = {"spec": {"draft", "locked", "frozen", "abandoned"},
+                 "plan": {"draft", "locked", "frozen", "abandoned"},
+                 "testcases": {"draft", "locked", "frozen", "abandoned"},
+                 "tasks": {"draft", "locked", "frozen", "abandoned"},
+                 "clarify": {"open", "answered", "frozen", "abandoned"}}
         for key, allowed in VALID.items():
             s = _fm_status(os.path.join(d, f"{key}.md"))
             if s != "?" and s not in allowed:
                 errs.append(f"{rel}/{key}.md: status {s!r} không hợp lệ "
                             f"(cho phép: {', '.join(sorted(allowed))})")
+
+        # Vòng đời plan: `supersedes` phải trỏ plan có thật, và plan đã đóng phải
+        # nói được vì sao. Một plan `abandoned` không có lý do thì bằng đúng cái
+        # nó thay thế — một thư mục bị xoá.
+        for old in re.findall(r"[\w.-]+", fm.get("supersedes", "")):
+            if not os.path.isdir(os.path.join(root, old)):
+                errs.append(f"{rel}/spec.md: supersedes trỏ plan không tồn tại: {old} "
+                            "— plan cũ phải còn nguyên trong .steering/plans/, "
+                            "đừng xoá (dùng `./mo steer plan abandon`)")
+        # `contract:` — file hợp đồng plan sẽ chạm. Khai sai đường dẫn thì chốt
+        # chặn contract_touch.py sẽ cho qua một file lẽ ra phải chặn, hoặc chặn
+        # một file lẽ ra được phép: cả hai đều là chốt chặn nói dối.
+        for c in re.split(r"[,\s]+", fm.get("contract", "").strip("[]")):
+            if not c:
+                continue
+            if not c.startswith("specs/"):
+                errs.append(f"{rel}/spec.md: contract chỉ nhận đường dẫn trong "
+                            f"specs/ — không hợp lệ: {c}")
+            elif c.endswith("/"):
+                if not os.path.isdir(os.path.join(ROOT, c)):
+                    errs.append(f"{rel}/spec.md: contract trỏ thư mục không tồn tại: {c}")
+            elif not os.path.exists(os.path.join(ROOT, c)):
+                warns.append(f"{rel}/spec.md: contract trỏ {c} chưa tồn tại "
+                             "— plan sẽ tạo?")
+
+        closed_as = fm.get("closed_as", "").strip()
+        if closed_as and closed_as not in ("frozen", "abandoned"):
+            errs.append(f"{rel}/spec.md: closed_as {closed_as!r} không hợp lệ "
+                        "(frozen | abandoned)")
+        if fm.get("closed", "").strip() and not fm.get("why_closed", "").strip('" '):
+            errs.append(f"{rel}/spec.md: đã đóng ({closed_as or '?'}) mà `why_closed:` "
+                        "rỗng — người sau chỉ còn ô này để hiểu vì sao dừng")
+        if closed_as and not fm.get("closed", "").strip():
+            errs.append(f"{rel}/spec.md: có closed_as mà thiếu mốc `closed:`")
 
         covers = set(ID_IN_LIST_RE.findall(fm.get("covers", "")))
         if not covers:

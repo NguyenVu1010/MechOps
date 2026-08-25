@@ -4,6 +4,10 @@ date: 2026-08-23T06:37:17Z
 kind: discovery
 outcome: kept
 title: "4 skill co frontmatter YAML khong hop le ma van chay"
+decision: ""
+reversible: yes
+deciders: agent
+revisit:
 area: flow
 milestone: M1
 test_ids: []

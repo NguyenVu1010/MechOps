@@ -12,6 +12,9 @@ ngoài Docker (ADR 0010). Gõ `make` trực tiếp sẽ báo "command not found"
 - `./mo verify` — **lệnh DUY NHẤT cập nhật tracker** (gen + lint + vet + test -race)
 - `./mo status` — tracker + sinh `docs/PROGRESS.md`
 - `./mo trace` — ID mồ côi, skill lệch ADR, milestone lệch catalog
+- `./mo steer plan triage` — **plan/quyết định đang treo, cần người quyết**
+  (mồ côi nhánh · bị vượt · treo gate người · im lặng 14 ngày · trùng id sau merge).
+  Trả lời bằng `plan keep --why` hoặc `plan abandon --why`, không bỏ qua.
 - `./mo doctor` — môi trường thiếu gì
 - `./mo hw-test ID=OTA-04 TESTER=<tên>` — biên bản test phần cứng (**người** chạy)
 
@@ -41,11 +44,17 @@ ngoài Docker (ADR 0010). Gõ `make` trực tiếp sẽ báo "command not found"
 
 - Sửa `docs/test-status.*` hoặc `docs/PROGRESS.md` trực tiếp — máy ghi, hook chặn.
   Bị chặn là chủ đích, không phải lỗi cần lách.
-- Sửa mục **đã đóng** trong `.steering/entries/`, gõ tay `.steering/INDEX.md` hoặc
-  `JOURNAL.md`. Nhật ký bất biến như ADR: sai thì viết mục mới trỏ ngược về mục cũ.
-  (`plans/<x>/` sửa được tới khi `./mo steer plan freeze`.)
+- Sửa mục **đã đóng** trong `.steering/entries/`, gõ tay `.steering/INDEX.md`,
+  `HISTORY.md` hoặc `JOURNAL.md`. Nhật ký bất biến như ADR: sai thì viết mục mới
+  trỏ ngược về mục cũ. (`plans/<x>/` sửa được tới khi `./mo steer plan freeze`.)
+- **Xoá thư mục trong `.steering/plans/`** — kể cả plan sai, plan bỏ dở, plan chỉ
+  viết được nửa spec. Bỏ một hướng đi là `./mo steer plan abandon <x> --why "..."`:
+  thư mục giữ nguyên, lý do vào nhật ký. Đã mất một plan vì xoá (`S0007`).
 - `t.Skip` hoặc comment test để CI xanh. Test đỏ = việc chưa xong.
 - Đổi nghĩa / xoá field trong `specs/` — breaking change, quyết định của founder.
+- Sửa file trong `specs/` mà plan chưa khai trong `contract:` — CI đỏ
+  (`./mo check-contract`). Khai thêm: `./mo steer plan contract <x> --add <path> --why "..."`.
+  Việc không thuộc feature nào thì khai bằng trailer `Contract: <path> — <lý do>`.
 - Thêm thư viện ngoài stack đã chốt mà chưa có ADR.
 - Tick test [H] — chỉ người chạy `./mo hw-test` mới tick được.
 - Merge vào `main` (constitution #9).

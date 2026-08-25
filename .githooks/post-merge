@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# post-merge: sinh lại file máy-sinh của .steering/ sau khi merge.
+#
+# INDEX.md và HISTORY.md là HÀM của entries/ + plans/. Merge hai nhánh cùng thêm
+# mục thì hai file này chắc chắn lệch — và vì chúng là bảng markdown, `git merge`
+# hoặc dựng conflict marker giữa bảng (không đọc được), hoặc nối hai nửa bảng
+# (sai mà im lặng). `.gitattributes` đặt `merge=ours` để merge không đụng vào
+# chúng, rồi hook này dựng lại từ nguồn — cách duy nhất cho ra kết quả đúng.
+#
+# Không chặn merge bao giờ: merge đã xong rồi mới tới lượt hook này.
+set -u
+cd "$(git rev-parse --show-toplevel)" || exit 0
+
+if ! docker version >/dev/null 2>&1; then
+  printf '\033[33m.steering: Docker chưa chạy nên INDEX/HISTORY chưa sinh lại.\033[0m\n' >&2
+  printf '           Chạy tay khi Docker lên:  ./mo steer index\n' >&2
+  exit 0
+fi
+
+bash ./mo steer index >/dev/null 2>&1 || exit 0
+bash ./mo steer plan triage --cache .claude/cache/triage.txt --quiet >/dev/null 2>&1 || true
+
+if ! git diff --quiet -- .steering/ 2>/dev/null; then
+  printf '\033[36m.steering: INDEX/HISTORY đã sinh lại sau merge — commit kèm:\033[0m\n' >&2
+  git diff --name-only -- .steering/ | sed 's/^/           /' >&2
+fi
+
+# Plan của nhánh vừa merge có thể đang treo — hỏi ngay, đừng để trôi.
+n=$(wc -l < .claude/cache/triage.txt 2>/dev/null | tr -d ' ')
+if [ "${n:-0}" -gt 0 ]; then
+  printf '\033[33m.steering: %s thứ đang cần người quyết — ./mo steer plan triage\033[0m\n' "$n" >&2
+fi
+exit 0

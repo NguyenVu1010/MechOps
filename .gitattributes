@@ -16,6 +16,18 @@ Makefile    text eol=lf
 mo          text eol=lf
 .githooks/* text eol=lf
 
+# File máy sinh: merge KHÔNG được trộn. Chúng là hàm của .steering/entries/ +
+# plans/, nên trộn hai nửa bảng markdown chỉ cho ra một bảng sai mà không ai thấy.
+# `merge=ours` giữ nguyên bản của nhánh đang đứng, rồi hook post-merge dựng lại
+# từ nguồn. Driver "ours" được bật trong `./mo hooks-install`.
+.steering/INDEX.md            merge=ours
+.steering/HISTORY.md          merge=ours
+.steering/plans/*/STATUS.md   merge=ours
+.steering/plans/*/JOURNAL.md  merge=ours
+docs/test-status.md           merge=ours
+docs/test-status.json         merge=ours
+docs/PROGRESS.md              merge=ours
+
 *.png binary
 *.jpg binary
 *.pem binary

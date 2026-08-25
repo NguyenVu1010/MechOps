@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# post-checkout: đổi nhánh thì nói ngay plan nào của nhánh này đang treo.
+#
+# Đây là đúng thời điểm người ta cần biết: vừa quay lại một nhánh cũ, chưa nhớ nó
+# đang làm gì, và plan bị bỏ giữa đường trông hệt plan đang làm dở.
+#
+# CỐ TÌNH không sinh lại INDEX/HISTORY ở đây: checkout chạy rất nhiều lần (kể cả
+# `git checkout -- <file>`), làm bẩn cây làm việc mỗi lần đổi nhánh thì hook này
+# sẽ bị người ta tắt. Sinh lại là việc của post-merge.
+set -u
+[ "${3:-0}" = "1" ] || exit 0          # 1 = đổi nhánh; 0 = checkout file lẻ
+cd "$(git rev-parse --show-toplevel)" || exit 0
+
+cache=.claude/cache/triage.txt
+if docker version >/dev/null 2>&1; then
+  bash ./mo steer plan triage --cache "$cache" --quiet >/dev/null 2>&1 || true
+fi
+[ -s "$cache" ] || exit 0
+
+printf '\033[33m.steering — %s thứ đang cần người quyết trên nhánh %s:\033[0m\n' \
+  "$(wc -l < "$cache" | tr -d ' ')" "$(git rev-parse --abbrev-ref HEAD)" >&2
+cut -d: -f1 "$cache" | sed 's/^/  ▸ /' >&2
+printf '  Chi tiết + lệnh chọn: ./mo steer plan triage\n' >&2
+exit 0

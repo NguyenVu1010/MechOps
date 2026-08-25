@@ -42,6 +42,21 @@ jobs:
           git diff --exit-code docs/test-status.md \
             || { echo "::error::docs/test-status.md lệch so với .json — file này chỉ do track.py ghi."; exit 1; }
 
+      # .steering/INDEX.md và HISTORY.md là hàm của entries/ + plans/. Merge hai
+      # nhánh cùng thêm mục thì chúng lệch, và `merge=ours` cố tình không trộn —
+      # nên phải có chốt chặn bắt lúc chưa ai sinh lại (hook post-merge làm việc đó
+      # nhưng chỉ chạy khi Docker đang lên).
+      - name: .steering không lệch
+        run: |
+          python3 tools/steering/steer.py index >/dev/null
+          git diff --exit-code -- .steering/ \
+            || { echo "::error::.steering/INDEX.md hoặc HISTORY.md lệch so với entries/plans — chạy ./mo steer index rồi commit lại."; exit 1; }
+
+      # Không chặn merge: "plan im lặng 14 ngày" là việc của người quyết, không
+      # phải lỗi của PR. Nhưng phải hiện ra ở chỗ người duyệt đang nhìn.
+      - name: Plan đang treo (thông tin)
+        run: python3 tools/steering/steer.py plan triage || true
+
       # Chốt chặn 2 — mỗi commit khai test ID nó chạm (catalog quy tắc #1).
       - name: Commit message khai Implements
         run: python3 tools/checks/commit_msg.py --range origin/${{ github.base_ref }}..HEAD
@@ -49,6 +64,11 @@ jobs:
       # Chốt chặn 3 — contract: mọi test vector validate được với schema.
       - name: Validate contract
         run: ./mo --native gen
+
+      # ...và file hợp đồng nào đổi thì phải có plan khai trước. `plan.md` mục 1
+      # là văn xuôi; đây là chỗ nó thành kiểm được.
+      - name: specs/ đổi phải có plan khai trước
+        run: python3 tools/checks/contract_touch.py --range origin/${{ github.base_ref }}..HEAD
 
       # Chốt chặn 4 — lint, gồm depguard (constitution #7) và forbidigo (slog).
       - name: Lint

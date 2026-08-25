@@ -23,6 +23,13 @@ STATUS_JSON = os.path.join(ROOT, "docs", "test-status.json")
 sys.path.insert(0, os.path.join(ROOT, "tools", "testtrack"))
 from track import CATALOG, milestone_num, milestone_of  # noqa: E402
 
+sys.path.insert(0, os.path.join(ROOT, "tools", "steering"))
+try:
+    from steer import triage                            # noqa: E402
+except Exception:                                       # steer hỏng không được chặn chẩn đoán
+    def triage():
+        return []
+
 # Dấu hiệu "chỗ này chưa ai điền" — template sinh ra đều dùng dạng <...>.
 PLACEHOLDER = re.compile(r"<(điền|viết|liệt kê|mô tả|state|quan sát|file|câu hỏi|ID)")
 
@@ -89,6 +96,10 @@ def plans():
             # Trước đây next.py suy từ placeholder — đoán, không phải đọc.
             "frozen": all(v == "frozen" for v in
                           (st["spec"], st["plan"], st["testcases"], st["tasks"])),
+            # Plan đã đóng — frozen (xong) HOẶC abandoned (bỏ) — không còn là việc
+            # đang làm. Thiếu vế abandoned thì `./mo next` sẽ chỉ agent đi làm tiếp
+            # một hướng đã bị vứt bỏ, tức là đúng cái sai mà .steering/ ra để chống.
+            "closed": bool(fm.get("closed")),
             "ready": all(st[k] in ("locked", "frozen")
                          for k in ("spec", "plan", "testcases", "tasks")),
             "todo": {k: bool(PLACEHOLDER.search(body_of(os.path.join(d, f"{k}.md"))))
@@ -121,13 +132,28 @@ def decide():
                 "--outcome kept|reverted --why \"...\" --promoted \"...\"",
                 why + [f"mục {ids} chưa đóng — không biết chuyện gì đã xảy ra"])
 
+    # Plan treo phải hỏi TRƯỚC khi mở việc mới. Không hỏi thì mỗi phiên lại đẻ thêm
+    # một plan, và cái cũ trôi ra khỏi tầm nhìn mà không ai từng quyết bỏ nó.
+    stuck = triage()
+    if stuck:
+        it = stuck[0]
+        return ("CẦN NGƯỜI QUYẾT — " + it["what"],
+                it["choices"][0],
+                why + [f"{len(stuck)} thứ đang treo: "
+                       + "; ".join(x["what"] for x in stuck[:3]),
+                       "· " + "; ".join(it["why"]),
+                       "chọn cách khác: " + " | ".join(it["choices"][1:]) if len(it["choices"]) > 1
+                       else "xem đủ: ./mo steer plan triage"])
+
     if ms is None:
         return ("XONG", "không còn việc — mở milestone mới hoặc rà lại catalog", why)
 
-    active = [p for p in ps if not p["frozen"] and p["milestone"] == f"M{ms}"]
+    active = [p for p in ps if not p["closed"] and not p["frozen"]
+              and p["milestone"] == f"M{ms}"]
     if not active:
         same = [p for p in ps if p["milestone"] == f"M{ms}"]
-        note = (f"mọi plan của M{ms} đã frozen") if same else f"chưa có plan nào cho M{ms}"
+        note = (f"mọi plan của M{ms} đã đóng (frozen/abandoned)"
+                if same else f"chưa có plan nào cho M{ms}")
         return ("VÒNG NGOÀI — chưa có plan",
                 f'./mo steer plan new m{ms}-<ten> --milestone M{ms} --covers "{nxt}" '
                 '--adr <NNNN> --requirements "docs/product/..."',
