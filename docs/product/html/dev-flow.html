@@ -1,0 +1,934 @@
+<title>Bộ máy kỷ luật MechOps</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+:root{
+  --paper:#ECEFF1;
+  --surface:#FBFCFC;
+  --sunk:#E2E7EA;
+  --ink:#161C22;
+  --ink-2:#465059;
+  --ink-3:#6D7982;
+  --rule:#C8D2D8;
+  --rule-soft:#DCE3E7;
+
+  --gate:#A33320;      /* chặn cứng — máy từ chối, exit khác 0 */
+  --gate-bg:#F6E7E3;
+  --warn:#9A6B0C;      /* cảnh báo — đi tiếp được */
+  --warn-bg:#F6EEDC;
+  --human:#3B4B8A;     /* gate người — cố tình không tự động */
+  --human-bg:#E6E9F4;
+  --steel:#2F6580;     /* luồng dữ liệu, cấu trúc */
+  --steel-bg:#E1ECF1;
+
+  --shadow:0 1px 0 rgba(22,28,34,.04), 0 8px 24px -18px rgba(22,28,34,.5);
+  --maxw:1180px;
+  --prose:68ch;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#11161A;
+    --surface:#171E23;
+    --sunk:#1D262C;
+    --ink:#DFE6EA;
+    --ink-2:#A3B0B9;
+    --ink-3:#7C8A93;
+    --rule:#2C383F;
+    --rule-soft:#232D33;
+
+    --gate:#E5806B;
+    --gate-bg:#2E1B17;
+    --warn:#DCA645;
+    --warn-bg:#2B2213;
+    --human:#93A0DC;
+    --human-bg:#1B1F32;
+    --steel:#77A9C4;
+    --steel-bg:#152630;
+
+    --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 28px -20px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#11161A;
+  --surface:#171E23;
+  --sunk:#1D262C;
+  --ink:#DFE6EA;
+  --ink-2:#A3B0B9;
+  --ink-3:#7C8A93;
+  --rule:#2C383F;
+  --rule-soft:#232D33;
+
+  --gate:#E5806B;
+  --gate-bg:#2E1B17;
+  --warn:#DCA645;
+  --warn-bg:#2B2213;
+  --human:#93A0DC;
+  --human-bg:#1B1F32;
+  --steel:#77A9C4;
+  --steel-bg:#152630;
+
+  --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 28px -20px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Source Serif 4",Georgia,"Times New Roman",serif;
+  font-size:17px;
+  line-height:1.68;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px 96px}
+
+/* ---------- masthead ---------- */
+.mast{
+  border-bottom:1px solid var(--rule);
+  padding:56px 0 30px;
+  margin-bottom:44px;
+}
+.eyebrow{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);
+  display:flex;flex-wrap:wrap;gap:10px 18px;margin-bottom:22px;
+}
+h1{
+  font-family:Archivo,"Helvetica Neue",Arial,sans-serif;
+  font-weight:700;font-size:clamp(2.4rem,6vw,4.1rem);
+  line-height:1.02;letter-spacing:-.026em;margin:0 0 18px;
+  text-wrap:balance;
+}
+.lede{font-size:1.16rem;color:var(--ink-2);max-width:62ch;margin:0}
+.lede strong{color:var(--ink);font-weight:600}
+
+/* ---------- legend ---------- */
+.legend{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(216px,1fr));
+  gap:1px;background:var(--rule-soft);
+  border:1px solid var(--rule);margin:34px 0 0;
+}
+.legend > div{background:var(--surface);padding:14px 16px}
+.legend b{
+  display:flex;align-items:center;gap:9px;
+  font-family:"JetBrains Mono",monospace;font-size:11.5px;font-weight:700;
+  letter-spacing:.11em;text-transform:uppercase;margin-bottom:5px;
+}
+.legend b::before{content:"";width:16px;height:4px;border-radius:1px;background:currentColor;flex:none}
+.legend p{margin:0;font-size:14px;color:var(--ink-2);line-height:1.5}
+.k-gate{color:var(--gate)} .k-warn{color:var(--warn)}
+.k-human{color:var(--human)} .k-steel{color:var(--steel)}
+
+/* ---------- nav ---------- */
+nav{
+  position:sticky;top:0;z-index:20;
+  background:var(--paper);
+  background:color-mix(in srgb, var(--paper) 90%, transparent);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--rule);
+  margin:44px 0 0;
+}
+nav ol{
+  list-style:none;margin:0 auto;padding:9px 28px;max-width:var(--maxw);
+  display:flex;gap:4px;overflow-x:auto;
+  font-family:"JetBrains Mono",monospace;font-size:11.5px;
+}
+nav a{
+  display:block;padding:5px 9px;white-space:nowrap;
+  color:var(--ink-3);text-decoration:none;border-radius:2px;
+}
+nav a:hover{color:var(--ink);background:var(--sunk)}
+nav a:focus-visible{outline:2px solid var(--steel);outline-offset:1px}
+
+/* ---------- sections ---------- */
+section{padding-top:64px}
+.sec-head{display:flex;gap:18px;align-items:baseline;margin-bottom:8px}
+.sec-num{
+  font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:700;
+  color:var(--steel);letter-spacing:.08em;flex:none;
+  padding-top:.5em;
+}
+h2{
+  font-family:Archivo,sans-serif;font-weight:600;
+  font-size:clamp(1.5rem,3.2vw,2.05rem);line-height:1.14;
+  letter-spacing:-.018em;margin:0;text-wrap:balance;
+}
+h3{
+  font-family:Archivo,sans-serif;font-weight:600;font-size:1.08rem;
+  letter-spacing:-.008em;margin:38px 0 10px;
+}
+p,ul,ol{max-width:var(--prose)}
+p{margin:0 0 16px}
+ul,ol{margin:0 0 16px;padding-left:1.25em}
+li{margin-bottom:7px}
+.sub{color:var(--ink-2)}
+strong{font-weight:600}
+
+code{
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:.855em;background:var(--sunk);
+  padding:.12em .38em;border-radius:2px;
+  color:var(--ink);
+  word-break:break-word;
+}
+h2 code,h3 code{font-size:.8em}
+
+pre{
+  font-family:"JetBrains Mono",monospace;font-size:13px;line-height:1.62;
+  background:var(--surface);border:1px solid var(--rule);
+  padding:16px 18px;overflow-x:auto;margin:0 0 22px;
+  color:var(--ink);
+}
+pre b{color:var(--steel);font-weight:500}
+pre i{color:var(--ink-3);font-style:normal}
+
+/* ---------- callout ---------- */
+.note{
+  border-left:3px solid var(--steel);background:var(--surface);
+  padding:14px 18px;margin:0 0 22px;max-width:var(--prose);
+  font-size:15.5px;line-height:1.6;
+}
+.note p{margin:0}
+.note p + p{margin-top:9px}
+.note.gate{border-color:var(--gate)}
+.note.human{border-color:var(--human)}
+.note.warn{border-color:var(--warn)}
+.note .tag{
+  display:block;font-family:"JetBrains Mono",monospace;
+  font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--steel);margin-bottom:6px;font-weight:700;
+}
+.note.gate .tag{color:var(--gate)}
+.note.human .tag{color:var(--human)}
+.note.warn .tag{color:var(--warn)}
+
+/* ---------- tables ---------- */
+.scroll{overflow-x:auto;margin:0 0 24px;border:1px solid var(--rule);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:640px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+th{
+  font-family:"JetBrains Mono",monospace;font-size:10.5px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);
+  background:var(--sunk);white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:0}
+td code{background:transparent;padding:0}
+.mono{font-family:"JetBrains Mono",monospace;font-size:13px;white-space:nowrap}
+.pill{
+  display:inline-block;font-family:"JetBrains Mono",monospace;
+  font-size:10.5px;font-weight:700;letter-spacing:.07em;
+  padding:2px 7px;border-radius:2px;white-space:nowrap;
+}
+.p-gate{background:var(--gate-bg);color:var(--gate)}
+.p-warn{background:var(--warn-bg);color:var(--warn)}
+.p-human{background:var(--human-bg);color:var(--human)}
+.p-steel{background:var(--steel-bg);color:var(--steel)}
+
+/* ---------- figures ---------- */
+figure{margin:30px 0 30px;max-width:100%}
+.fig-frame{overflow-x:auto;border:1px solid var(--rule);background:var(--surface);padding:22px 20px}
+figure svg{display:block;width:100%;min-width:660px;height:auto}
+figcaption{
+  font-size:14px;color:var(--ink-2);line-height:1.55;
+  margin-top:12px;max-width:var(--prose);
+}
+figcaption b{
+  font-family:"JetBrains Mono",monospace;font-size:10.5px;font-weight:700;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);
+  display:block;margin-bottom:4px;
+}
+svg text{font-family:"JetBrains Mono",ui-monospace,monospace}
+.n-box{fill:var(--surface);stroke:currentColor;stroke-width:1.2}
+.n-sunk{fill:var(--sunk);stroke:var(--rule);stroke-width:1.2}
+.t{fill:var(--ink);font-size:12.5px}
+.t-sm{fill:var(--ink-3);font-size:10.5px;letter-spacing:.04em}
+.t-lbl{fill:var(--ink-2);font-size:11px}
+.ln{stroke:currentColor;stroke-width:1.3;fill:none}
+.ln-soft{stroke:var(--rule);stroke-width:1.2;fill:none}
+.dash{stroke-dasharray:5 4}
+
+/* ---------- footer ---------- */
+footer{
+  margin-top:80px;padding-top:26px;border-top:1px solid var(--rule);
+  font-size:14px;color:var(--ink-3);max-width:var(--prose);
+}
+footer code{font-size:.86em}
+
+@media (max-width:640px){
+  body{font-size:16px}
+  .wrap{padding:0 18px 72px}
+  nav ol{padding:9px 18px}
+  .sec-head{gap:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow">
+    <span>MechOps</span><span>Tài liệu vào việc</span><span>Đọc một lượt ≈ 25 phút</span>
+  </div>
+  <h1>Bộ máy kỷ luật MechOps</h1>
+  <p class="lede">Repo này không tin vào thiện chí. Mọi luật quan trọng đều có <strong>một chốt chặn máy</strong> đứng sau, và tài liệu này chỉ ra từng cái: nó là gì, nó chạy lúc nào, và nó bắt được chuyện gì mà mắt người bỏ sót. Đọc từ đơn vị nhỏ nhất — một test ID — rồi lớn dần ra tới CI.</p>
+
+  <div class="legend">
+    <div><b class="k-gate">Chặn cứng</b><p>Máy từ chối. Lệnh thoát khác 0, PR đỏ, không đi tiếp được.</p></div>
+    <div><b class="k-warn">Cảnh báo</b><p>Máy nói ra nhưng vẫn cho đi tiếp. Là thước đo, không phải lỗi.</p></div>
+    <div><b class="k-human">Gate người</b><p>Cố tình không tự động hoá. Constitution #9.</p></div>
+    <div><b class="k-steel">Luồng dữ liệu</b><p>Cái gì sinh ra cái gì. Không ai gõ tay vào giữa.</p></div>
+  </div>
+</header>
+
+<nav>
+  <ol>
+    <li><a href="#s1">01 · Test ID</a></li>
+    <li><a href="#s2">02 · Bốn nguồn sự thật</a></li>
+    <li><a href="#s3">03 · Ai được ghi file nào</a></li>
+    <li><a href="#s4">04 · Đường đi của một tick</a></li>
+    <li><a href="#s5">05 · <code>mo</code> và Makefile</a></li>
+    <li><a href="#s6">06 · Ba lớp cưỡng chế</a></li>
+    <li><a href="#s7">07 · Vòng ngoài</a></li>
+    <li><a href="#s8">08 · Vòng trong</a></li>
+    <li><a href="#s9">09 · Làm sai thì sao</a></li>
+    <li><a href="#s10">10 · Bắt đầu</a></li>
+  </ol>
+</nav>
+
+<!-- ══════════════════ 01 ══════════════════ -->
+<section id="s1">
+  <div class="sec-head"><span class="sec-num">01</span><h2>Nguyên tử của hệ thống: một test ID</h2></div>
+
+  <p>Mọi thứ trong repo này treo lên một danh sách <strong><span data-check="catalog-count">49</span> test ID</strong>. Không có ID thì không có spec để viết, không có test để chạy, không có gì để tick, và <code>commit-msg</code> sẽ chặn commit của bạn.</p>
+
+  <p>Một ID trông như <code>PRV-01</code>: ba chữ cái nhóm chức năng, hai chữ số thứ tự. Nó sống ở hai nơi và <strong>hai nơi đó phải khớp nhau</strong> — <code>docs/product/05-test-catalog.md</code> cho người đọc, và <code>CATALOG</code> trong <code>tools/testtrack/track.py</code> cho máy dùng. Lệch một bên là lỗi CI.</p>
+
+  <h3>Ba tầng, ba người chạy khác nhau</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Tầng</th><th>Nghĩa</th><th>Chạy bằng</th><th>Ai tick được</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">[U]</td><td>Unit — trong bộ nhớ, mili giây</td><td class="mono">./mo verify</td><td>máy</td></tr>
+      <tr><td class="mono">[I]</td><td>Integration — cần MQTT/Postgres thật</td><td class="mono">./mo test-integration</td><td>máy (nightly)</td></tr>
+      <tr><td class="mono">[H]</td><td>Hardware — Jetson/Pi thật, rút điện thật</td><td class="mono">./mo hw-test</td><td><span class="pill p-human">người</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Sợi dây nối test Go với tracker là một quy ước đặt tên</h3>
+  <p>Đây là chi tiết nhỏ nhất mà cũng quan trọng nhất trong toàn hệ thống. Không có cấu hình, không có bảng ánh xạ — chỉ là <strong>tên hàm</strong>:</p>
+
+<pre>func TestPRV01_EnrollTokenHopLe(t *testing.T) {
+         <b>▔▔▔▔▔</b>
+           <i>└── track.py quét tên này, rút ra</i>  <b>PRV-01</b>  <i>rồi tick đúng ô đó</i>
+
+<i>Cũng nhận cả subtest:</i>
+    t.Run(<b>"PRV-01 token hợp lệ"</b>, func(t *testing.T){ ... })</pre>
+
+  <div class="note gate">
+    <span class="tag">Chặn cứng</span>
+    <p>Đặt sai tên thì test vẫn chạy, vẫn xanh, nhưng <strong>không ô nào được tick</strong> và <code>track.py</code> in ra <code>Không có ID nào khớp trong output</code>. Không có gì hỏng — chỉ là công sức của bạn không được ghi nhận ở đâu cả.</p>
+  </div>
+
+  <p class="sub">Ngược lại cũng được canh: <code>trace.py</code> đọc mã nguồn, và nếu một ID đang <code>✅</code> trong tracker mà không còn hàm test nào mang ID đó — nghĩa là ai đó xoá hoặc đổi tên test sau khi nó đã xanh — thì đó là <strong>lỗi</strong>. Test <code>[H]</code> được loại khỏi luật này vì chúng vốn không có test Go.</p>
+</section>
+
+<!-- ══════════════════ 02 ══════════════════ -->
+<section id="s2">
+  <div class="sec-head"><span class="sec-num">02</span><h2>Bốn nguồn sự thật, đọc theo thứ tự</h2></div>
+
+  <p>Khi hai file nói khác nhau, file nào đúng? Repo trả lời sẵn, và thứ tự này không thương lượng.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>#</th><th>Nguồn</th><th>Trả lời câu hỏi</th><th>Ai được sửa</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="mono">1</td>
+        <td class="mono">specs/</td>
+        <td><strong>Hợp đồng</strong> — AsyncAPI + JSON Schema cho MQTT và Probe API. Code lệch spec là bug của <em>code</em>.</td>
+        <td><span class="pill p-human">founder</span> · đổi nghĩa field = breaking change</td>
+      </tr>
+      <tr>
+        <td class="mono">2</td>
+        <td class="mono">05-test-catalog.md</td>
+        <td>Định nghĩa <strong>"xong"</strong>. Mỗi tính năng gắn test ID.</td>
+        <td>người, kèm sửa <code>track.py</code> cùng commit</td>
+      </tr>
+      <tr>
+        <td class="mono">3</td>
+        <td class="mono">docs/test-status.*</td>
+        <td><strong>Trạng thái</strong>. Dòng đầu trả lời thẳng "việc tiếp theo là gì".</td>
+        <td><span class="pill p-gate">chỉ máy</span></td>
+      </tr>
+      <tr>
+        <td class="mono">4</td>
+        <td class="mono">docs/adr/</td>
+        <td><strong>Vì sao</strong> mọi thứ như hiện tại. Bất biến.</td>
+        <td>người — đổi ý thì viết ADR mới supersede</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note human">
+    <span class="tag">Gate người</span>
+    <p>Ba việc <strong>cố tình</strong> không có tự động hoá nào làm được: merge vào <code>main</code>, sửa nghĩa field trong <code>specs/</code>, và tick test <code>[H]</code>. Đó là constitution #9. Nếu bạn thấy một cách để tự động hoá chúng, đó là dấu hiệu bạn đang đi sai đường chứ không phải phát hiện ra chỗ tối ưu.</p>
+  </div>
+</section>
+
+<!-- ══════════════════ 03 ══════════════════ -->
+<section id="s3">
+  <div class="sec-head"><span class="sec-num">03</span><h2>Ai được ghi file nào</h2></div>
+
+  <p>Câu hỏi đầu tiên mọi dev mới đều gặp: <em>"tôi sửa file này mà bị chặn, sao vậy?"</em> Câu trả lời là những file đó có chủ, và chủ của chúng là một script.</p>
+
+  <figure>
+    <div class="fig-frame">
+      <svg viewBox="0 0 880 372" role="img" aria-label="Bốn công cụ ghi bốn nhóm file máy sinh; đường ghi tay của người và agent bị hook guard-tracker chặn lại">
+        <defs>
+          <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" style="fill:var(--steel)"/>
+          </marker>
+          <marker id="a1g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" style="fill:var(--gate)"/>
+          </marker>
+        </defs>
+
+        <text x="40" y="26" class="t-sm">CÔNG CỤ (MÁY)</text>
+        <text x="560" y="26" class="t-sm">FILE NÓ SỞ HỮU</text>
+
+        <g style="color:var(--steel)">
+          <rect x="40" y="44" width="200" height="42" rx="2" class="n-box"/>
+          <text x="56" y="70" class="t">track.py</text>
+          <rect x="40" y="106" width="200" height="42" rx="2" class="n-box"/>
+          <text x="56" y="132" class="t">progress.py</text>
+          <rect x="40" y="168" width="200" height="42" rx="2" class="n-box"/>
+          <text x="56" y="194" class="t">steer.py</text>
+          <rect x="40" y="230" width="200" height="42" rx="2" class="n-box"/>
+          <text x="56" y="256" class="t">go test -race -json</text>
+
+          <line x1="248" y1="65"  x2="552" y2="65"  class="ln" marker-end="url(#a1)"/>
+          <line x1="248" y1="127" x2="552" y2="127" class="ln" marker-end="url(#a1)"/>
+          <line x1="248" y1="189" x2="552" y2="189" class="ln" marker-end="url(#a1)"/>
+          <line x1="248" y1="251" x2="552" y2="251" class="ln" marker-end="url(#a1)"/>
+        </g>
+
+        <text x="400" y="58"  class="t-lbl" text-anchor="middle">./mo verify</text>
+        <text x="400" y="120" class="t-lbl" text-anchor="middle">./mo status</text>
+        <text x="400" y="182" class="t-lbl" text-anchor="middle">./mo steer index</text>
+        <text x="400" y="244" class="t-lbl" text-anchor="middle">./mo verify</text>
+
+        <g style="color:var(--rule)">
+          <rect x="560" y="44" width="284" height="42" rx="2" class="n-sunk"/>
+          <rect x="560" y="106" width="284" height="42" rx="2" class="n-sunk"/>
+          <rect x="560" y="168" width="284" height="42" rx="2" class="n-sunk"/>
+          <rect x="560" y="230" width="284" height="42" rx="2" class="n-sunk"/>
+        </g>
+        <text x="576" y="61" class="t">docs/test-status.json</text>
+        <text x="576" y="78" class="t-sm">+ .md (ảnh chụp, sinh lại được)</text>
+        <text x="576" y="132" class="t">docs/PROGRESS.md</text>
+        <text x="576" y="185" class="t">.steering/INDEX.md · HISTORY.md</text>
+        <text x="576" y="202" class="t-sm">+ STATUS.md · JOURNAL.md của plan</text>
+        <text x="576" y="256" class="t">docs/evidence/ci/…/raw.jsonl</text>
+
+        <g style="color:var(--gate)">
+          <rect x="40" y="300" width="200" height="42" rx="2" class="n-box"/>
+          <text x="56" y="320" class="t">Bạn · Claude</text>
+          <text x="56" y="336" class="t-sm">Edit / Write</text>
+          <line x1="248" y1="321" x2="392" y2="321" class="ln" marker-end="url(#a1g)"/>
+          <line x1="404" y1="288" x2="404" y2="358" class="ln dash"/>
+          <path d="M416,310 L436,332 M436,310 L416,332" class="ln"/>
+          <text x="452" y="317" class="t" style="fill:var(--gate)">guard-tracker.sh → deny</text>
+          <text x="452" y="335" class="t-sm">kèm câu giải thích và lệnh đúng phải dùng</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption><b>Hình 1 — quyền ghi</b>Bốn nhóm file này chỉ có máy ghi. Hook <code>guard-tracker.sh</code> chặn mọi Edit/Write vào chúng, kể cả của agent AI. Và CI kiểm lại một lần nữa bằng cách sinh lại rồi <code>git diff --exit-code</code> — nên sửa bằng editor bên ngoài cũng không lọt.</figcaption>
+  </figure>
+
+  <div class="note">
+    <span class="tag">Vì sao gắt vậy</span>
+    <p>Cách làm thông thường là ai đó tick một ô, hoặc kéo card sang cột Done. Cả hai đều là <strong>lời khai</strong>. Người khai chân thành, nhưng lời khai và thực tế trôi xa nhau ngay tuần thứ hai — test bị skip, test bị xoá lúc refactor, ô vẫn xanh.</p>
+    <p>Đảo chiều thì hết chuyện đó: <strong>không ai được tick; ô chỉ xanh khi có một test thật vừa chạy xanh và log thô được lưu lại.</strong></p>
+  </div>
+</section>
+
+<!-- ══════════════════ 04 ══════════════════ -->
+<section id="s4">
+  <div class="sec-head"><span class="sec-num">04</span><h2>Đường đi của một tick, từ đầu tới cuối</h2></div>
+
+  <p>Đây là mạch chính của hệ thống. Nếu chỉ đọc một hình trong tài liệu này, đọc hình dưới.</p>
+
+  <figure>
+    <div class="fig-frame">
+      <svg viewBox="0 0 980 458" role="img" aria-label="Từ một hàm test Go, qua go test và track.py, sinh ra tracker, bằng chứng thô và bản markdown, rồi nuôi các bảng tiến độ; trace.py đối chiếu ngược lại">
+        <defs>
+          <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" style="fill:var(--steel)"/>
+          </marker>
+          <marker id="a2g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" style="fill:var(--gate)"/>
+          </marker>
+        </defs>
+
+        <g style="color:var(--steel)">
+          <rect x="20" y="30" width="220" height="44" rx="2" class="n-box"/>
+          <text x="34" y="50" class="t">func TestPRV01_…</text>
+          <text x="34" y="66" class="t-sm">bạn viết, trong *_test.go</text>
+
+          <line x1="248" y1="52" x2="292" y2="52" class="ln" marker-end="url(#a2)"/>
+          <rect x="300" y="30" width="150" height="44" rx="2" class="n-box"/>
+          <text x="314" y="57" class="t">./mo verify</text>
+
+          <line x1="458" y1="52" x2="502" y2="52" class="ln" marker-end="url(#a2)"/>
+          <rect x="510" y="30" width="212" height="44" rx="2" class="n-box"/>
+          <text x="524" y="57" class="t">go test -race -json</text>
+
+          <line x1="730" y1="52" x2="774" y2="52" class="ln" marker-end="url(#a2)"/>
+          <rect x="782" y="30" width="176" height="44" rx="2" class="n-box"/>
+          <text x="796" y="50" class="t">track.py</text>
+          <text x="796" y="66" class="t-sm">rút ID từ tên test</text>
+
+          <path d="M870,78 L870,110 L150,110 L150,148" class="ln" marker-end="url(#a2)"/>
+          <path d="M470,110 L470,148" class="ln" marker-end="url(#a2)"/>
+          <path d="M790,110 L790,148" class="ln" marker-end="url(#a2)"/>
+        </g>
+
+        <text x="620" y="96" class="t-lbl" text-anchor="middle">chỉ ghi khi có ID ĐỔI trạng thái</text>
+
+        <g style="color:var(--rule)">
+          <rect x="30" y="156" width="240" height="58" rx="2" class="n-sunk"/>
+          <rect x="350" y="156" width="240" height="58" rx="2" class="n-sunk"/>
+          <rect x="670" y="156" width="240" height="58" rx="2" class="n-sunk"/>
+        </g>
+        <text x="44" y="178" class="t-sm" style="fill:var(--steel)">SỰ THẬT</text>
+        <text x="44" y="197" class="t">docs/test-status.json</text>
+        <text x="364" y="178" class="t-sm" style="fill:var(--steel)">BẰNG CHỨNG THÔ</text>
+        <text x="364" y="197" class="t">evidence/ci/…/raw.jsonl</text>
+        <text x="684" y="178" class="t-sm" style="fill:var(--steel)">ẢNH CHỤP</text>
+        <text x="684" y="197" class="t">docs/test-status.md</text>
+
+        <g style="color:var(--steel)">
+          <path d="M150,222 L150,252 L830,252" class="ln"/>
+          <path d="M110,252 L110,286" class="ln" marker-end="url(#a2)"/>
+          <path d="M350,252 L350,286" class="ln" marker-end="url(#a2)"/>
+          <path d="M590,252 L590,286" class="ln" marker-end="url(#a2)"/>
+          <path d="M830,252 L830,286" class="ln" marker-end="url(#a2)"/>
+
+          <rect x="30" y="294" width="160" height="52" rx="2" class="n-box"/>
+          <text x="42" y="314" class="t">progress.py</text>
+          <text x="42" y="331" class="t-sm">PROGRESS.md</text>
+
+          <rect x="270" y="294" width="160" height="52" rx="2" class="n-box"/>
+          <text x="282" y="314" class="t">statusline</text>
+          <text x="282" y="331" class="t-sm">M1 0/16 · next PRV-01</text>
+
+          <rect x="510" y="294" width="160" height="52" rx="2" class="n-box"/>
+          <text x="522" y="314" class="t">SessionStart</text>
+          <text x="522" y="331" class="t-sm">context đầu phiên</text>
+
+          <rect x="750" y="294" width="160" height="52" rx="2" class="n-box"/>
+          <text x="762" y="314" class="t">./mo next</text>
+          <text x="762" y="331" class="t-sm">việc tiếp theo</text>
+        </g>
+
+        <g style="color:var(--gate)">
+          <rect x="290" y="386" width="400" height="52" rx="2" class="n-box"/>
+          <text x="304" y="406" class="t">trace.py — đối chiếu mã nguồn ↔ tracker</text>
+          <text x="304" y="423" class="t-sm">ID ✅ mà không còn test mang ID đó = LỖI, CI đỏ</text>
+          <path d="M20,52 L8,52 L8,412 L282,412" class="ln dash" marker-end="url(#a2g)"/>
+          <path d="M150,214 L150,368 L490,368 L490,378" class="ln dash" marker-end="url(#a2g)"/>
+        </g>
+        <text x="16" y="392" class="t-sm" style="fill:var(--gate)">đọc</text>
+      </svg>
+    </div>
+    <figcaption><b>Hình 2 — mạch tick</b>Một chiều đi từ tên hàm tới ô ✅, và một chiều đối chiếu ngược lại. Chiều ngược mới là chỗ giữ cho tracker không nói dối: nó bắt được ca test đã bị xoá mà ô vẫn xanh — điều mà <code>track.py</code> không thể tự thấy, vì nó chỉ nhìn thấy output của lần chạy hiện tại.</figcaption>
+  </figure>
+
+  <h3>Ba file đầu ra, ba vai khác nhau</h3>
+  <ul>
+    <li><strong><code>test-status.json</code> là sự thật.</strong> Máy đọc, máy ghi.</li>
+    <li><strong><code>raw.jsonl</code> là bằng chứng.</strong> Toàn bộ output gốc kèm timestamp và commit hash — không phải bản tóm tắt. Sáu tháng sau, câu hỏi "PRV-01 xanh từ bao giờ, trên code nào" tra được chứ không phải nhớ được.</li>
+    <li><strong><code>test-status.md</code> là ảnh chụp.</strong> Sinh lại được bất cứ lúc nào; gõ tay vào đó là vô nghĩa.</li>
+  </ul>
+</section>
+
+<!-- ══════════════════ 05 ══════════════════ -->
+<section id="s5">
+  <div class="sec-head"><span class="sec-num">05</span><h2><code>./mo</code> quyết định chạy ở đâu, Makefile quyết định làm gì</h2></div>
+
+  <p>Máy dev không cài Go, không cài Python, không cài lint — toolchain sống trong một container Docker (ADR-0010). Nên <code>./mo</code> tồn tại để trả lời <strong>đúng một câu hỏi</strong>: lệnh này chạy trong container hay chạy thẳng trên máy?</p>
+
+<pre>./mo --native verify   →  chạy thẳng trên host          <i>(CI dùng đường này)</i>
+./mo verify            →  docker compose exec  ~200ms   <i>(container đang ấm)</i>
+                       →  docker compose run --rm  1-2s <i>(chưa lên, có cảnh báo)</i></pre>
+
+  <p>Toàn bộ tri thức nghiệp vụ nằm ở chỗ khác: <em>verify gồm những bước gì</em> ở <code>Makefile</code>, <em>cấm import gì</em> ở <code>.golangci.yml</code>, <em>test nào ứng ID nào</em> ở <code>track.py</code>. <code>mo</code> không biết gì trong số đó.</p>
+
+  <div class="note">
+    <span class="tag">Vì sao tách</span>
+    <p>Repo có ba loại người chạy cùng một lệnh: bạn trên Windows chỉ có Docker, CI trên Linux có sẵn toolchain, và agent AI gọi qua hook. Không có <code>mo</code> thì ba đường đó sẽ trôi xa nhau, và khi CI đỏ mà máy bạn xanh sẽ không ai biết vì code sai hay vì môi trường khác.</p>
+  </div>
+
+  <h3><code>./mo verify</code> — sáu tầng, dừng ở tầng đầu tiên sai</h3>
+<pre>check-merge   <i>còn conflict marker trong file đã tracked?</i>       ✗ → DỪNG
+gen           <i>mọi testvector validate được với JSON Schema?</i>   ✗ → DỪNG
+lint          <i>golangci-lint: depguard, forbidigo, gosec…</i>       ✗ → DỪNG
+gofmt -l .    <i>file nào lệch định dạng chuẩn?</i>                   ✗ → DỪNG
+go vet        <i>lỗi biên dịch được nhưng chắc chắn sai?</i>          ✗ → DỪNG
+go test -race -json | track.py     <i>chạy test, ghi tracker</i></pre>
+
+  <p>Thứ tự là cố ý: rẻ trước, đắt sau. Và quan hệ phụ thuộc <code>verify: check-merge gen lint</code> nghĩa là <strong>không thể tick một test nào mà bỏ qua lint</strong> — không có đường vòng.</p>
+
+  <h3>Hai linter biến nguyên tắc thành lỗi</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Linter</th><th>Cưỡng chế</th><th>Nội dung</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">depguard</td><td>constitution #7</td><td>Trong <code>agent/**</code> cấm import <code>…/server</code>, và ngược lại. Chiều phụ thuộc là <code>server → protocol ← agent</code>, không bao giờ ngược.</td></tr>
+      <tr><td class="mono">forbidigo</td><td>quy ước log</td><td>Cấm <code>fmt.Print*</code> và <code>log.Print*</code>. Khi robot ngoài hiện trường hỏng, thứ duy nhất bạn có là log — <code>slog</code> bắt log ra JSON có trường, tra được.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="sub">Đây là lý do repo tách ba Go module riêng (<code>protocol</code>, <code>agent</code>, <code>server</code>) thay vì gộp một: tách module biến chiều phụ thuộc thành thứ <em>khai báo được và kiểm được</em>.</p>
+</section>
+
+<!-- ══════════════════ 06 ══════════════════ -->
+<section id="s6">
+  <div class="sec-head"><span class="sec-num">06</span><h2>Ba lớp cưỡng chế, và cái nào sống sót sau <code>git clone</code></h2></div>
+
+  <p>Đây là phần dễ hiểu sai nhất, và cũng là phần quyết định repo có an toàn với một dev mới hay không.</p>
+
+  <figure>
+    <div class="fig-frame">
+      <svg viewBox="0 0 900 392" role="img" aria-label="Sau git clone, lớp Claude Code có ngay, lớp git hook vắng mặt im lặng cho tới khi session-start tự bật, lớp CI chỉ chạy khi mở pull request">
+        <defs>
+          <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" style="fill:var(--steel)"/>
+          </marker>
+          <marker id="a3n" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" style="fill:var(--rule)"/>
+          </marker>
+        </defs>
+
+        <g style="color:var(--rule)">
+          <rect x="24" y="24" width="152" height="38" rx="2" class="n-sunk"/>
+        </g>
+        <text x="38" y="48" class="t">git clone</text>
+        <line x1="100" y1="62" x2="100" y2="88" class="ln-soft" marker-end="url(#a3n)"/>
+
+        <g style="color:var(--steel)">
+          <rect x="24" y="90" width="852" height="80" rx="2" class="n-box"/>
+          <text x="42" y="116" class="t">Lớp 1 · Claude Code — <tspan style="font-size:11.5px">.claude/settings.json</tspan></text>
+          <text x="42" y="137" class="t-sm">CLAUDE.md vào context · guard-tracker chặn Edit/Write · SessionStart nói việc tiếp theo · record-risky ghi lệnh phá hoại</text>
+          <text x="42" y="156" class="t-sm">Chạy bằng bash thuần, không cần Docker.</text>
+        </g>
+        <rect x="742" y="104" width="118" height="22" rx="2" fill="var(--steel-bg)"/>
+        <text x="752" y="119" class="t-sm" style="fill:var(--steel);font-weight:700">CÓ NGAY</text>
+
+        <g style="color:var(--gate)">
+          <rect x="24" y="192" width="852" height="88" rx="2" class="n-box"/>
+          <text x="42" y="218" class="t">Lớp 2 · Git hook — <tspan style="font-size:11.5px">.githooks/</tspan></text>
+          <text x="42" y="239" class="t-sm">commit-msg kiểm Implements · post-merge sinh lại .steering · post-checkout báo plan treo · merge driver ours</text>
+          <text x="42" y="258" class="t-sm" style="fill:var(--gate)">core.hooksPath là config LOCAL — git clone không mang theo, và không ai được báo.</text>
+        </g>
+        <rect x="676" y="206" width="184" height="22" rx="2" fill="var(--gate-bg)"/>
+        <text x="686" y="221" class="t-sm" style="fill:var(--gate);font-weight:700">VẮNG MẶT IM LẶNG</text>
+
+        <g style="color:var(--steel)">
+          <path d="M470,170 L470,186" class="ln" marker-end="url(#a3)"/>
+        </g>
+        <text x="482" y="184" class="t-sm" style="fill:var(--steel)">SessionStart tự bật cả hai config</text>
+
+        <g style="color:var(--human)">
+          <rect x="24" y="302" width="852" height="66" rx="2" class="n-box"/>
+          <text x="42" y="328" class="t">Lớp 3 · CI — <tspan style="font-size:11.5px">.github/workflows/pr.yml</tspan></text>
+          <text x="42" y="349" class="t-sm">9 chốt chặn chặn được PR, chạy lại toàn bộ bằng ./mo --native. Hook local có thể bị --no-verify; CI thì không.</text>
+        </g>
+        <rect x="666" y="316" width="194" height="22" rx="2" fill="var(--human-bg)"/>
+        <text x="676" y="331" class="t-sm" style="fill:var(--human);font-weight:700">CHỈ KHI MỞ PR</text>
+      </svg>
+    </div>
+    <figcaption><b>Hình 3 — sau khi clone</b>Lớp Claude Code đi theo repo nên có hiệu lực ngay. Lớp git hook thì không, vì <code>.git/</code> không thể versioned — đó là chốt chặn cố ý của git: nếu clone mang theo mã tự chạy thì clone một repo lạ đồng nghĩa với cho nó chạy code trên máy mình. Vì thế <code>session-start.sh</code> tự bật công tắc và báo lên đầu context.</figcaption>
+  </figure>
+
+  <div class="note warn">
+    <span class="tag">Còn một lỗ chưa bịt được bằng code</span>
+    <p>CI chỉ chạy khi có pull request. <code>git push</code> thẳng lên nhánh tích hợp đi qua toàn bộ chốt chặn, và <strong>không dòng code nào trong repo ngăn được</strong>. Bịt bằng branch protection trên GitHub: require a pull request + require status check <code>verify</code>.</p>
+  </div>
+
+  <h3><span data-check="ci-steps">13</span> bước có tên trong CI — chín trong số đó chặn được PR</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>#</th><th>Bước</th><th>Bắt được gì</th><th>Chặn?</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">1</td><td class="mono">Cài golangci-lint</td><td>Phiên bản đọc từ <code>.golangci-version</code> — cùng file container dev dùng, nên hai bên không lệch được</td><td><span class="pill p-steel">cài đặt</span></td></tr>
+      <tr><td class="mono">2</td><td class="mono">Không còn conflict marker</td><td>Merge nửa vời lọt vào commit</td><td><span class="pill p-gate">chặn</span></td></tr>
+      <tr><td class="mono">3</td><td class="mono">Tracker không bị sửa tay</td><td>Sinh lại <code>.md</code> từ <code>.json</code> rồi <code>git diff --exit-code</code></td><td><span class="pill p-gate">chặn</span></td></tr>
+      <tr><td class="mono">4</td><td class="mono">.steering không lệch</td><td>INDEX/HISTORY chưa sinh lại sau merge</td><td><span class="pill p-gate">chặn</span></td></tr>
+      <tr><td class="mono">5</td><td class="mono">Plan đang treo</td><td>Plan im lặng 14 ngày, mồ côi nhánh, bị vượt</td><td><span class="pill p-warn">thông tin</span></td></tr>
+      <tr><td class="mono">6</td><td class="mono">Commit message khai Implements</td><td>Quét <strong>mọi</strong> commit của PR, không chỉ commit cuối</td><td><span class="pill p-gate">chặn</span></td></tr>
+      <tr><td class="mono">7</td><td class="mono">Validate contract</td><td>Testvector không khớp JSON Schema</td><td><span class="pill p-gate">chặn</span></td></tr>
+      <tr><td class="mono">8</td><td class="mono">specs/ đổi phải có plan khai trước</td><td>Đổi hợp đồng mà plan chưa khai trong <code>contract:</code></td><td><span class="pill p-gate">chặn</span></td></tr>
+      <tr><td class="mono">9</td><td class="mono">Lint</td><td>depguard, forbidigo, gosec, errcheck…</td><td><span class="pill p-gate">chặn</span></td></tr>
+      <tr><td class="mono">10</td><td class="mono">Verify</td><td>gofmt, vet, <code>go test -race</code>, sinh evidence</td><td><span class="pill p-gate">chặn</span></td></tr>
+      <tr><td class="mono">11</td><td class="mono">Trace</td><td>ID mồ côi, skill lệch ADR, <code>t.Skip</code>, plan bị xoá</td><td><span class="pill p-gate">chặn</span></td></tr>
+      <tr><td class="mono">12</td><td class="mono">Sinh PROGRESS.md</td><td>+ upload toàn bộ <code>docs/evidence/</code> làm artifact</td><td><span class="pill p-steel">báo cáo</span></td></tr>
+      <tr><td class="mono">13</td><td class="mono">Đăng PR digest</td><td>Comment tóm tắt cho người duyệt: tick mới, link evidence, <code>specs/</code> đã đổi</td><td><span class="pill p-steel">báo cáo</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <span class="tag">Tài liệu này được máy canh</span>
+    <p>Hai con số ở trên — <span data-check="catalog-count">49</span> test ID và <span data-check="ci-steps">13</span> bước CI — cùng mọi lệnh <code>./mo …</code> và mọi đường dẫn file được nhắc trong trang này đều bị <code>trace.py</code> đối chiếu với repo thật ở mỗi PR. Thêm một bước CI mà quên sửa trang này thì CI đỏ.</p>
+  </div>
+</section>
+
+<!-- ══════════════════ 07 ══════════════════ -->
+<section id="s7">
+  <div class="sec-head"><span class="sec-num">07</span><h2>Vòng ngoài — từ ý tưởng tới danh sách task</h2></div>
+
+  <p>Trước khi viết dòng Go đầu tiên, một tính năng phải đi qua năm artifact trong <code>.steering/plans/&lt;tên&gt;/</code>. Chúng bị khoá <strong>tuần tự</strong>: chưa chốt cái trước thì không mở được cái sau.</p>
+
+  <figure>
+    <div class="fig-frame">
+      <svg viewBox="0 0 940 300" role="img" aria-label="Vòng đời một plan: spec, gate người ở clarify, rồi lần lượt khoá spec, plan, testcases, tasks, cuối cùng đóng băng; nhánh abandoned giữ nguyên thư mục">
+        <defs>
+          <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" style="fill:var(--steel)"/>
+          </marker>
+          <marker id="a4h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" style="fill:var(--human)"/>
+          </marker>
+          <marker id="a4g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" style="fill:var(--gate)"/>
+          </marker>
+          <marker id="a4w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" style="fill:var(--warn)"/>
+          </marker>
+        </defs>
+
+        <g style="color:var(--steel)">
+          <rect x="20" y="60" width="120" height="46" rx="2" class="n-box"/>
+          <text x="34" y="80" class="t">spec.md</text>
+          <text x="34" y="97" class="t-sm">covers, adr</text>
+          <line x1="148" y1="83" x2="184" y2="83" class="ln" marker-end="url(#a4)"/>
+        </g>
+
+        <g style="color:var(--human)">
+          <rect x="192" y="52" width="150" height="62" rx="2" class="n-box"/>
+          <text x="206" y="74" class="t">clarify.md</text>
+          <text x="206" y="91" class="t-sm" style="fill:var(--human)">GATE NGƯỜI · DỪNG</text>
+          <text x="206" y="107" class="t-sm">founder trả lời từng câu</text>
+          <line x1="350" y1="83" x2="386" y2="83" class="ln" marker-end="url(#a4h)"/>
+        </g>
+
+        <g style="color:var(--steel)">
+          <rect x="394" y="60" width="118" height="46" rx="2" class="n-box"/>
+          <text x="408" y="80" class="t">plan.md</text>
+          <text x="408" y="97" class="t-sm">kiến trúc</text>
+          <line x1="520" y1="83" x2="552" y2="83" class="ln" marker-end="url(#a4)"/>
+
+          <rect x="560" y="60" width="136" height="46" rx="2" class="n-box"/>
+          <text x="574" y="80" class="t">testcases.md</text>
+          <text x="574" y="97" class="t-sm">mỗi ID một mục</text>
+          <line x1="704" y1="83" x2="736" y2="83" class="ln" marker-end="url(#a4)"/>
+
+          <rect x="744" y="60" width="118" height="46" rx="2" class="n-box"/>
+          <text x="758" y="80" class="t">tasks.md</text>
+          <text x="758" y="97" class="t-sm">bẻ nhỏ</text>
+        </g>
+
+        <text x="80"  y="42" class="t-sm" style="fill:var(--ink-3)">KHOÁ 1</text>
+        <text x="440" y="42" class="t-sm" style="fill:var(--ink-3)">KHOÁ 2</text>
+        <text x="606" y="42" class="t-sm" style="fill:var(--ink-3)">KHOÁ 3</text>
+        <text x="790" y="42" class="t-sm" style="fill:var(--ink-3)">KHOÁ 4</text>
+
+        <g style="color:var(--steel)">
+          <path d="M862,83 L900,83 L900,150 L482,150" class="ln" marker-end="url(#a4)"/>
+          <rect x="352" y="130" width="126" height="40" rx="2" class="n-box"/>
+          <text x="366" y="155" class="t">frozen</text>
+        </g>
+
+        <g style="color:var(--gate)">
+          <path d="M415,174 L415,210" class="ln dash" marker-end="url(#a4g)"/>
+          <rect x="286" y="214" width="260" height="52" rx="2" class="n-box"/>
+          <text x="300" y="235" class="t">abandoned</text>
+          <text x="300" y="252" class="t-sm">thư mục Ở LẠI · lý do vào nhật ký</text>
+          <text x="558" y="238" class="t-sm" style="fill:var(--gate)">./mo steer plan abandon &lt;x&gt; --why "…"</text>
+          <text x="558" y="255" class="t-sm">xoá thư mục = LỖI CI (trace.py)</text>
+        </g>
+
+        <g style="color:var(--warn)">
+          <path d="M120,116 L120,240 L272,240" class="ln dash" marker-end="url(#a4w)"/>
+          <text x="20" y="200" class="t-sm" style="fill:var(--warn)">im lặng 14 ngày</text>
+          <text x="20" y="216" class="t-sm">→ triage hỏi</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption><b>Hình 4 — vòng đời plan</b>Bốn khoá theo đúng thứ tự này, vì mỗi cái được xây trên cái trước. <code>clarify.md</code> là gate người: agent <strong>không bao giờ</strong> được tự trả lời thay founder — đã từng xảy ra một lần và được ghi lại thành mục <code>S0007</code>.</figcaption>
+  </figure>
+
+  <p><strong>Không biết đang ở bước nào thì gõ <code>/dev</code>.</strong> Nó chạy <code>./mo next</code>, đọc tracker + trạng thái plan + nhánh git + mục nhật ký đang mở, rồi nói thẳng bước tiếp theo và gọi đúng skill. Không cần thuộc sơ đồ trên.</p>
+</section>
+
+<!-- ══════════════════ 08 ══════════════════ -->
+<section id="s8">
+  <div class="sec-head"><span class="sec-num">08</span><h2>Vòng trong — mỗi test ID một phiên</h2></div>
+
+  <figure>
+    <div class="fig-frame">
+      <svg viewBox="0 0 920 372" role="img" aria-label="Vòng trong TDD: task, đỏ, xanh, gọn, verify, audit, commit, pr; ba lối rẽ là troubleshoot, bug-to-test và steering">
+        <defs>
+          <marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" style="fill:var(--steel)"/>
+          </marker>
+          <marker id="a5g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" style="fill:var(--gate)"/>
+          </marker>
+        </defs>
+
+        <g style="color:var(--steel)">
+          <rect x="20" y="46" width="112" height="42" rx="2" class="n-box"/>
+          <text x="34" y="72" class="t">/task &lt;ID&gt;</text>
+          <line x1="140" y1="67" x2="168" y2="67" class="ln" marker-end="url(#a5g)"/>
+        </g>
+
+        <g style="color:var(--gate)">
+          <rect x="176" y="46" width="96" height="42" rx="2" class="n-box"/>
+          <text x="196" y="72" class="t">ĐỎ</text>
+          <line x1="280" y1="67" x2="308" y2="67" class="ln" marker-end="url(#a5)" style="color:var(--steel)"/>
+        </g>
+
+        <g style="color:var(--steel)">
+          <rect x="316" y="46" width="96" height="42" rx="2" class="n-box"/>
+          <text x="332" y="72" class="t">XANH</text>
+          <line x1="420" y1="67" x2="448" y2="67" class="ln" marker-end="url(#a5)"/>
+
+          <rect x="456" y="46" width="96" height="42" rx="2" class="n-box"/>
+          <text x="474" y="72" class="t">GỌN</text>
+          <line x1="560" y1="67" x2="588" y2="67" class="ln" marker-end="url(#a5)"/>
+
+          <rect x="596" y="46" width="130" height="42" rx="2" class="n-box"/>
+          <text x="610" y="72" class="t">./mo verify</text>
+          <line x1="734" y1="67" x2="762" y2="67" class="ln" marker-end="url(#a5)"/>
+
+          <rect x="770" y="46" width="120" height="42" rx="2" class="n-box"/>
+          <text x="784" y="72" class="t">/audit</text>
+
+          <path d="M830,96 L830,124 L120,124 L120,152" class="ln" marker-end="url(#a5)"/>
+          <rect x="60" y="160" width="130" height="42" rx="2" class="n-box"/>
+          <text x="74" y="186" class="t">commit</text>
+          <line x1="198" y1="181" x2="228" y2="181" class="ln" marker-end="url(#a5)"/>
+          <rect x="236" y="160" width="110" height="42" rx="2" class="n-box"/>
+          <text x="250" y="186" class="t">/pr</text>
+          <line x1="354" y1="181" x2="384" y2="181" class="ln" marker-end="url(#a5)"/>
+          <rect x="392" y="160" width="150" height="42" rx="2" class="n-box"/>
+          <text x="406" y="186" class="t">CI · 9 chốt chặn</text>
+        </g>
+
+        <text x="196" y="110" class="t-sm" style="fill:var(--gate)">phải đỏ vì</text>
+        <text x="196" y="124" class="t-sm" style="fill:var(--gate)">lý do ĐÚNG</text>
+        <text x="608" y="110" class="t-sm">tracker + evidence</text>
+        <text x="782" y="110" class="t-sm">2 kiểm toán viên</text>
+        <text x="60" y="220" class="t-sm">hook commit-msg: phải có Implements: &lt;ID&gt;</text>
+
+        <g style="color:var(--human)">
+          <line x1="550" y1="181" x2="580" y2="181" class="ln" marker-end="url(#a5)"/>
+          <rect x="588" y="160" width="302" height="42" rx="2" class="n-box"/>
+          <text x="602" y="180" class="t">GATE NGƯỜI · founder duyệt và merge</text>
+          <text x="602" y="196" class="t-sm">≈5 phút: tick mới, 1 link evidence, kết luận kiểm toán</text>
+        </g>
+
+        <text x="20" y="272" class="t-sm" style="fill:var(--ink-3)">LỐI RẼ — gặp thì rẽ ngay, đừng cố đi thẳng</text>
+        <g style="color:var(--warn)">
+          <rect x="20" y="286" width="282" height="58" rx="2" class="n-box"/>
+          <text x="34" y="307" class="t">troubleshoot</text>
+          <text x="34" y="324" class="t-sm">test đỏ không rõ vì sao</text>
+          <text x="34" y="339" class="t-sm">→ tái hiện trước, sửa sau</text>
+
+          <rect x="318" y="286" width="282" height="58" rx="2" class="n-box"/>
+          <text x="332" y="307" class="t">bug-to-test</text>
+          <text x="332" y="324" class="t-sm">phát hiện bug</text>
+          <text x="332" y="339" class="t-sm">→ thêm test ID mới TRƯỚC khi sửa</text>
+
+          <rect x="616" y="286" width="282" height="58" rx="2" class="n-box"/>
+          <text x="630" y="307" class="t">steering</text>
+          <text x="630" y="324" class="t-sm">bỏ một hướng / giả định sai</text>
+          <text x="630" y="339" class="t-sm">→ ghi .steering ngay lúc đổi hướng</text>
+        </g>
+      </svg>
+    </div>
+    <figcaption><b>Hình 5 — vòng trong</b>Bước ĐỎ không phải thủ tục: test phải đỏ vì <em>hành vi chưa có</em>, không phải vì code chưa biên dịch được. Một test đỏ sai lý do sẽ xanh vì lý do sai, và không chứng minh được gì.</figcaption>
+  </figure>
+
+  <div class="note gate">
+    <span class="tag">Chặn cứng</span>
+    <p><code>t.Skip</code> bị cấm tuyệt đối và giờ là <strong>lỗi CI</strong>. Test đỏ nghĩa là việc chưa xong — đó là thông tin thật; bọc <code>t.Skip</code> là xoá thông tin đó đi rồi báo cáo màu xanh. Không có cách khai miễn trừ.</p>
+  </div>
+</section>
+
+<!-- ══════════════════ 09 ══════════════════ -->
+<section id="s9">
+  <div class="sec-head"><span class="sec-num">09</span><h2>Làm sai thì chuyện gì xảy ra</h2></div>
+
+  <p>Bảng tra nhanh. Cột cuối là cột quan trọng nhất: một chốt chặn bắt lỗi <em>tức thì</em> rẻ hơn nhiều so với một chốt chặn bắt lỗi lúc mở PR, khi bạn đã đi được mười commit.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Bạn làm</th><th>Ai bắt</th><th>Lộ ra khi nào</th></tr></thead>
+    <tbody>
+      <tr><td>Bảo Claude sửa <code>test-status.md</code></td><td class="mono">guard-tracker.sh</td><td><span class="pill p-steel">tức thì</span></td></tr>
+      <tr><td>Tự mở editor sửa <code>test-status.md</code></td><td class="mono">CI bước 2</td><td>lúc mở PR</td></tr>
+      <tr><td>Commit thiếu <code>Implements:</code></td><td class="mono">commit-msg</td><td><span class="pill p-steel">tức thì</span> — nếu hook đã bật</td></tr>
+      <tr><td>Đặt tên test sai quy ước</td><td class="mono">track.py</td><td>tức thì, nhưng chỉ là một dòng nhắc</td></tr>
+      <tr><td>Xoá test đã xanh</td><td class="mono">trace.py</td><td><span class="pill p-gate">CI đỏ</span></td></tr>
+      <tr><td>Dùng <code>t.Skip</code></td><td class="mono">trace.py</td><td><span class="pill p-gate">CI đỏ</span></td></tr>
+      <tr><td>Xoá một thư mục trong <code>.steering/plans/</code></td><td class="mono">trace.py</td><td><span class="pill p-gate">CI đỏ</span> — nếu plan đã từng vào git</td></tr>
+      <tr><td>Commit kèm conflict marker</td><td class="mono">check-merge</td><td>ngay ở <code>./mo verify</code></td></tr>
+      <tr><td>Đổi file trong <code>specs/</code> mà plan chưa khai</td><td class="mono">contract_touch.py</td><td>lúc mở PR</td></tr>
+      <tr><td><code>agent/</code> import <code>server/</code></td><td class="mono">depguard</td><td>ngay ở <code>./mo lint</code></td></tr>
+      <tr><td>Chạy <code>rm -rf</code>, <code>git reset --hard</code></td><td class="mono">record-risky.sh</td><td>không chặn — <strong>ghi lại</strong> vào <code>.steering/</code></td></tr>
+      <tr><td><code>git push</code> thẳng lên nhánh tích hợp</td><td>chỉ branch protection</td><td><span class="pill p-warn">không có chốt chặn nào trong code</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <span class="tag">Về hook record-risky</span>
+    <p>Nó <strong>không chặn</strong> lệnh phá hoại, chỉ ghi lại. Chặn thì người ta tìm đường vòng; ghi thì hành động vẫn xảy ra nhưng để lại dấu vết. Đây là loại hành động đáng truy vết nhất và cũng là loại ít ai tự nguyện khai nhất — nên nó không được để cho tự thuật.</p>
+  </div>
+</section>
+
+<!-- ══════════════════ 10 ══════════════════ -->
+<section id="s10">
+  <div class="sec-head"><span class="sec-num">10</span><h2>Bắt đầu</h2></div>
+
+<pre>git clone git@github.com:NguyenVu1010/MechOps.git &amp;&amp; cd MechOps
+git checkout develop
+
+./mo doctor      <i># in ra thiếu gì — chỉ cần Docker Desktop</i>
+./mo up          <i># dựng container dev, lần đầu vài phút</i>
+./mo status      <i># tracker + PROGRESS.md + plan đang treo</i>
+
+/dev             <i># không biết làm gì tiếp thì gõ đúng cái này</i></pre>
+
+  <p>Không cần cài Go, Python hay golangci-lint — chúng sống trong image Docker. <code>./mo hooks-install</code> không còn bắt buộc phải nhớ: mở một phiên Claude Code là <code>session-start.sh</code> tự bật giúp, và nói cho bạn biết là nó vừa bật.</p>
+
+  <h3>Ba câu hỏi hay gặp nhất</h3>
+  <ul>
+    <li><strong>"Việc tiếp theo là gì?"</strong> — dòng đầu <code>docs/test-status.md</code>, hoặc <code>./mo next</code>.</li>
+    <li><strong>"Vì sao chỗ này lại làm thế?"</strong> — <code>docs/adr/</code> cho quyết định lớn, <code>.steering/</code> cho quyết định nhỏ và các hướng đã bỏ.</li>
+    <li><strong>"Tôi bị chặn, làm sao đi tiếp?"</strong> — đọc câu giải thích của chốt chặn; nó luôn kèm lệnh đúng phải dùng. Bị chặn là chủ đích, không phải lỗi cần lách.</li>
+  </ul>
+
+  <footer>
+    Tài liệu này mô tả trạng thái repo tại nhánh <code>develop</code>. Nguồn gốc của mọi luật ở đây: <code>constitution.md</code> (9 nguyên tắc bất biến), <code>CLAUDE.md</code> (luật làm việc), <code>docs/adr/</code> (vì sao). Khi tài liệu này và code nói khác nhau, <strong>code đúng</strong> — và đó là lỗi của tài liệu.
+  </footer>
+</section>
+
+</div>
