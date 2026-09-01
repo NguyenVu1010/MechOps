@@ -57,7 +57,7 @@ case "$cmd" in
     ;;
 
   # --- việc thật, uỷ quyền cho Makefile ---
-  gen|lint|verify|test-integration|trace|fmt-dirty)
+  gen|lint|verify|test-integration|trace|fmt-dirty|check-merge)
     mk "$cmd"
     ;;
   status)
@@ -138,8 +138,9 @@ case "$cmd" in
     sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'
     echo
     echo "Lệnh: up down shell doctor hooks-install"
-    echo "      gen lint verify test-integration trace"
-    echo "      status progress digest check-commit steer hw-test fmt-dirty"
+    echo "      gen lint verify test-integration trace check-merge"
+    echo "      next status progress digest steer hw-test fmt-dirty"
+    echo "      check-commit check-contract"
     echo
     echo "Steering: ./mo steer plan triage        plan/quyết định đang treo"
     echo "          ./mo steer plan keep <x>      trả lời: vẫn làm tiếp"
