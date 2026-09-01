@@ -29,7 +29,8 @@ def load():
     if not os.path.exists(STATUS_JSON):
         sys.exit("chưa có docs/test-status.json — chạy ./mo verify trước.")
     with open(STATUS_JSON, encoding="utf-8") as f:
-        return json.load(f)["tests"]
+        st = json.load(f)
+    return st["tests"], st.get("updated") or "?"
 
 
 def bar(done, total, width=20):
@@ -65,7 +66,7 @@ def velocity(tests):
     return counts
 
 
-def render(tests):
+def render(tests, updated):
     total = len(CATALOG)
     done = sum(1 for t in CATALOG if tests[t]["status"] == "pass")
     groups = by_milestone(tests)
@@ -77,7 +78,12 @@ def render(tests):
         "# MechOps — Tiến độ",
         "",
         "> ⚙️ Sinh bởi `tools/report/progress.py` từ `docs/test-status.json` — **không sửa tay**.",
-        f"> Cập nhật: {dt.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')} · "
+        # Lấy mốc TỪ tracker, không phải giờ hiện tại. Đóng dấu "bây giờ" thì mỗi
+        # lần `./mo status` lại sinh một diff chỉ khác timestamp — không mang nội
+        # dung nào, mà vẫn nằm chình ình trong `git status` để người ta commit theo
+        # phản xạ. File này là hàm thuần của test-status.json, nên nó phải đổi đúng
+        # lúc tracker đổi, không sớm hơn. (track.py cũng vừa được sửa cùng lý do.)
+        f"> Cập nhật: {updated} · "
         f"**{done}/{total}** ({100 * done // total}%)",
         "",
     ]
@@ -151,8 +157,8 @@ def main():
     p.add_argument("--quiet", action="store_true")
     a = p.parse_args()
 
-    tests = load()
-    md, (done, total, open_n, nxt, mdone, mtotal) = render(tests)
+    tests, updated = load()
+    md, (done, total, open_n, nxt, mdone, mtotal) = render(tests, updated)
 
     with open(OUT_MD, "w", encoding="utf-8") as f:
         f.write(md)
