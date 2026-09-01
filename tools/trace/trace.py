@@ -23,7 +23,7 @@ import os, re, subprocess, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, os.path.join(ROOT, "tools", "testtrack"))
-from track import CATALOG, GROUPS, MILESTONE  # một nguồn sự thật, không parse lại catalog md
+from track import CATALOG, GROUPS, MILESTONE, norm_id  # một nguồn sự thật, không parse lại catalog md
 
 CATALOG_MD = os.path.join("docs", "product", "05-test-catalog.md")
 
@@ -69,13 +69,30 @@ def collect_covers():
     return found
 
 
+TEST_FUNC_RE = re.compile(r"func\s+(Test\w+)\s*\(")
+SUBTEST_RE = re.compile(r't\.Run\(\s*"([^"]*)"')
+
+
 def collect_test_ids():
-    """ID xuất hiện trong tên test Go: TestOTA07_... -> OTA-07."""
+    """ID xuất hiện trong test Go: `func TestOTA07_...` HOẶC `t.Run("OTA-07 ...")`.
+
+    Phải nhận dạng GIỐNG HỆT track.py, và đó là lý do nó import norm_id thay vì tự
+    viết regex. track.py tick tracker bằng cách quét toàn bộ tên test mà `go test`
+    in ra — gồm cả phần subtest. Chỗ này trước đây chỉ nhìn tên hàm, nên một test
+    gộp-subtest (cách chính docstring của track.py khuyến khích) sẽ tick được tracker
+    mà vẫn bị báo "chưa có test Go" mãi mãi: hai công cụ nói hai điều trái nhau về
+    cùng một ID, và triệu chứng đó gần như không đoán ra được nguyên nhân.
+
+    Chỉ quét khai báo hàm và chuỗi trong t.Run — KHÔNG quét cả file. Quét cả file
+    thì một ID nhắc trong comment cũng thành "đã có test".
+    """
     ids = set()
-    pat = re.compile(r"func\s+Test([A-Z]{3})(\d{2})\w*\(")
     for path in walk_files(".", ("_test.go",)):
-        for m in pat.finditer(open(path, encoding="utf-8").read()):
-            ids.add(f"{m.group(1)}-{m.group(2)}")
+        text = open(path, encoding="utf-8").read()
+        for m in list(TEST_FUNC_RE.finditer(text)) + list(SUBTEST_RE.finditer(text)):
+            tid = norm_id(m.group(1))
+            if tid and tid in CATALOG:
+                ids.add(tid)
     return ids
 
 
@@ -579,6 +596,22 @@ def main():
         warns.append(f"{len(no_spec)}/{len(CATALOG)} ID chưa có covers trong spec: {', '.join(sorted(no_spec)[:8])}{'…' if len(no_spec) > 8 else ''}")
     if no_test:
         warns.append(f"{len(no_test)}/{len(CATALOG)} ID chưa có test Go: {', '.join(sorted(no_test)[:8])}{'…' if len(no_test) > 8 else ''}")
+
+    # Tracker xanh mà test biến mất = tracker đang nói dối, im lặng.
+    # track.py chỉ cập nhật những ID CÓ MẶT trong output `go test`, nên xoá hoặc đổi
+    # tên một test đã xanh thì ô đó giữ ✅ vĩnh viễn. track.py không tự thấy được
+    # (nó chỉ có output), còn chỗ này đọc được mã nguồn — nên chốt chặn thuộc về đây.
+    # LỖI chứ không phải cảnh báo: "chưa có test" là bình thường ở M0, còn "đã tick
+    # rồi mà test biến mất" thì không có ngữ cảnh nào biện minh được.
+    # Test [H] không có test Go — người tick bằng biên bản `./mo hw-test` — nên loại ra.
+    for tid, ok in sorted(_tracker_pass().items()):
+        if not ok or tid not in CATALOG or CATALOG[tid][0] == "H" or tid in test_ids:
+            continue
+        errors.append(
+            f"{tid} đang ✅ trong tracker nhưng không còn test Go nào mang ID này — "
+            f"test bị xoá hoặc đổi tên sau khi tick. Khôi phục test (đúng tên "
+            f"Test{tid.replace('-', '')}_...); nếu ID này thật sự bỏ thì gỡ khỏi "
+            f"{CATALOG_MD} và CATALOG của track.py trong cùng một commit.")
 
     # skill <-> ADR  (statuses đã lấy ở đầu main, dùng chung với check_plans)
     for path in walk_files(SKILL_DIR, ("SKILL.md",)):

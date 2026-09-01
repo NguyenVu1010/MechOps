@@ -248,15 +248,20 @@ def main():
         if not (a.result and a.evidence):
             sys.exit("--hw cần cả --result và --evidence")
         changed = set_hw(state, a.hw, a.result, a.evidence)
-    if a.render and not (a.go_json or a.hw):
-        # `--render` = render lại .md TỪ .json, không đụng gì tới .json.
-        # save() đặt updated/commit mới nên mỗi lần --render lại sinh một diff;
-        # bước "Tracker không bị sửa tay" của CI dùng chính lệnh này để chứng
-        # minh .md khớp .json, nên nó phải idempotent — nếu không CI đỏ oan
-        # ngay PR đầu tiên và người ta sẽ học cách bỏ qua nó.
-        render(state)
-    else:
+    # Ghi .json CHỈ khi có ID thật sự đổi trạng thái (hoặc lần đầu chưa có file).
+    # Trước đây mọi lần chạy đều save(), mà save() đặt updated/commit mới — nên một
+    # `./mo verify` không tick gì vẫn để lại diff rỗng nghĩa, rồi người ta commit nó
+    # theo phản xạ và lịch sử git đầy commit "cập nhật tracker" không mang nội dung.
+    # Hệ quả có chủ đích: `updated` nghĩa là "lần cuối tracker ĐỔI", không phải "lần
+    # cuối chạy test". Không script nào đọc trường đó, chỉ người đọc.
+    if changed or not os.path.exists(STATUS_JSON):
         save(state)
+    elif a.render:
+        # `--render` = vẽ lại .md TỪ .json, không đụng .json. Bước "Tracker không bị
+        # sửa tay" của CI dùng chính lệnh này để chứng minh .md khớp .json, nên nó
+        # phải idempotent — nếu không CI đỏ oan ngay PR đầu tiên và người ta sẽ học
+        # cách bỏ qua nó.
+        render(state)
     for tid, res in changed:
         print(f"{ICON[res]} {tid} → {res}")
     if not changed and not a.render:

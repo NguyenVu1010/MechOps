@@ -1,7 +1,7 @@
 # .steering — mục lục
 
 > ⚙️ Sinh bởi `tools/steering/steer.py` — **không sửa tay**. Luật và format: `.steering/README.md`.
-> 1 plan · 12 mục nhật ký · 0 chưa đóng · decision 3 · discovery 1 · risky 6 · wrong 2
+> 1 plan · 13 mục nhật ký · 0 chưa đóng · decision 3 · discovery 1 · risky 7 · wrong 2
 
 ## Plan đang mở
 
@@ -13,6 +13,7 @@
 
 | id | Ngày | Loại | Kết cục | Tầng | Test ID | Đã nâng thành | Tiêu đề |
 |---|---|---|---|---|---|---|---|
+| [S0013](entries/2026-09-01T035545Z-S0013-risky-git-checkout----docstest-statusjson-docste.md) | 2026-09-01 | risky | reverted | infra | — | none — hook bao dung, day la rm -rf that | git checkout -- docs/test-status.json docs/test-status.md && rm -rf d |
 | [S0012](entries/2026-08-25T194921Z-S0012-risky-cd-cusersanhnd0904workspacemechops-docker.md) | 2026-08-25 | risky | kept | infra | — | trace.py check_exec_bits() — MUST_EXEC phai la 100755 | cd /c/Users/AnhND0904/workspace/MechOps ; docker compose -f docker-com |
 | [S0011](entries/2026-08-25T193404Z-S0011-risky-cd-cusersanhnd0904workspacemechops-bash-mo.md) | 2026-08-25 | risky | reverted | infra | — | record-risky.sh: bo gia tri --why/--title/--promoted/-m... ; ma tran 24 ca | cd /c/Users/AnhND0904/workspace/MechOps ; bash ./mo steer close S0010 |
 | [S0010](entries/2026-08-25T193137Z-S0010-risky-cd-cusersanhnd0904workspacemechops-git-add.md) | 2026-08-25 | risky | reverted | infra | — | record-risky.sh: scan=${cmd%%<<*} + _lib.sh json_str xu ly dau escape; ma tran 20 ca trong scratchpad | cd /c/Users/AnhND0904/workspace/MechOps ; git add -A ; git commit -F - |
