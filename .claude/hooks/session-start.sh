@@ -6,6 +6,29 @@
 set -u
 cd "${CLAUDE_PROJECT_DIR:-.}" || exit 0
 
+# Git hook KHÔNG đi theo `git clone`: mặc định git nhìn .git/hooks/, mà .git/ không
+# versioned được — đó là chốt chặn cố ý của git (nếu clone mang theo mã tự chạy thì
+# clone một repo lạ = cho nó chạy code trên máy mình). Nên mỗi clone phải bật công
+# tắc một lần, và không có gì trong repo tự làm được việc đó.
+#
+# Bật LUÔN thay vì chỉ cảnh báo: đúng người cần cảnh báo nhất — dev mới chưa đọc
+# CLAUDE.md — là người sẽ lướt qua nó. Hai lệnh này chỉ ghi vài dòng vào .git/config
+# của chính clone đang mở: không cài gói, không tải gì, không chạm ngoài thư mục repo.
+hookwarn=""
+if [ "$(git config core.hooksPath 2>/dev/null)" != ".githooks" ]; then
+  git config core.hooksPath .githooks 2>/dev/null
+  git config merge.ours.driver true 2>/dev/null
+  hookwarn="
+- ⚠️ Clone này CHƯA cài git hook — vừa tự bật (core.hooksPath + merge driver ours).
+  Trước đó: commit-msg không kiểm \`Implements:\`, và merge trộn cả file máy sinh."
+  printf '\033[33mMechOps: git hook chưa cài trong clone này — đã tự bật.\033[0m\n' >&2
+elif [ "$(git config merge.ours.driver 2>/dev/null)" != "true" ]; then
+  git config merge.ours.driver true 2>/dev/null
+  hookwarn="
+- ⚠️ Thiếu merge driver \`ours\` — vừa đặt. Không có nó git BỎ QUA
+  .gitattributes và trộn file máy sinh như văn bản thường."
+fi
+
 # Làm ấm container ở nền; phiên không phải chờ.
 ( bash ./mo up >/dev/null 2>&1 & ) 2>/dev/null
 
@@ -28,7 +51,7 @@ fi
 # Làm mới cache ở nền cho phiên sau; phiên này không chờ.
 ( bash ./mo steer plan triage --cache .claude/cache/triage.txt --quiet >/dev/null 2>&1 & ) 2>/dev/null
 
-ctx="Trạng thái MechOps đầu phiên (hook SessionStart nạp, không phải người gõ):
+ctx="Trạng thái MechOps đầu phiên (hook SessionStart nạp, không phải người gõ):${hookwarn}
 - Nhánh: ${branch} · ${dirty} file chưa commit${triage}
 - Tracker: ${tracker:-chưa có}
 - ${mstone:-Milestone: chưa xác định}

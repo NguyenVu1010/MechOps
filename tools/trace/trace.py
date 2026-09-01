@@ -567,11 +567,72 @@ def check_exec_bits():
     return errs
 
 
+SKIP_RE = re.compile(r"(?<![A-Za-z0-9_])t[.]Skip(?:Now|f)?[ ]*[(]")
+
+
+def check_no_skip():
+    """`t.Skip` = một test đỏ bị giấu thành xanh.
+
+    CLAUDE.md cấm tuyệt đối, nhưng golangci-lint không có linter nào bắt nó — nên
+    tới giờ đây vẫn là luật chỉ nằm trong văn bản, đúng loại luật mà ADR-0011 nói
+    là sẽ bị lách khi bí. Cố tình KHÔNG có cách khai báo miễn trừ: một test chưa
+    chạy được thì để nó ĐỎ, đó là thông tin thật; bọc t.Skip là xoá thông tin đó.
+    """
+    errs = []
+    for path in walk_files(".", ("_test.go",)):
+        rel = os.path.relpath(path, ROOT)
+        for i, line in enumerate(open(path, encoding="utf-8"), 1):
+            if line.lstrip().startswith("//"):
+                continue
+            if SKIP_RE.search(line):
+                errs.append(f"{rel}:{i}: có t.Skip — test đỏ nghĩa là việc chưa xong "
+                            "(CLAUDE.md, mục Cấm tuyệt đối). Để nó đỏ, đừng giấu.")
+    return errs
+
+
+def check_deleted_plans():
+    """Thư mục từng có trong .steering/plans/ mà nay biến mất = plan bị xoá.
+
+    Đây là nợ của S0007: một plan bị xoá mất hẳn, và bài học đó tới giờ mới chỉ
+    thành một câu cấm trong CLAUDE.md cộng với check `supersedes` — mà check đó chỉ
+    bắt được khi có plan KHÁC trỏ tới plan bị xoá. Plan không ai trỏ tới thì biến
+    mất im lặng. Bỏ một hướng đi là `./mo steer plan abandon`: thư mục ở lại, lý do
+    vào nhật ký.
+
+    Giới hạn phải nói rõ: chỉ bắt được plan đã từng vào git ít nhất một lần. Plan
+    mở rồi xoá trong cùng một phiên chưa commit thì git không có gì để so — đúng ca
+    của S0007. Không công cụ nào bịt được ca đó ngoài việc commit sớm.
+    """
+    r = subprocess.run(["git", "log", "--all", "--diff-filter=A", "--name-only",
+                        "--format=", "--", ".steering/plans"],
+                       capture_output=True, text=True, cwd=ROOT)
+    if r.returncode != 0:
+        return []            # không phải git repo (tarball) thì bỏ qua, đừng đỏ oan
+    seen = set()
+    for line in r.stdout.splitlines():
+        parts = line.strip().split("/")     # git luôn in dấu / kể cả trên Windows
+        if len(parts) >= 3 and parts[0] == ".steering" and parts[1] == "plans":
+            seen.add(parts[2])
+    errs = []
+    for name in sorted(seen):
+        if name.endswith(".md"):
+            continue                        # TEMPLATE.md nằm ngay trong plans/
+        if not os.path.isdir(os.path.join(ROOT, PLANS_DIR, name)):
+            errs.append(
+                f".steering/plans/{name}/ từng có trong lịch sử git nhưng nay không "
+                f"còn — plan KHÔNG được xoá (CLAUDE.md, S0007). Bỏ một hướng đi: "
+                f"./mo steer plan abandon {name} --why \"...\" — thư mục ở lại, lý do "
+                f"vào nhật ký. Lấy lại: git checkout <commit> -- .steering/plans/{name}")
+    return errs
+
+
 def main():
     errors, warns = [], []
     statuses = adr_status()
 
     errors += check_exec_bits()
+    errors += check_no_skip()
+    errors += check_deleted_plans()
     errors += check_milestones()
     errors += check_frontmatter()
     steer_errs, steer_warns = check_steering()

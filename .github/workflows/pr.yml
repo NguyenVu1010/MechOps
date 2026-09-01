@@ -33,6 +33,12 @@ jobs:
             | sh -s -- -b "$(go env GOPATH)/bin" "$(cat .golangci-version)"
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
 
+      # Chốt chặn 0 — không commit nửa vời. Đặt trước mọi thứ: marker trong .go làm
+      # lint vỡ với lỗi cú pháp khó hiểu, còn trong .json làm track.py chết với
+      # JSONDecodeError trên đúng file mà người ta bị cấm sửa tay.
+      - name: Không còn conflict marker
+        run: ./mo --native check-merge
+
       # Chốt chặn 1 — tracker không bị sửa tay.
       # Render lại .md từ .json: nếu khác file đã commit thì có người gõ tay vào đó
       # (constitution #2). Chạy TRƯỚC verify, vì verify được phép làm tracker đổi.

@@ -1,4 +1,4 @@
-.PHONY: verify lint gen test-integration hw-test status progress trace fmt-dirty
+.PHONY: verify lint gen test-integration hw-test status progress trace fmt-dirty check-merge
 
 # Makefile định nghĩa VIỆC. `./mo` quyết định việc đó chạy ở đâu (container hay host).
 # Gọi thẳng `make` chỉ đúng khi máy đã có go+python3+make — trên máy dev Windows thì không (ADR 0010).
@@ -21,7 +21,19 @@ lint: ## golangci-lint — cưỡng chế constitution #7 (depguard) và quy ư�
 	@# ./... và vỡ trong workspace mode. Phải liệt kê module tường minh.
 	golangci-lint run $(GO_PKGS)
 
-verify: gen lint
+check-merge: ## conflict marker lọt vào commit = file máy sinh vỡ im lặng
+	@# Chỉ bắt `<<<<<<< ` và `>>>>>>> ` — chúng LUÔN có nhãn theo sau nên dấu cách là
+	@# phần của mẫu. Cố tình KHÔNG bắt `=======` đứng một mình: đó cũng là cách gạch
+	@# chân tiêu đề H1 của markdown, bắt nó là báo oan ngay trên docs/ của repo này.
+	@if git grep -nE '^(<{7}|>{7}) ' -- . ; then \
+		echo "" >&2; \
+		echo "LỖI: còn conflict marker trong file đã tracked (liệt kê ở trên)." >&2; \
+		echo "     Giải quyết merge cho xong rồi commit lại, đừng commit nửa vời." >&2; \
+		echo "     Trong file máy sinh, marker làm track.py chết với JSONDecodeError" >&2; \
+		echo "     trên đúng file mà người ta bị CẤM sửa tay." >&2; \
+		exit 1; fi
+
+verify: check-merge gen lint
 	@command -v go >/dev/null || { echo "LỖI: không có Go trong PATH — evidence sẽ rỗng. Chạy qua ./mo verify." >&2; exit 1; }
 	@fmt_files=$$(gofmt -l .); if [ -n "$$fmt_files" ]; then echo "gofmt chưa chuẩn:" >&2; echo "$$fmt_files" >&2; exit 1; fi
 	go vet $(GO_PKGS)
