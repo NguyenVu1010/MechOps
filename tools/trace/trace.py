@@ -626,11 +626,80 @@ def check_deleted_plans():
     return errs
 
 
+DOC_HTML = os.path.join("docs", "product", "html", "dev-flow.html")
+PR_YML = os.path.join(".github", "workflows", "pr.yml")
+
+# Không dùng ký tự thoát nào trong các mẫu dưới: [.] thay cho dấu chấm, [)] thay
+# cho ngoặc. Dấu thoát bị nuốt khi vá file qua heredoc, và một regex hỏng ở đây
+# thì chốt chặn im lặng cho qua tất cả — đúng loại hỏng tệ nhất.
+MO_CMD_RE = re.compile(r"[.]/mo (?:--native )?([a-z][a-z-]*)")
+DOC_PATH_RE = re.compile(
+    r"<code>((?:docs|tools|specs|protocol|agent|server"
+    r"|[.]githooks|[.]github|[.]claude|[.]steering)/[A-Za-z0-9_./-]+)</code>")
+CHECK_RE = re.compile(r'data-check="([a-z-]+)"[^>]*>([0-9]+)<')
+MO_CASE_RE = re.compile(r"^  ([a-z][a-z0-9|_-]*)[)]", re.M)
+CI_STEP_RE = re.compile(r"^[ ]+- name:", re.M)
+
+
+def mo_commands():
+    """Tập lệnh ./mo có thật — đọc thẳng nhãn `case` trong chính file mo."""
+    return set(
+        c
+        for m in MO_CASE_RE.findall(open(os.path.join(ROOT, "mo"), encoding="utf-8").read())
+        for c in m.split("|")
+    )
+
+
+def check_doc_html():
+    """Tài liệu vào việc (HTML) phải nói đúng về repo.
+
+    Đây là tài liệu duy nhất trong repo dày đặc lệnh, đường dẫn và con số — nên
+    cũng là tài liệu dễ mục nát nhất. Hai file HTML cũ trong cùng thư mục sống qua
+    20 commit mà không sai một chữ, nhưng chúng không chứa MỘT câu lệnh nào; đó là
+    lý do chúng an toàn, không phải vì có ai trông nom.
+
+    Ba thứ kiểm được bằng máy, và chỉ ba thứ đó: lệnh có tồn tại không, đường dẫn
+    có tồn tại không, con số có khớp không. Văn xuôi thì không ai kiểm được — nên
+    tài liệu cố tình để những khẳng định quan trọng dưới dạng số và tên file.
+    """
+    path = os.path.join(ROOT, DOC_HTML)
+    if not os.path.exists(path):
+        return []                      # tài liệu là tuỳ chọn; không có thì bỏ qua
+    text = open(path, encoding="utf-8").read()
+    errs = []
+
+    known = mo_commands()
+    for cmd in sorted(set(MO_CMD_RE.findall(text))):
+        if cmd not in known:
+            errs.append(f"{DOC_HTML}: dạy lệnh `./mo {cmd}` nhưng mo không có lệnh đó")
+
+    for rel in sorted(set(DOC_PATH_RE.findall(text))):
+        if not os.path.exists(os.path.join(ROOT, rel)):
+            errs.append(f"{DOC_HTML}: nhắc đường dẫn không còn tồn tại: {rel}")
+
+    want = {"catalog-count": len(CATALOG)}
+    pr = os.path.join(ROOT, PR_YML)
+    if os.path.exists(pr):
+        want["ci-steps"] = len(CI_STEP_RE.findall(open(pr, encoding="utf-8").read()))
+
+    seen = {}
+    for key, val in CHECK_RE.findall(text):
+        seen.setdefault(key, set()).add(int(val))
+    for key, expect in sorted(want.items()):
+        got = seen.get(key)
+        if got is None:
+            errs.append(f"{DOC_HTML}: thiếu data-check={key} — con số này phải để máy đối chiếu")
+        elif got != {expect}:
+            errs.append(f"{DOC_HTML}: data-check={key} ghi {sorted(got)}, repo thật là {expect}")
+    return errs
+
+
 def main():
     errors, warns = [], []
     statuses = adr_status()
 
     errors += check_exec_bits()
+    errors += check_doc_html()
     errors += check_no_skip()
     errors += check_deleted_plans()
     errors += check_milestones()

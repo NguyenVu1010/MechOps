@@ -4,6 +4,10 @@
 > vòng lặp & luật ở CLAUDE.md · nguyên tắc bất biến ở constitution.md · "vì sao" ở docs/adr/
 > · toàn cảnh flow và bảng "luật nào chặn ở đâu" ở docs/product/07-ai-flow.md.
 
+**Chưa từng làm việc trong repo này?** Đọc `docs/product/html/dev-flow.html` trước
+(mở bằng trình duyệt) — giải phẫu bộ máy từ một test ID tới CI, kèm lưu đồ, khoảng
+25 phút. File bạn đang đọc là bản tra cứu hằng ngày, không phải bản nhập môn.
+
 ## Cài đặt
 
 Máy chỉ cần **Docker Desktop + git + Claude Code**. Go, Python, make, golangci-lint
@@ -11,7 +15,8 @@ nằm trong container (ADR-0010) — không cài gì lên máy.
 
 ```bash
 ./mo up              # dựng container dev (lần đầu vài phút)
-./mo hooks-install   # bật git hook commit-msg
+./mo hooks-install   # bật git hook — Claude Code tự bật giúp ở SessionStart,
+                     # cần gõ tay nếu bạn làm việc ngoài Claude Code
 ./mo doctor          # xác nhận môi trường đủ
 ./mo status          # sinh tracker, thấy 49 test ⬜
 ```
@@ -38,7 +43,7 @@ Trong terminal:
 
 | Lệnh | Làm gì |
 |---|---|
-| `./mo verify` | gen + lint + vet + `go test -race` + cập nhật tracker |
+| `./mo verify` | check-merge + gen + lint + gofmt + vet + `go test -race` + cập nhật tracker |
 | `./mo status` | render tracker + sinh `docs/PROGRESS.md` |
 | `./mo trace` | ID mồ côi, skill lệch ADR, milestone lệch catalog |
 | `./mo lint` | golangci-lint (gồm `depguard` ép constitution #7) |
