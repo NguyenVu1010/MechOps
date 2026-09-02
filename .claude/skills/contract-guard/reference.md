@@ -5,7 +5,7 @@ specs/
 ├── asyncapi.yaml          ← channels (topic MQTT), operations, bindings mqtt5;
 │                             message KHÔNG định nghĩa inline — $ref sang schemas/
 ├── schemas/*.schema.json  ← JSON Schema draft 2020-12 từng payload — nguồn sự thật DUY NHẤT
-│                             mỗi file có "covers": [test IDs] cho make trace
+│                             mỗi file có "covers": [test IDs] cho ./mo trace
 ├── testvectors/
 │   ├── valid/             ← payload phải PASS validate
 │   └── invalid/           ← payload phải FAIL validate (tên file nói rõ vì sao, vd telemetry-missing-seq.json)
@@ -31,6 +31,6 @@ asyncapi-codegen của Go yếu với MQTT — CHỈ sinh types + docs từ nó;
 ## Checklist sửa contract (chạy trong đầu trước khi commit)
 - [ ] Field mới optional? Bên nhận cũ bỏ qua được?
 - [ ] Test vector valid + invalid cập nhật?
-- [ ] `covers:` cập nhật, `make trace` sạch?
+- [ ] `covers:` cập nhật, `./mo trace` sạch?
 - [ ] Topic mới có trong asyncapi.yaml VÀ protocol/topics.go, không hardcode nơi khác?
-- [ ] `make gen && make verify` xanh?
+- [ ] `./mo gen && ./mo verify` xanh?

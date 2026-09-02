@@ -83,14 +83,14 @@ Spec Kit chuẩn hóa flow `constitution → specify → clarify → plan → ta
 Dùng Spec Kit thật (`specify init --integration claude --skills`) hay tự chế 3 template markdown? **Khuyến nghị: tự chế template theo đúng cấu trúc trên.** Spec Kit đầy đủ hơi nặng cho team 1-2 người và ta đã có constitution + test catalog riêng; giá trị nằm ở *cấu trúc flow*, không ở tooling. Xét lại khi team ≥ 3.
 
 **Vòng trong — mỗi task (đã có trong automation kit, giữ nguyên):**
-chọn test ID ⬜ → test đỏ → implement → `make verify` → tick ✅ + evidence → commit `Implements: <ID>`.
+chọn test ID ⬜ → test đỏ → implement → `./mo verify` → tick ✅ + evidence → commit `Implements: <ID>`.
 
 ### Subagents (.claude/agents/) — đúng 2, không hơn
 
 | Subagent | Vai trò | Vì sao tách |
 |---|---|---|
 | `spec-guardian` | Review diff trước commit: có lệch asyncapi/schema/ADR không, có đổi nghĩa field không, topic có hardcode không | Context riêng, chỉ đọc spec + diff — không bị "quen tay" theo code vừa viết. Người review lạnh. |
-| `test-auditor` | Sau `make verify`: soi test vừa viết có assert thật không (chống test rỗng pass), có `t.Skip` lén không, evidence có khớp ID khai báo không | Kiểm toán viên tách khỏi người làm — cùng một agent tự viết tự duyệt là điểm mù kinh điển |
+| `test-auditor` | Sau `./mo verify`: soi test vừa viết có assert thật không (chống test rỗng pass), có `t.Skip` lén không, evidence có khớp ID khai báo không | Kiểm toán viên tách khỏi người làm — cùng một agent tự viết tự duyệt là điểm mù kinh điển |
 
 Main agent (implementer) làm mọi thứ còn lại. Không tạo subagent "planner/architect" — việc đó là vòng ngoài có founder tham gia, không ủy quyền.
 
@@ -137,7 +137,7 @@ Mỗi cuối milestone, 30 phút: đọc lại 5 skill, xóa dòng đã thành l
 1. `constitution.md` — gom từ CLAUDE.md/README (1 giờ)
 2. `docs/adr/0001..0008` — chuyển các quyết định đã chốt thành ADR (nửa ngày, Claude Code làm được từ transcript các buổi thảo luận)
 3. `specs/asyncapi.yaml` + JSON Schema hóa payload từ protocol spec v0.1 (1 ngày)
-4. Codegen pipeline: go-jsonschema + validate testvectors vào `make verify` (nửa ngày)
+4. Codegen pipeline: go-jsonschema + validate testvectors vào `./mo verify` (nửa ngày)
 5. Skill `adr` + `feature-spec` + nâng `protocol-guard` → `contract-guard` (nửa ngày)
 6. 2 subagents + script `trace` CI (nửa ngày)
 

@@ -1,0 +1,34 @@
+# Dev trên Windows, verify trong container Linux (ADR 0010).
+# Không có file này thì core.autocrlf=true sinh CRLF ở working tree, và gofmt
+# trong container báo MỌI file .go là "chưa format" — verify không bao giờ xanh.
+# Nguy hiểm hơn: script bash có CRLF sẽ lỗi `\r: command not found` trong container.
+* text=auto eol=lf
+
+*.go        text eol=lf
+*.py        text eol=lf
+*.sh        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.json      text eol=lf
+*.md        text eol=lf
+*.sql       text eol=lf
+Makefile    text eol=lf
+mo          text eol=lf
+.githooks/* text eol=lf
+
+# File máy sinh: merge KHÔNG được trộn. Chúng là hàm của .steering/entries/ +
+# plans/, nên trộn hai nửa bảng markdown chỉ cho ra một bảng sai mà không ai thấy.
+# `merge=ours` giữ nguyên bản của nhánh đang đứng, rồi hook post-merge dựng lại
+# từ nguồn. Driver "ours" được bật trong `./mo hooks-install`.
+.steering/INDEX.md            merge=ours
+.steering/HISTORY.md          merge=ours
+.steering/plans/*/STATUS.md   merge=ours
+.steering/plans/*/JOURNAL.md  merge=ours
+docs/test-status.md           merge=ours
+docs/test-status.json         merge=ours
+docs/PROGRESS.md              merge=ours
+
+*.png binary
+*.jpg binary
+*.pem binary
+*.key binary

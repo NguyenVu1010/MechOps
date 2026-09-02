@@ -1,9 +1,99 @@
 name: nightly
+
 on:
   schedule: [{cron: "0 18 * * *"}]
+  workflow_dispatch:
+
+permissions:
+  contents: write        # push nhánh bot/nightly-tracker
+  pull-requests: write   # mở PR từ nhánh đó
+
 jobs:
   integration:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "TODO(M1): compose up, make test-integration, bot-commit test-status"
+        with:
+          # NIGHTLY_TOKEN chưa cần có — xem ghi chú ở bước "Mở PR" bên dưới.
+          token: ${{ secrets.NIGHTLY_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install jsonschema pyyaml
+
+      # Test [I] cần EMQX + Postgres + registry thật.
+      - name: Dựng hạ tầng
+        run: |
+          docker compose -f deploy/docker-compose.yml up -d
+          docker compose -f deploy/docker-compose.yml ps
+
+      - name: Integration test
+        run: ./mo --native test-integration
+
+      - name: Sinh PROGRESS.md
+        if: always()
+        run: ./mo --native progress
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evidence-nightly-${{ github.run_id }}
+          path: docs/evidence/ci/
+          retention-days: 90
+
+      # Tracker do MÁY ghi (constitution #2) — nhưng "máy ghi" không có nghĩa là máy
+      # được bỏ qua chốt chặn. Đó là hai điều khác nhau, và bản trước của bước này
+      # gộp chúng làm một: nó `git push` thẳng vào nhánh tích hợp.
+      #
+      # Nhánh tích hợp có ruleset khoá — mọi thay đổi phải đi qua PR. Cách duy nhất
+      # cho một `git push` thẳng đi lọt là đưa danh tính của nó vào Bypass list, tức
+      # là mở một cửa sau đi vòng qua toàn bộ chốt chặn, và cửa đó lại do CHÍNH FILE
+      # NÀY điều khiển: ai sửa được nó thì push được bất cứ thứ gì. Nên nightly đi
+      # cùng cửa với mọi người, và Bypass list giữ nguyên trạng thái trống — trạng
+      # thái duy nhất khiến branch protection nói thật.
+      #
+      # Nhánh bot luôn là "base + đúng một commit": tạo mới mỗi đêm rồi push -f, nên
+      # không tích luỹ lịch sử rác và PR đang mở tự cập nhật theo.
+      - name: Mở PR cập nhật tracker
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.NIGHTLY_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          git add docs/test-status.json docs/test-status.md docs/PROGRESS.md docs/evidence/ci
+          git diff --cached --quiet && { echo "không có ID nào đổi trạng thái — không mở PR"; exit 0; }
+
+          branch=bot/nightly-tracker
+          git config user.name  "mechops-bot"
+          git config user.email "bot@mechops.local"
+          git switch -c "$branch" || git switch "$branch"
+          git commit -m "nightly: cập nhật tracker từ integration test
+
+          Log thô nằm trong artifact evidence-nightly-${{ github.run_id }} của run này.
+
+          Implements: none"
+          git push -f origin "$branch"
+
+          if gh pr list --head "$branch" --state open --json number -q '.[0].number' | grep -q .; then
+            echo "PR đang mở — vừa đẩy thêm commit vào đó."
+          else
+            gh pr create --base "${GITHUB_REF_NAME}" --head "$branch" \
+              --title "nightly: tracker từ integration test" \
+              --body "Máy sinh bởi \`.github/workflows/nightly.yml\`. Chỉ chứa file do máy ghi:
+          \`docs/test-status.*\`, \`docs/PROGRESS.md\`, \`docs/evidence/ci/\`.
+
+          Kiểm trước khi merge: mở evidence của ID vừa đổi trạng thái, đối chiếu với
+          log thô trong artifact \`evidence-nightly-${{ github.run_id }}\`.
+
+          **CI không chạy trên PR này** nếu nó được mở bằng \`GITHUB_TOKEN\` — GitHub
+          cố tình không cho workflow tự kích hoạt workflow. Muốn có CI thì tạo một
+          fine-grained PAT, lưu thành secret \`NIGHTLY_TOKEN\`; workflow tự dùng nó,
+          không phải sửa gì thêm."
+          fi
+
+      - name: Log hạ tầng khi thất bại
+        if: failure()
+        run: docker compose -f deploy/docker-compose.yml logs --tail=200

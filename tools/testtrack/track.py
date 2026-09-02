@@ -60,6 +60,36 @@ CATALOG = {
   "LOD-03": ("H", "30 ngày fleet thật, 0 brick"),
 }
 
+# Milestone của từng nhóm ID. Nguồn: tiêu đề nhóm trong docs/product/05-test-catalog.md
+# ("## A. Provisioning & danh tính (M1)"). trace.py kiểm map này KHỚP tiêu đề đó —
+# nếu ai đó dời một nhóm sang milestone khác mà quên chỗ này, CI báo lỗi.
+MILESTONE = {
+    "PRV": "M1", "ACL": "M1", "TEL": "M1–M2", "PRB": "M2", "OTA": "M3",
+    "ALT": "M4", "TRM": "M4–M5", "WLB": "M5", "INS": "M5", "LOD": "M6",
+}
+
+
+def milestone_of(tid):
+    return MILESTONE[tid.split("-")[0]]
+
+
+def milestone_num(ms):
+    """'M1–M2' -> 1. Dùng để xếp thứ tự và gom nhóm theo milestone bắt đầu."""
+    return int(re.match(r"M(\d)", ms).group(1))
+
+
+def open_milestone(tests):
+    """Milestone đang mở = milestone thấp nhất còn test chưa pass.
+
+    Trả về (số milestone, danh sách ID thuộc milestone đó). Toàn bộ xanh -> (None, []).
+    """
+    pending = [t for t in CATALOG if tests[t]["status"] != "pass"]
+    if not pending:
+        return None, []
+    n = min(milestone_num(milestone_of(t)) for t in pending)
+    return n, [t for t in CATALOG if milestone_num(milestone_of(t)) == n]
+
+
 GROUPS = [("A · Provisioning", "PRV"), ("B · ACL cách ly", "ACL"), ("C · Telemetry/offline", "TEL"),
           ("D · Probe API", "PRB"), ("E · OTA ⭐", "OTA"), ("F · Alert", "ALT"),
           ("G · Terminal/log", "TRM"), ("H · White-label/Installer", ("WLB", "INS")),
@@ -103,23 +133,31 @@ def norm_id(name):
 def ingest_go_json(state, stream):
     """Parse `go test -json`. Một test Go có thể cover nhiều ID (ghi trong tên hoặc subtests)."""
     ts = now()
+    # Đọc hết vào bộ nhớ TRƯỚC khi tạo thư mục evidence. Tạo trước rồi mới biết có
+    # ID nào khớp không thì mỗi lần chạy khi repo chưa có test sẽ để lại một thư mục
+    # rỗng — suốt M0 là hàng chục cái, và docs/evidence/ci/ hết duyệt được.
+    lines, results = [], {}
+    for line in stream:
+        lines.append(line if line.endswith("\n") else line + "\n")
+        try:
+            ev = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if ev.get("Action") not in ("pass", "fail") or "Test" not in ev:
+            continue
+        tid = norm_id(ev["Test"])
+        if tid and tid in CATALOG:
+            # fail thắng pass nếu nhiều subtest cùng ID
+            results[tid] = "fail" if results.get(tid) == "fail" else ev["Action"]
+
+    if not results:
+        return []                       # không có gì để chứng minh -> không sinh evidence
+
     ev_dir = os.path.join(EVIDENCE_DIR, f"{ts.replace(':', '')}-{git_commit()}")
     os.makedirs(ev_dir, exist_ok=True)
     raw_path = os.path.join(ev_dir, "raw.jsonl")
-    results = {}
     with open(raw_path, "w") as raw:
-        for line in stream:
-            raw.write(line if line.endswith("\n") else line + "\n")
-            try:
-                ev = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if ev.get("Action") not in ("pass", "fail") or "Test" not in ev:
-                continue
-            tid = norm_id(ev["Test"])
-            if tid and tid in CATALOG:
-                # fail thắng pass nếu nhiều subtest cùng ID
-                results[tid] = "fail" if results.get(tid) == "fail" else ev["Action"]
+        raw.writelines(lines)
     rel = os.path.relpath(raw_path, ROOT)
     changed = []
     for tid, res in results.items():
@@ -155,12 +193,31 @@ def render(state):
         f"**{done}/{total} ✅** ({100 * done // total}%)",
         "",
     ]
+
+    # Khối "việc tiếp theo" — lý do file này tồn tại là để trả lời đúng câu hỏi đó.
+    # Agent đọc dòng này ở đầu phiên (hook SessionStart) thay vì phải suy từ 3 file.
+    mnum, mids = open_milestone(tests)
+    if mnum is None:
+        lines += ["> **Toàn bộ catalog đã xanh.** Không còn milestone nào mở.", ""]
+    else:
+        mdone = sum(1 for i in mids if tests[i]["status"] == "pass")
+        nxt = next((i for i in mids if tests[i]["status"] != "pass"), None)
+        nxt_txt = (
+            f"`{nxt}` [{tests[nxt]['tier']}] {tests[nxt]['desc']}" if nxt else "—"
+        )
+        lines += [
+            f"> **Milestone đang mở: M{mnum}** — {mdone}/{len(mids)} ✅ · "
+            f"Việc tiếp theo: {nxt_txt}",
+            "",
+        ]
+
     for gname, prefix in GROUPS:
         prefixes = prefix if isinstance(prefix, tuple) else (prefix,)
         ids = [i for i in CATALOG if i.split("-")[0] in prefixes]
         gdone = sum(1 for i in ids if tests[i]["status"] == "pass")
         bar = "█" * gdone + "░" * (len(ids) - gdone)
-        lines += [f"## {gname} — {gdone}/{len(ids)} `{bar}`", "",
+        ms = MILESTONE[prefixes[0]]
+        lines += [f"## {gname} · {ms} — {gdone}/{len(ids)} `{bar}`", "",
                   "| | ID | Tầng | Mô tả | Lần cuối | Evidence |",
                   "|---|---|---|---|---|---|"]
         for i in ids:
@@ -191,7 +248,20 @@ def main():
         if not (a.result and a.evidence):
             sys.exit("--hw cần cả --result và --evidence")
         changed = set_hw(state, a.hw, a.result, a.evidence)
-    save(state)
+    # Ghi .json CHỈ khi có ID thật sự đổi trạng thái (hoặc lần đầu chưa có file).
+    # Trước đây mọi lần chạy đều save(), mà save() đặt updated/commit mới — nên một
+    # `./mo verify` không tick gì vẫn để lại diff rỗng nghĩa, rồi người ta commit nó
+    # theo phản xạ và lịch sử git đầy commit "cập nhật tracker" không mang nội dung.
+    # Hệ quả có chủ đích: `updated` nghĩa là "lần cuối tracker ĐỔI", không phải "lần
+    # cuối chạy test". Không script nào đọc trường đó, chỉ người đọc.
+    if changed or not os.path.exists(STATUS_JSON):
+        save(state)
+    elif a.render:
+        # `--render` = vẽ lại .md TỪ .json, không đụng .json. Bước "Tracker không bị
+        # sửa tay" của CI dùng chính lệnh này để chứng minh .md khớp .json, nên nó
+        # phải idempotent — nếu không CI đỏ oan ngay PR đầu tiên và người ta sẽ học
+        # cách bỏ qua nó.
+        render(state)
     for tid, res in changed:
         print(f"{ICON[res]} {tid} → {res}")
     if not changed and not a.render:

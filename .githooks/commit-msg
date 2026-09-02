@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Cưỡng chế dòng `Implements: <ID>`. Cài bằng: ./mo hooks-install
+#
+# Chạy qua ./mo vì máy dev không có python (ADR 0010).
+# CI chạy LẠI đúng script này trên toàn bộ commit của PR — hook local có thể bị
+# `--no-verify`, CI thì không. Hook này là để biết sớm, không phải chốt chặn cuối.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+# $1 là đường dẫn tương đối so với repo root (.git/COMMIT_EDITMSG) nên dùng được
+# cả bên trong container, nơi repo được mount ở /w.
+rel="${1#"$PWD/"}"
+exec bash ./mo check-commit "$rel"
