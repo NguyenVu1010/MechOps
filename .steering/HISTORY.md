@@ -1,10 +1,12 @@
 # .steering — dòng thời gian
 
 > ⚙️ Sinh bởi `tools/steering/steer.py` — **không sửa tay**. Trạng thái hiện tại: `INDEX.md`.
-> 40 sự việc · plan · cổng chốt · mục nhật ký · ADR, mới nhất trên đầu
+> 42 sự việc · plan · cổng chốt · mục nhật ký · ADR, mới nhất trên đầu
 
 | Mốc (UTC) | Loại | Việc |
 |---|---|---|
+| `2026-09-02T07:05:22Z` | risky | đóng [S0015](entries/2026-09-02T070512Z-S0015-risky-set-e-echo-steering-dang-treo-gi-bash-mo-s.md) **kept** → none — day la he qua cua ruleset, khong phai bai hoc moi |
+| `2026-09-02T07:05:12Z` | risky | mở [S0015](entries/2026-09-02T070512Z-S0015-risky-set-e-echo-steering-dang-treo-gi-bash-mo-s.md) — set +e ; echo === .steering đang treo gì === ; bash ./mo steer pla |
 | `2026-09-01T06:23:20Z` | decision | đóng [S0014](entries/2026-09-01T062319Z-S0014-decision-dev-moi-vibe-khong-chan-phien-chan-ba-lo-c.md) **kept** → Makefile check-merge + trace.py check_no_skip + trace.py check_deleted_plans + session-start.sh tu bat hook |
 | `2026-09-01T06:23:19Z` | decision | mở [S0014](entries/2026-09-01T062319Z-S0014-decision-dev-moi-vibe-khong-chan-phien-chan-ba-lo-c.md) — Dev moi vibe: khong chan phien, chan ba lo cu the · **quyết định:** Khong dat rao can nao truoc phien vibe. Thay vao do: session-start tu bat git hook, va ba luat chi-nam-trong-van-ban (conflict marker, t.Skip, xoa plan) tro thanh chot chan may. |
 | `2026-09-01T03:56:53Z` | risky | đóng [S0013](entries/2026-09-01T035545Z-S0013-risky-git-checkout----docstest-statusjson-docste.md) **reverted** → none — hook bao dung, day la rm -rf that |

@@ -1,7 +1,7 @@
 # .steering — mục lục
 
 > ⚙️ Sinh bởi `tools/steering/steer.py` — **không sửa tay**. Luật và format: `.steering/README.md`.
-> 1 plan · 14 mục nhật ký · 0 chưa đóng · decision 4 · discovery 1 · risky 7 · wrong 2
+> 1 plan · 15 mục nhật ký · 0 chưa đóng · decision 4 · discovery 1 · risky 8 · wrong 2
 
 ## Plan đang mở
 
@@ -13,6 +13,7 @@
 
 | id | Ngày | Loại | Kết cục | Tầng | Test ID | Đã nâng thành | Tiêu đề |
 |---|---|---|---|---|---|---|---|
+| [S0015](entries/2026-09-02T070512Z-S0015-risky-set-e-echo-steering-dang-treo-gi-bash-mo-s.md) | 2026-09-02 | risky | kept | infra | — | none — day la he qua cua ruleset, khong phai bai hoc moi | set +e ; echo === .steering đang treo gì === ; bash ./mo steer pla |
 | [S0014](entries/2026-09-01T062319Z-S0014-decision-dev-moi-vibe-khong-chan-phien-chan-ba-lo-c.md) | 2026-09-01 | decision | kept | flow | — | Makefile check-merge + trace.py check_no_skip + trace.py check_deleted_plans + session-start.sh tu bat hook | Dev moi vibe: khong chan phien, chan ba lo cu the |
 | [S0013](entries/2026-09-01T035545Z-S0013-risky-git-checkout----docstest-statusjson-docste.md) | 2026-09-01 | risky | reverted | infra | — | none — hook bao dung, day la rm -rf that | git checkout -- docs/test-status.json docs/test-status.md && rm -rf d |
 | [S0012](entries/2026-08-25T194921Z-S0012-risky-cd-cusersanhnd0904workspacemechops-docker.md) | 2026-08-25 | risky | kept | infra | — | trace.py check_exec_bits() — MUST_EXEC phai la 100755 | cd /c/Users/AnhND0904/workspace/MechOps ; docker compose -f docker-com |
