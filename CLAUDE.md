@@ -10,7 +10,7 @@ Toolchain (Go, Python, golangci-lint) nằm trong Docker — máy dev không cà
 ngoài Docker (ADR 0010). Gõ `make` trực tiếp sẽ báo "command not found".
 
 - `./mo verify` — **lệnh DUY NHẤT cập nhật tracker** (gen + lint + vet + test -race)
-- `./mo status` — tracker + sinh `docs/PROGRESS.md`
+- `./mo status` — tracker + sinh `docs/PROGRESS.md` + đo `docs/module-status.json` (nhúng vào master-plan.html)
 - `./mo trace` — ID mồ côi, skill lệch ADR, milestone lệch catalog
 - `./mo steer plan triage` — **plan/quyết định đang treo, cần người quyết**
   (mồ côi nhánh · bị vượt · treo gate người · im lặng 14 ngày · trùng id sau merge).
@@ -42,7 +42,7 @@ ngoài Docker (ADR 0010). Gõ `make` trực tiếp sẽ báo "command not found"
 
 ## Cấm tuyệt đối
 
-- Sửa `docs/test-status.*` hoặc `docs/PROGRESS.md` trực tiếp — máy ghi, hook chặn.
+- Sửa `docs/test-status.*`, `docs/PROGRESS.md` hoặc `docs/module-status.json` trực tiếp — máy ghi, hook chặn.
   Bị chặn là chủ đích, không phải lỗi cần lách.
 - Sửa mục **đã đóng** trong `.steering/entries/`, gõ tay `.steering/INDEX.md`,
   `HISTORY.md` hoặc `JOURNAL.md`. Nhật ký bất biến như ADR: sai thì viết mục mới
@@ -86,10 +86,10 @@ rồi gọi đúng skill tiếp theo. Không cần thuộc thứ tự 8 bước 
 | Hết giờ / phiên dài | `/handoff` |
 
 Tự nạp khi chạm file tương ứng: `contract-guard` (`specs/`), `go-conventions`
-(`*.go`), `test-evidence` (`*_test.go`), `security-guard` (cert/ACL/token/PTY/digest),
+(`*.go`), `rust-conventions` (`*.rs`), `test-evidence` (`*_test.go`), `security-guard` (cert/ACL/token/PTY/digest),
 `feature-spec` (`.steering/plans/`). Rule trong `.claude/rules/` tự nạp theo thư mục.
 
-## Quy ước Go (chi tiết: skill `go-conventions`)
+## Quy ước Go và Rust (chi tiết: skill `go-conventions`, `rust-conventions`)
 
 - `slog` cho mọi log, kèm `deviceId`/`agentId`/`cmdId`/`deploymentId` khi có ngữ cảnh
 - Lỗi wrap `fmt.Errorf("ngữ cảnh: %w", err)` — không nuốt, không log-rồi-return-nil

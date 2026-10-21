@@ -1,5 +1,5 @@
 # ADR-0009: Go cho agent + server, không dùng C++
-- Status: accepted
+- Status: accepted (phạm vi thu hẹp bởi ADR-0012: chỉ còn server và protocol; agent chuyển Rust)
 - Date: 2026-07-15 (founder chuẩn thuận sau thảo luận Go vs C++ 2026-07-14)
 ## Context
 MechOps là sản phẩm hạ tầng vận hành (telemetry, MQTT, OTA, PTY, WireGuard) — không phải phần mềm điều khiển robot. Agent chạy quyền cao trên robot của khách hàng, nhiều vendor, nhiều bản Ubuntu, nhiều kiến trúc (amd64/arm64). Toàn bộ workload là I/O-bound network plumbing, không có vòng lặp điều khiển real-time nào cần độ trễ micro-giây.
