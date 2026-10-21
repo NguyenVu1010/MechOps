@@ -10,7 +10,7 @@ Toolchain (Go, Python, golangci-lint) nằm trong Docker — máy dev không cà
 ngoài Docker (ADR 0010). Gõ `make` trực tiếp sẽ báo "command not found".
 
 - `./mo verify` — **lệnh DUY NHẤT cập nhật tracker** (gen + lint + vet + test -race)
-- `./mo status` — tracker + sinh `docs/PROGRESS.md` + đo `docs/module-status.json` (nhúng vào master-plan.html)
+- `./mo status` — tracker + sinh `docs/PROGRESS.md`
 - `./mo trace` — ID mồ côi, skill lệch ADR, milestone lệch catalog
 - `./mo steer plan triage` — **plan/quyết định đang treo, cần người quyết**
   (mồ côi nhánh · bị vượt · treo gate người · im lặng 14 ngày · trùng id sau merge).
@@ -42,7 +42,7 @@ ngoài Docker (ADR 0010). Gõ `make` trực tiếp sẽ báo "command not found"
 
 ## Cấm tuyệt đối
 
-- Sửa `docs/test-status.*`, `docs/PROGRESS.md` hoặc `docs/module-status.json` trực tiếp — máy ghi, hook chặn.
+- Sửa `docs/test-status.*` hoặc `docs/PROGRESS.md` trực tiếp — máy ghi, hook chặn.
   Bị chặn là chủ đích, không phải lỗi cần lách.
 - Sửa mục **đã đóng** trong `.steering/entries/`, gõ tay `.steering/INDEX.md`,
   `HISTORY.md` hoặc `JOURNAL.md`. Nhật ký bất biến như ADR: sai thì viết mục mới

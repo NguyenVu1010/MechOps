@@ -24,7 +24,6 @@ nào rồi gọi đúng skill. Không cần thuộc quy trình.
 |---|---|---|
 | `docs/product/html/dev-flow.html` | Bộ máy này hoạt động thế nào? | dev mới, ngày đầu |
 | `docs/product/html/master-plan.html` | Đang ở đâu, mốc nào tiếp, nghiệm thu bằng gì? | founder, mỗi tuần |
-| `sim/ros2/README.md` | Chạy robot giả (Gazebo, Nav2) trên máy dev thế nào? | dev probe, khi cần robot |
 | `docs/DEVELOPMENT.md` | Hằng ngày gõ gì? Bị chặn thì làm sao? | dev, tra cứu |
 | `CLAUDE.md` | Luật làm việc và vòng lặp chuẩn | agent AI (tự nạp) + dev |
 | `constitution.md` | 9 nguyên tắc không thương lượng | tất cả |
@@ -38,7 +37,7 @@ nào rồi gọi đúng skill. Không cần thuộc quy trình.
 1. **Mọi lệnh đi qua `./mo`**, không phải `make` — toolchain nằm trong Docker (ADR-0010).
    Gõ `make` thẳng sẽ báo "command not found". PowerShell dùng `.\mo.ps1`.
 
-2. **Không sửa tay** `docs/test-status.*`, `docs/PROGRESS.md`, `docs/module-status.json`, `.steering/INDEX.md`.
+2. **Không sửa tay** `docs/test-status.*`, `docs/PROGRESS.md`, `.steering/INDEX.md`.
    Máy ghi, hook chặn, CI kiểm lại. Bị chặn ở đó là chủ đích, không phải lỗi cần lách —
    thông báo luôn kèm lệnh đúng phải dùng.
 
@@ -50,7 +49,6 @@ nào rồi gọi đúng skill. Không cần thuộc quy trình.
 
 - `docs/test-status.md` — tick tự động kèm evidence, dòng đầu nói luôn việc tiếp theo
 - `docs/PROGRESS.md` — burndown từng milestone, nhịp độ
-- `docs/module-status.json` — module nào có code, đang dở, còn trống (máy đo, hiện trong master-plan.html)
 - `.steering/` — nhật ký quyết định, gồm cả hướng đã thử rồi bỏ
 - `./mo next` — đang ở bước nào, làm gì tiếp
 
