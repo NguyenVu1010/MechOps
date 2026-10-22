@@ -23,6 +23,7 @@ nào rồi gọi đúng skill. Không cần thuộc quy trình.
 | File | Trả lời câu hỏi | Cho ai |
 |---|---|---|
 | `docs/product/html/dev-flow.html` | Bộ máy này hoạt động thế nào? | dev mới, ngày đầu |
+| `docs/product/html/master-plan.html` | Đang ở đâu, mốc nào tiếp, nghiệm thu bằng gì? | founder, mỗi tuần |
 | `docs/DEVELOPMENT.md` | Hằng ngày gõ gì? Bị chặn thì làm sao? | dev, tra cứu |
 | `CLAUDE.md` | Luật làm việc và vòng lặp chuẩn | agent AI (tự nạp) + dev |
 | `constitution.md` | 9 nguyên tắc không thương lượng | tất cả |

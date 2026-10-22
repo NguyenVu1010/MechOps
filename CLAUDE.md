@@ -86,10 +86,10 @@ rồi gọi đúng skill tiếp theo. Không cần thuộc thứ tự 8 bước 
 | Hết giờ / phiên dài | `/handoff` |
 
 Tự nạp khi chạm file tương ứng: `contract-guard` (`specs/`), `go-conventions`
-(`*.go`), `test-evidence` (`*_test.go`), `security-guard` (cert/ACL/token/PTY/digest),
+(`*.go`), `rust-conventions` (`*.rs`), `test-evidence` (`*_test.go`), `security-guard` (cert/ACL/token/PTY/digest),
 `feature-spec` (`.steering/plans/`). Rule trong `.claude/rules/` tự nạp theo thư mục.
 
-## Quy ước Go (chi tiết: skill `go-conventions`)
+## Quy ước Go và Rust (chi tiết: skill `go-conventions`, `rust-conventions`)
 
 - `slog` cho mọi log, kèm `deviceId`/`agentId`/`cmdId`/`deploymentId` khi có ngữ cảnh
 - Lỗi wrap `fmt.Errorf("ngữ cảnh: %w", err)` — không nuốt, không log-rồi-return-nil
