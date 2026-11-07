@@ -40,6 +40,7 @@ Một database duy nhất cho cả relational (users, devices, deployments) lẫ
 | State | TanStack Query + SSE invalidation — không cần Redux/Zustand ở quy mô này |
 
 ### 1.5 Agent — Go single binary + ROS 2 sidecar
+> **Cập nhật 2026-10-18:** agent viết bằng **Rust** (ADR-0012), probe bằng **C++ rclcpp** (ADR-0013). Kiến trúc hai tầng dưới đây giữ nguyên; chỉ ngôn ngữ đổi. Kế hoạch theo module: `08-master-plan.md`.
 Vấn đề kỹ thuật quan trọng nhất của agent: **Go không nói chuyện DDS/ROS 2 tự nhiên** (rclgo chưa production-ready). Giải pháp 2 tầng:
 
 ```

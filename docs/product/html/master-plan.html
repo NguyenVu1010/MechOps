@@ -1,0 +1,1100 @@
+<title>Lộ trình MechOps</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+/* Layout: một cột đọc dọc theo thời gian; tiến độ máy đọc ở đầu, kế hoạch người đọc ở sau.
+   Palette kế thừa docs/product/html/dev-flow.html để hai tài liệu là một bộ. */
+:root{
+  --paper:#ECEFF1; --surface:#FBFCFC; --sunk:#E2E7EA;
+  --ink:#161C22; --ink-2:#465059; --ink-3:#6D7982;
+  --rule:#C8D2D8; --rule-soft:#DCE3E7;
+  --gate:#A33320; --gate-bg:#F6E7E3;
+  --warn:#9A6B0C; --warn-bg:#F6EEDC;
+  --human:#3B4B8A; --human-bg:#E6E9F4;
+  --steel:#2F6580; --steel-bg:#E1ECF1;
+  --ok:#2E7D4F; --ok-bg:#E2F1E7;
+  --rust:#B5531F; --rust-bg:#F7E7DC;
+  --ts:#2F6FA3; --ts-bg:#E1EBF5;
+  --shadow:0 1px 0 rgba(22,28,34,.04), 0 8px 24px -18px rgba(22,28,34,.5);
+  --maxw:1180px; --prose:68ch;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:Archivo,"Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#11161A; --surface:#171E23; --sunk:#1D262C;
+    --ink:#DFE6EA; --ink-2:#A3B0B9; --ink-3:#7C8A93;
+    --rule:#2C383F; --rule-soft:#232D33;
+    --gate:#E5806B; --gate-bg:#2E1B17;
+    --warn:#DCA645; --warn-bg:#2B2213;
+    --human:#93A0DC; --human-bg:#1B1F32;
+    --steel:#77A9C4; --steel-bg:#152630;
+    --ok:#6CC592; --ok-bg:#15291D;
+    --rust:#E0895A; --rust-bg:#2E1F15;
+    --ts:#7FB2E0; --ts-bg:#152231;
+    --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 28px -20px rgba(0,0,0,.9);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#11161A; --surface:#171E23; --sunk:#1D262C;
+  --ink:#DFE6EA; --ink-2:#A3B0B9; --ink-3:#7C8A93;
+  --rule:#2C383F; --rule-soft:#232D33;
+  --gate:#E5806B; --gate-bg:#2E1B17;
+  --warn:#DCA645; --warn-bg:#2B2213;
+  --human:#93A0DC; --human-bg:#1B1F32;
+  --steel:#77A9C4; --steel-bg:#152630;
+  --ok:#6CC592; --ok-bg:#15291D;
+  --rust:#E0895A; --rust-bg:#2E1F15;
+  --ts:#7FB2E0; --ts-bg:#152231;
+  --shadow:0 1px 0 rgba(0,0,0,.3), 0 10px 28px -20px rgba(0,0,0,.9);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--serif); font-size:17px; line-height:1.66;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{
+  max-width:var(--maxw); margin:0 auto;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:0 96px;
+}
+a{color:var(--steel)}
+code,.mono{font-family:var(--mono);font-size:.86em}
+code{background:var(--sunk);padding:1px 5px;border-radius:2px}
+h2{
+  font-family:var(--sans); font-weight:700; font-size:clamp(1.5rem,3vw,2.05rem);
+  letter-spacing:-.018em; line-height:1.12; margin:0 0 10px; text-wrap:balance;
+}
+h3{font-family:var(--sans);font-weight:600;font-size:1.12rem;margin:0 0 8px;letter-spacing:-.01em}
+p{margin:0 0 14px;max-width:var(--prose)}
+section{padding:52px 0 8px;border-top:1px solid var(--rule)}
+section:first-of-type{border-top:0}
+.sec-eyebrow{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:10px;
+}
+.lede{font-size:1.14rem;color:var(--ink-2);max-width:62ch}
+.lede strong{color:var(--ink);font-weight:600}
+.note{font-size:14.5px;color:var(--ink-2);max-width:var(--prose)}
+
+/* masthead */
+.mast{border-bottom:1px solid var(--rule);padding:52px 0 28px;margin-bottom:8px}
+.eyebrow{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:20px;
+}
+h1{
+  font-family:var(--sans);font-weight:700;font-size:clamp(2.3rem,6vw,3.9rem);
+  line-height:1.02;letter-spacing:-.026em;margin:0 0 16px;text-wrap:balance;
+}
+
+/* nav */
+nav{
+  position:sticky;top:env(safe-area-inset-top,0px);z-index:20;
+  background:var(--paper);background:color-mix(in srgb,var(--paper) 90%,transparent);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--rule);
+  margin:0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0 calc(-1 * max(16px, env(safe-area-inset-right, 0px)));
+}
+nav ol{
+  list-style:none;margin:0 auto;max-width:var(--maxw);
+  padding:8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px));
+  display:flex;gap:4px;overflow-x:auto;font-family:var(--mono);font-size:11.5px;
+}
+nav a{display:block;padding:5px 9px;white-space:nowrap;color:var(--ink-3);text-decoration:none;border-radius:2px}
+nav a:hover,nav a:focus-visible{color:var(--ink);background:var(--sunk);outline:none}
+
+/* chips */
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.02em;
+  padding:3px 8px;border-radius:2px;border:1px solid var(--rule);background:var(--surface);
+  color:var(--ink-2);white-space:nowrap;line-height:1.4;
+}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ink-3);flex:none}
+.chip.pending::before{background:var(--ink-3)}
+.chip.pass{border-color:var(--ok);color:var(--ok);background:var(--ok-bg)} .chip.pass::before{background:var(--ok)}
+.chip.fail{border-color:var(--gate);color:var(--gate);background:var(--gate-bg)} .chip.fail::before{background:var(--gate)}
+.chip.warn{border-color:var(--warn);color:var(--warn);background:var(--warn-bg)} .chip.warn::before{background:var(--warn)}
+.chip.h{border-style:dashed}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.tag{
+  display:inline-block;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;padding:2px 7px;border-radius:2px;line-height:1.5;
+}
+.tag.rust{color:var(--rust);background:var(--rust-bg)}
+.tag.go{color:var(--steel);background:var(--steel-bg)}
+.tag.cpp{color:var(--human);background:var(--human-bg)}
+.tag.ts{color:var(--ts);background:var(--ts-bg)}
+.tag.cfg{color:var(--ink-2);background:var(--sunk)}
+.tag.gate{color:var(--gate);background:var(--gate-bg)}
+.tag.human{color:var(--human);background:var(--human-bg)}
+
+/* progress panel */
+.panel{background:var(--surface);border:1px solid var(--rule);box-shadow:var(--shadow)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--rule-soft);border-bottom:1px solid var(--rule)}
+.tiles > div{background:var(--surface);padding:16px 18px;min-width:0}
+.tiles .lab{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+.tiles .val{font-family:var(--sans);font-weight:700;font-size:1.9rem;letter-spacing:-.02em;line-height:1.05;font-variant-numeric:tabular-nums}
+.tiles .val small{font-size:.55em;color:var(--ink-3);font-weight:500;letter-spacing:0}
+.tiles .sub{font-size:13.5px;color:var(--ink-2);margin-top:4px;overflow-wrap:anywhere}
+.burn{padding:18px;display:grid;gap:10px}
+.burn-row{display:grid;grid-template-columns:62px 1fr 72px;gap:12px;align-items:center;font-family:var(--mono);font-size:12.5px}
+.burn-row .m{font-weight:700}
+.burn-row .m.open{color:var(--steel)}
+.bar{height:12px;background:var(--sunk);border:1px solid var(--rule);position:relative;overflow:hidden}
+.bar > i{position:absolute;inset:0 auto 0 0;background:var(--ok);width:0;transition:width .4s ease}
+.bar > b{position:absolute;inset:0 auto 0 0;background:var(--gate);width:0}
+.burn-row .n{text-align:right;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.src{
+  display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;
+  padding:12px 18px;border-top:1px solid var(--rule);font-family:var(--mono);font-size:12px;color:var(--ink-3);
+}
+.src label{display:inline-flex;gap:8px;align-items:center;cursor:pointer;color:var(--steel)}
+.src input{font:inherit;max-width:260px}
+.src .state{color:var(--ink-2)}
+.src .state.err{color:var(--gate)}
+/* module status table */
+.modtab{width:100%;border-collapse:collapse;font-size:13.5px;min-width:720px}
+.modtab th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);text-align:left;padding:10px 12px;border-bottom:1px solid var(--rule);background:var(--sunk)}
+.modtab td{padding:9px 12px;border-bottom:1px solid var(--rule-soft);vertical-align:top;color:var(--ink-2)}
+.modtab tr:last-child td{border-bottom:0}
+.modtab td.id b{display:block;font-family:var(--mono);font-size:12.5px;color:var(--ink)}
+.modtab td small{display:block;font-size:12px;color:var(--ink-3);margin-top:2px;line-height:1.35}
+.modtab td.num{white-space:nowrap;font-variant-numeric:tabular-nums}
+.modtab td.tst{min-width:140px}
+.modtab td.tst .bar{height:8px;margin-top:4px}
+.modtab td.empty{text-align:center;padding:24px;color:var(--ink-3)}
+.modtab .dim{color:var(--ink-3)}
+.modtab .warn-note{color:var(--warn)}
+.st{display:inline-block;font-family:var(--mono);font-size:11.5px;padding:2px 8px;border:1px solid var(--rule);border-radius:999px;white-space:nowrap}
+.st.none{color:var(--ink-3);border-style:dashed}
+.st.skeleton{color:var(--ink-2);background:var(--sunk)}
+.st.active{color:var(--steel);border-color:var(--steel);background:var(--steel-bg)}
+.st.done{color:var(--ok);border-color:var(--ok);background:var(--ok-bg)}
+.tag.sql,.tag.sh{color:var(--ink-2);background:var(--sunk)}
+@media (prefers-reduced-motion: reduce){.bar > i{transition:none}}
+
+/* phase track */
+.track{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;background:var(--rule-soft);border:1px solid var(--rule)}
+.track > div{background:var(--surface);padding:16px 16px 18px;min-width:0;position:relative}
+.track .ph{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.track h3{margin:4px 0 6px}
+.track .when{font-family:var(--mono);font-size:12px;color:var(--steel);margin-bottom:8px}
+.track ul{margin:0;padding-left:18px;font-size:14px;color:var(--ink-2);line-height:1.5}
+.track .gate{margin-top:10px;padding-top:10px;border-top:1px dashed var(--rule);font-size:13.5px;color:var(--ink-2)}
+.track .gate b{color:var(--gate);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:3px}
+.track > div.now{outline:2px solid var(--steel);outline-offset:-2px}
+.track > div.now .ph::after{content:"đang ở đây";margin-left:8px;color:var(--steel);font-weight:700}
+
+/* milestones */
+.ms{display:grid;grid-template-columns:150px 1fr;gap:0 28px;padding:28px 0;border-top:1px solid var(--rule-soft)}
+.ms:first-of-type{border-top:0}
+.ms .side{min-width:0}
+.ms .side .id{font-family:var(--sans);font-weight:700;font-size:1.8rem;letter-spacing:-.02em;line-height:1}
+.ms .side .wk{font-family:var(--mono);font-size:12px;color:var(--steel);margin:6px 0 4px}
+.ms .side .dates{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);line-height:1.5}
+.ms .side .mini{margin-top:10px}
+.ms .side .mini .bar{height:8px}
+.ms .side .mini .n{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);margin-top:4px;font-variant-numeric:tabular-nums}
+.ms .body{min-width:0}
+.ms .body h3{font-size:1.25rem;margin-bottom:6px}
+.ms .goal{color:var(--ink-2);font-size:15.5px;margin-bottom:12px}
+.ms .mods{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.ms table{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0 12px}
+.ms th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);text-align:left;padding:6px 8px 6px 0;border-bottom:1px solid var(--rule)}
+.ms td{padding:7px 8px 7px 0;border-bottom:1px solid var(--rule-soft);vertical-align:top;color:var(--ink-2)}
+.ms td:first-child{font-family:var(--mono);font-size:12px;color:var(--ink-3);width:28px}
+.ms td.w{color:var(--ink)}
+.tbl-wrap{overflow-x:auto}
+.accept{
+  background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--ok);
+  padding:12px 16px;font-size:14.5px;color:var(--ink-2);
+}
+.accept b{color:var(--ok);font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:4px}
+.accept.gate{border-left-color:var(--gate)} .accept.gate b{color:var(--gate)}
+.accept.human{border-left-color:var(--human)} .accept.human b{color:var(--human)}
+@media (max-width:720px){.ms{grid-template-columns:1fr;gap:12px}.ms .side .id{font-size:1.5rem}}
+
+/* architecture */
+.arch{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0 10px}
+@media (max-width:820px){.arch{grid-template-columns:1fr}}
+.box{background:var(--surface);border:1px solid var(--rule);padding:14px 16px;min-width:0}
+.box > .t{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.mod{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:start;padding:8px 0;border-top:1px solid var(--rule-soft);font-size:14px}
+.mod:first-of-type{border-top:0}
+.mod .nm{font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--ink)}
+.mod .ds{color:var(--ink-2);line-height:1.45}
+.mod .ds small{display:block;color:var(--ink-3);font-family:var(--mono);font-size:11px;margin-top:2px}
+.link{
+  text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--ink-3);
+  padding:6px 0;border-top:1px dashed var(--rule);border-bottom:1px dashed var(--rule);margin:10px 0;
+}
+.dep{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);background:var(--sunk);padding:10px 14px;border:1px solid var(--rule);overflow-x:auto;white-space:pre;line-height:1.55}
+
+/* I/O accordion */
+details.io{background:var(--surface);border:1px solid var(--rule);margin-bottom:8px}
+details.io summary{
+  list-style:none;cursor:pointer;padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+  font-family:var(--sans);font-weight:600;font-size:1rem;
+}
+details.io summary::-webkit-details-marker{display:none}
+details.io summary::before{content:"+";font-family:var(--mono);color:var(--ink-3);width:14px}
+details.io[open] summary::before{content:"–"}
+details.io summary .sub{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);font-weight:400}
+details.io .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1px;background:var(--rule-soft);border-top:1px solid var(--rule)}
+details.io .grid > div{background:var(--surface);padding:12px 16px;font-size:14px;color:var(--ink-2);line-height:1.5;min-width:0}
+details.io .grid b{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px}
+details.io .grid .f b{color:var(--gate)}
+details.io .ids{padding:10px 16px;border-top:1px solid var(--rule-soft)}
+
+/* plain tables */
+table.plain{width:100%;border-collapse:collapse;font-size:14.5px}
+table.plain th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);text-align:left;padding:8px 10px 8px 0;border-bottom:1px solid var(--rule)}
+table.plain td{padding:9px 10px 9px 0;border-bottom:1px solid var(--rule-soft);vertical-align:top;color:var(--ink-2)}
+table.plain td:first-child{color:var(--ink);font-weight:600;font-family:var(--sans);font-size:14px}
+table.plain td .mono{color:var(--ink-3)}
+
+/* ADR list */
+.adrs{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1px;background:var(--rule-soft);border:1px solid var(--rule)}
+.adrs > div{background:var(--surface);padding:12px 14px;font-size:14px;color:var(--ink-2);min-width:0;line-height:1.45}
+.adrs .n{font-family:var(--mono);font-size:11.5px;color:var(--steel);font-weight:700;margin-right:6px}
+.adrs .new .n{color:var(--rust)}
+.adrs b{color:var(--ink);font-weight:600}
+
+/* risk */
+.risks{display:grid;gap:8px}
+.risk{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.6fr) auto;gap:14px;padding:12px 16px;background:var(--surface);border:1px solid var(--rule);font-size:14px;color:var(--ink-2);align-items:start}
+.risk b{color:var(--ink);font-weight:600;display:block}
+.risk .where{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+@media (max-width:720px){.risk{grid-template-columns:1fr}.risk .where{white-space:normal}}
+
+/* now list */
+ol.now{counter-reset:n;list-style:none;padding:0;margin:0;display:grid;gap:8px;max-width:var(--prose)}
+ol.now li{display:grid;grid-template-columns:30px 1fr;gap:12px;padding:12px 16px;background:var(--surface);border:1px solid var(--rule);font-size:15px;color:var(--ink-2)}
+ol.now li::before{counter-increment:n;content:counter(n);font-family:var(--mono);font-weight:700;color:var(--steel);font-size:14px;padding-top:2px}
+ol.now li b{color:var(--ink);font-weight:600}
+
+footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--rule);font-family:var(--mono);font-size:12px;color:var(--ink-3);line-height:1.7}
+:focus-visible{outline:2px solid var(--steel);outline-offset:2px}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow">
+    <span>Kế hoạch tổng thể</span><span>Chốt 2026-10-18</span><span>ADR 0001–0017</span><span>Catalog 49 test ID</span>
+  </div>
+  <h1>Lộ trình MechOps tới sản phẩm cuối</h1>
+  <p class="lede">Một trang để theo dõi từ <strong>hợp đồng đầu tiên</strong> tới <strong>fleet thật của khách</strong>: tiến độ do máy ghi ở trên, kế hoạch người đọc ở dưới. Tiến độ lấy từ <code>docs/test-status.json</code>, cùng nguồn với tracker, nên không có ô nào tick tay ở đây.</p>
+</header>
+
+<nav aria-label="Mục">
+  <ol>
+    <li><a href="#tien-do">Tiến độ</a></li>
+    <li><a href="#hanh-trinh">Hành trình</a></li>
+    <li><a href="#phase0">Phase 0 từng mốc</a></li>
+    <li><a href="#kien-truc">Kiến trúc</a></li>
+    <li><a href="#vao-ra">Vào / ra module</a></li>
+    <li><a href="#phase1-4">Phase 1–4</a></li>
+    <li><a href="#adr">Quyết định</a></li>
+    <li><a href="#rui-ro">Rủi ro</a></li>
+    <li><a href="#tuan-nay">Tuần này</a></li>
+  </ol>
+</nav>
+
+<!-- ============ TIẾN ĐỘ ============ -->
+<section id="tien-do">
+  <div class="sec-eyebrow">1 · Tiến độ máy ghi</div>
+  <h2>Đang ở đâu trên đường tới 49/49</h2>
+  <p class="note">Mỗi ✅ dưới đây tương ứng một test ID xanh trong CI hoặc một biên bản <code>./mo hw-test</code> ký tên. Trang mở từ clone sẽ hiện bản chụp lúc chốt kế hoạch; nạp file <code>docs/test-status.json</code> mới nhất để cập nhật, hoặc mở trang qua một HTTP server trong repo để trang tự đọc.</p>
+
+  <div class="panel">
+    <div class="tiles">
+      <div><div class="lab">Tổng</div><div class="val"><span id="t-pass">0</span><small> / 49 ✅</small></div><div class="sub" id="t-pct">0% · 0 đỏ</div></div>
+      <div><div class="lab">Milestone đang mở</div><div class="val" id="t-ms">M1</div><div class="sub" id="t-ms-sub">0/16 trong mốc</div></div>
+      <div><div class="lab">Việc tiếp theo</div><div class="val mono" id="t-next" style="font-size:1.35rem">PRV-01</div><div class="sub" id="t-next-sub">Enroll token hợp lệ</div></div>
+      <div><div class="lab">Tracker cập nhật</div><div class="val mono" id="t-upd" style="font-size:1.1rem">2026-08-25</div><div class="sub" id="t-commit">commit 86aafdb</div></div>
+    </div>
+    <div class="burn" id="burn"></div>
+    <div class="src">
+      <span>Nguồn: <span id="src-state" class="state">bản chụp nhúng lúc chốt kế hoạch</span></span>
+      <label><span>Nạp test-status.json</span><input type="file" id="f-status" accept=".json,application/json"></label>
+    </div>
+  </div>
+
+  <h3 style="margin-top:26px">Trạng thái từng module</h3>
+  <p class="note">Máy đo, không ai gõ tay: <code>tools/report/modstatus.py</code> đếm file và dòng mã trong thư mục của module, hỏi git lần commit cuối, và lấy test ID thuộc module từ tracker. Một test ID có thể thuộc hai module (enroll cần cả agent lẫn server), nên cột test ở đây không cộng thành 49. "Khung" là thư mục có file nhưng chưa tới 80 dòng mã đúng ngôn ngữ đã chốt.</p>
+  <div class="panel">
+    <div class="tiles">
+      <div><div class="lab">Module</div><div class="val" id="m-states" style="font-size:1rem;line-height:1.4;font-weight:600">—</div><div class="sub">12 module Phase 0, theo mục 4 bên dưới</div></div>
+      <div><div class="lab">Hợp đồng</div><div class="val" id="m-spec">—</div><div class="sub" id="m-spec-sub">channel AsyncAPI đã điền</div></div>
+      <div><div class="lab">ADR đã chốt</div><div class="val" id="m-adr">—</div><div class="sub">docs/adr/</div></div>
+      <div><div class="lab">Plan đang mở</div><div class="val" id="m-plans">—</div><div class="sub" id="m-plans-sub">.steering/plans/</div></div>
+      <div><div class="lab">Đo trên commit</div><div class="val mono" id="m-basis" style="font-size:1.1rem">—</div><div class="sub" id="m-basis-sub">—</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="modtab">
+        <thead><tr><th>Module</th><th>Ngôn ngữ</th><th>Trạng thái</th><th>Mã</th><th>Test ID của module</th><th>Commit cuối</th><th>Mốc</th></tr></thead>
+        <tbody id="modtab-body"></tbody>
+      </table>
+    </div>
+    <div class="src">
+      <span>Nguồn: <span id="mod-src" class="state">—</span></span>
+      <label><span>Nạp module-status.json</span><input type="file" id="f-mod" accept=".json,application/json"></label>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HÀNH TRÌNH ============ -->
+<section id="hanh-trinh">
+  <div class="sec-eyebrow">2 · Hành trình năm phase</div>
+  <h2>Mỗi phase có cửa vào. Không đạt thì không bước.</h2>
+  <p class="note">Gate lấy từ <code>03-phase-plan-1-4.md</code>. Độ chi tiết giảm theo khoảng cách: Phase 0 tới từng test ID, Phase 1 tới module, Phase 2–4 tới ranh giới kiến trúc.</p>
+
+  <div class="track">
+    <div class="now">
+      <div class="ph">Phase 0</div>
+      <h3>Foundation</h3>
+      <div class="when">2026-10-20 → ~2027-09 · 46 tuần part-time</div>
+      <ul>
+        <li>Agent Rust, server Go, probe C++</li>
+        <li>Provisioning, ACL, telemetry offline-first</li>
+        <li>OTA app-level có rollback tự trị</li>
+        <li>Alert, terminal có audit, white-label, installer</li>
+      </ul>
+      <div class="gate"><b>Cửa ra</b>49/49 ✅ · design partner production ≥ 3 tháng · OTA 0 brick · ≥ 1 vendor trả phí hoặc 2 pipeline</div>
+    </div>
+    <div>
+      <div class="ph">Phase 1</div>
+      <h3>Multi-tenant &amp; Interop</h3>
+      <div class="when">12–18 tháng · cần ≥ 1 full-time</div>
+      <ul>
+        <li>vda5050-probe, rồi bridge</li>
+        <li>Video view-only WebRTC, sau đó teleop</li>
+        <li>Tenant RLS, Keycloak, control plane license</li>
+        <li>Fleet dashboard, Foxglove link-out</li>
+      </ul>
+      <div class="gate"><b>Cửa vào</b>Cửa ra Phase 0 + tiền nuôi 1 full-time. Không đạt: chỉ làm VDA probe + video view-only</div>
+    </div>
+    <div>
+      <div class="ph">Phase 2</div>
+      <h3>Industrial Platform</h3>
+      <div class="when">năm 2–3 · 3–5 người</div>
+      <ul>
+        <li>opcua-probe, modbus-probe (Mode B gateway)</li>
+        <li>Alarm center: ack, escalation, ca kíp</li>
+        <li>Firmware OTA ESP32/STM32</li>
+        <li>Gap assessment IEC 62443</li>
+      </ul>
+      <div class="gate"><b>Cửa vào</b>≥ 5 khách trả phí · ≥ 1 hợp đồng nhà máy yêu cầu PLC/OPC-UA</div>
+    </div>
+    <div>
+      <div class="ph">Phase 3</div>
+      <h3>Data Platform</h3>
+      <div class="when">năm 3–5 · 5+ người</div>
+      <ul>
+        <li>Tiering Timescale → Parquet/MinIO (Rust)</li>
+        <li>Mission replay: telemetry + video + bag</li>
+        <li>Lidar/pointcloud replay</li>
+        <li>Dataset builder cho team AI khách</li>
+      </ul>
+      <div class="gate"><b>Cửa vào</b>≥ 100 robot connected · khách chủ động hỏi retention/replay</div>
+    </div>
+    <div>
+      <div class="ph">Phase 4</div>
+      <h3>AI Platform</h3>
+      <div class="when">năm 5+ · tuỳ vốn</div>
+      <ul>
+        <li>Anomaly thống kê (ship sớm)</li>
+        <li>Predictive maintenance từ nhãn alarm center</li>
+        <li>Fleet optimization, inspection</li>
+        <li>Digital twin chỉ khi có khách tài trợ</li>
+      </ul>
+      <div class="gate"><b>Cửa vào</b>Phase 3 vận hành ≥ 1 năm. Bán insight, không bán model</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PHASE 0 ============ -->
+<section id="phase0">
+  <div class="sec-eyebrow">3 · Phase 0 từng mốc</div>
+  <h2>Bảy mốc, mỗi mốc một lát cắt dọc chạy xuyên agent → broker → server → dashboard</h2>
+  <p class="note">Thứ tự trong mỗi mốc là thứ tự làm, không đổi ID thuộc mốc nào trong catalog. Thanh nhỏ bên trái và màu chip test ID cập nhật theo tracker. Ngày là dự kiến với 15–20 giờ/tuần cả team.</p>
+
+  <!-- M0' -->
+  <article class="ms" data-ms="M0">
+    <div class="side">
+      <div class="id">M0′</div>
+      <div class="wk">3 tuần</div>
+      <div class="dates">2026-10-20<br>→ 2026-11-09</div>
+      <div class="mini"><div class="bar"><i></i><b></b></div><div class="n">TEL-01 là test duy nhất</div></div>
+    </div>
+    <div class="body">
+      <h3>Nền hạ tầng và hợp đồng</h3>
+      <p class="goal">M0 cũ dừng ở skeleton. Hợp đồng mới có một channel, toolchain chưa có Rust, tracker chưa đọc được test Rust. Không có mốc này thì PRV-01 không có gì để đứng.</p>
+      <div class="mods">
+        <span class="tag cfg">SPEC</span><span class="tag go">PROTO-GO</span><span class="tag rust">PROTO-RS</span><span class="tag cfg">DEP toolchain</span><span class="tag cfg">Tracker</span><span class="tag cfg">BRK</span>
+      </div>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Việc</th><th>Kết quả</th></tr>
+        <tr><td>1</td><td class="w">Điền 8 channel còn <code>TODO(M0)</code> vào <code>asyncapi.yaml</code>; JSON Schema cho status, inventory, cmd, cmdRes, otaState, deviceState, event; schema Probe API; test vector hợp lệ và không hợp lệ; <code>openapi.yaml</code> enroll/renew/devices; bảng mã <code>codes.md</code></td><td>Hợp đồng đủ để agent và server viết độc lập</td></tr>
+        <tr><td>2</td><td class="w"><code>make gen</code> chạy go-jsonschema và typify từ cùng <code>specs/schemas</code></td><td>CI đỏ nếu file sinh lệch</td></tr>
+        <tr><td>3</td><td class="w"><code>dev.Dockerfile</code> thêm Rust stable pinned, cargo-nextest, cargo-deny, sccache, mold; Go lên 1.25; <code>agent/</code> rời <code>go.work</code> thành Cargo workspace; <code>devcontainer.json</code></td><td>Máy trắng chỉ cần Docker vẫn đúng</td></tr>
+        <tr><td>4</td><td class="w"><code>track.py</code> đọc JUnit từ cargo-nextest; Makefile tách lint-go / lint-rust / lint-cpp; <code>trace.py</code> kiểm <code>forbid(unsafe_code)</code></td><td>Test Rust tick được</td></tr>
+        <tr><td>5</td><td class="w"><code>docker-compose.yml</code> thật: EMQX pin phiên bản, 8883 mTLS, ACL SQL; Timescale; registry; server; dashboard. <code>install.sh</code> bootstrap CA và user seed</td><td><code>docker compose up</code> trên máy trắng</td></tr>
+      </table></div>
+      <div class="chips"><span class="chip" data-tid="TEL-01">TEL-01 [U]</span></div>
+      <div class="accept" style="margin-top:12px"><b>Nghiệm thu M0′</b><code>./mo verify</code> xanh và tick TEL-01 ở cả Rust và Go · <code>./mo trace</code> OK với 17 ADR · đăng nhập dashboard bằng user seed trên máy trắng · <code>.steering</code> có mục ghi quyết định M0′</div>
+    </div>
+  </article>
+
+  <!-- M1 -->
+  <article class="ms" data-ms="M1">
+    <div class="side">
+      <div class="id">M1</div>
+      <div class="wk">8 tuần</div>
+      <div class="dates">2026-11-10<br>→ 2027-01-04</div>
+      <div class="mini"><div class="bar"><i></i><b></b></div><div class="n" data-ms-n="M1">0/16</div></div>
+    </div>
+    <div class="body">
+      <h3>Agent v0 và provisioning</h3>
+      <p class="goal">Robot thật xuất hiện online/offline trên dashboard qua mTLS, ACL đúng, telemetry chảy, mất mạng không mất event. Đây là mốc học Rust trên lõi sản phẩm, có gate rút lui.</p>
+      <div class="mods">
+        <span class="tag go">SRV.ca</span><span class="tag go">SRV.ingest</span><span class="tag go">SRV.api</span><span class="tag rust">AGT.identity</span><span class="tag rust">AGT.transport</span><span class="tag rust">AGT.telemetry</span><span class="tag rust">AGT.buffer</span><span class="tag rust">SIM</span><span class="tag cfg">BRK ACL</span><span class="tag ts">DSH list</span>
+      </div>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Việc</th><th>Test ID</th></tr>
+        <tr><td>1</td><td class="w">SRV.ca + DB: bảng enroll_tokens, agents; enroll, renew; CA bootstrap (ADR-0016)</td><td>PRV-01, PRV-02</td></tr>
+        <tr><td>2</td><td class="w">AGT.identity + transport: CLI enroll, key/CSR, connect mTLS, LWT, status retained</td><td>PRV-01 đầu-cuối</td></tr>
+        <tr><td>3</td><td class="w">BRK: ACL SQL theo agentId và inventory</td><td>ACL-01..03</td></tr>
+        <tr><td>4</td><td class="w">AGT.telemetry + SRV.ingest + DB: envelope, batch insert hypertable, LWT → offline</td><td>TEL-03</td></tr>
+        <tr><td>5</td><td class="w">SRV.api + DSH: device list qua SSE, login JWT hai role</td><td>DoD M1</td></tr>
+        <tr><td>6</td><td class="w">AGT.buffer: SQLite offline, replay theo seq</td><td>TEL-04</td></tr>
+        <tr><td>7</td><td class="w">Giới hạn 64 KB; renew &lt; 30 ngày; hết hạn không crash-loop</td><td>ACL-04, PRV-03, PRV-04</td></tr>
+        <tr><td>8</td><td class="w">SIM: agent giả lập N thiết bị cho nightly</td><td>chuẩn bị TEL-02, LOD</td></tr>
+        <tr><td>9</td><td class="w">Jetson + Pi thật, <code>curl | sh</code>, biên bản ký</td><td>PRV-05, TEL-07 [H]</td></tr>
+      </table></div>
+      <div class="chips" data-ms-chips="M1">
+        <span class="chip" data-tid="PRV-01">PRV-01</span><span class="chip" data-tid="PRV-02">PRV-02</span><span class="chip" data-tid="PRV-03">PRV-03</span><span class="chip" data-tid="PRV-04">PRV-04</span><span class="chip h" data-tid="PRV-05">PRV-05 [H]</span>
+        <span class="chip" data-tid="ACL-01">ACL-01</span><span class="chip" data-tid="ACL-02">ACL-02</span><span class="chip" data-tid="ACL-03">ACL-03</span><span class="chip" data-tid="ACL-04">ACL-04</span>
+        <span class="chip" data-tid="TEL-03">TEL-03</span><span class="chip" data-tid="TEL-04">TEL-04</span><span class="chip h" data-tid="TEL-07">TEL-07 [H]</span>
+      </div>
+      <div class="accept gate" style="margin-top:12px"><b>Gate rút lui Rust · ADR-0012</b>Hết tuần 8 kể từ <code>/task PRV-01</code> mà PRV-01 và TEL-03 chưa xanh → viết ADR quay về Go cho agent. Protocol trong <code>specs/</code> không mất.</div>
+      <div class="accept" style="margin-top:8px"><b>Nghiệm thu M1</b>PRV-01..04, ACL-01..04, TEL-01, TEL-03, TEL-04 xanh trong nightly · PRV-05, TEL-07 có biên bản · dashboard thấy 2 thiết bị thật online/offline realtime. TEL-02, TEL-05, TEL-06 được phép kéo sang M2.</div>
+    </div>
+  </article>
+
+  <!-- M2 -->
+  <article class="ms" data-ms="M2">
+    <div class="side">
+      <div class="id">M2</div>
+      <div class="wk">6 tuần</div>
+      <div class="dates">2027-01-05<br>→ 2027-02-15</div>
+      <div class="mini"><div class="bar"><i></i><b></b></div><div class="n" data-ms-n="M2">0/6</div></div>
+    </div>
+    <div class="body">
+      <h3>Probe ROS 2 và dashboard v0</h3>
+      <p class="goal">Robot ROS 2 hiện node status, battery, pose trên dashboard. Probe C++ là nơi kinh nghiệm C++ của team vào việc. Bắt đầu tiếp cận design partner vì đã có demo.</p>
+      <div class="mods">
+        <span class="tag rust">AGT.probe_hub</span><span class="tag cpp">PRB-ROS</span><span class="tag ts">DSH detail + ECharts + RBAC</span><span class="tag rust">SIM 24h</span>
+      </div>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Việc</th><th>Test ID</th></tr>
+        <tr><td>1</td><td class="w">AGT.probe_hub: Unix socket, hello/helloAck, ping/pong, inventory hợp nhất (probe giả lập)</td><td>PRB-01, PRB-03, PRB-04, PRB-05</td></tr>
+        <tr><td>2</td><td class="w">PRB-ROS rclcpp: node list, topic hz, battery, pose, event ROS_NODE_DOWN; image matrix humble/jazzy × amd64/arm64 (ADR-0013)</td><td>PRB-02, PRB-06 [H]</td></tr>
+        <tr><td>3</td><td class="w">DSH: device detail, ECharts telemetry, profile AMR, RBAC admin/viewer</td><td>DoD M2</td></tr>
+        <tr><td>4</td><td class="w">AGT + SIM: chạy 24h, clock skew, buffer 24h</td><td>TEL-02, TEL-05, TEL-06</td></tr>
+      </table></div>
+      <div class="chips" data-ms-chips="M2">
+        <span class="chip" data-tid="PRB-01">PRB-01 [U]</span><span class="chip" data-tid="PRB-02">PRB-02</span><span class="chip" data-tid="PRB-03">PRB-03</span><span class="chip" data-tid="PRB-04">PRB-04</span><span class="chip" data-tid="PRB-05">PRB-05</span><span class="chip h" data-tid="PRB-06">PRB-06 [H]</span>
+        <span class="chip" data-tid="TEL-02">TEL-02</span><span class="chip" data-tid="TEL-05">TEL-05</span><span class="chip" data-tid="TEL-06">TEL-06</span>
+      </div>
+      <div class="accept" style="margin-top:12px"><b>Nghiệm thu M2</b>Toàn bộ PRB [I] xanh, PRB-06 [H] biên bản, TEL nhóm C đủ 7/7 · robot ROS 2 (sim hoặc thật) hiện node status + battery trên dashboard.</div>
+    </div>
+  </article>
+
+  <!-- M3 -->
+  <article class="ms" data-ms="M3">
+    <div class="side">
+      <div class="id">M3 ⭐</div>
+      <div class="wk">10 tuần</div>
+      <div class="dates">2027-02-16<br>→ 2027-04-26</div>
+      <div class="mini"><div class="bar"><i></i><b></b></div><div class="n" data-ms-n="M3">0/12</div></div>
+    </div>
+    <div class="body">
+      <h3>OTA v1, trọng tâm Phase 0</h3>
+      <p class="goal">Deploy version lỗi, robot tự về version cũ không ai can thiệp, kể cả khi rút điện hay rút mạng giữa chừng. Đây là lúc Rust trả công: state machine do compiler canh. Design partner ký ở mốc này.</p>
+      <div class="mods">
+        <span class="tag rust">AGT.ota</span><span class="tag rust">AGT.cmd</span><span class="tag go">SRV.fleet</span><span class="tag cfg">REG</span><span class="tag ts">DSH deploy</span><span class="tag cfg">Release + cosign</span>
+      </div>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Việc</th><th>Test ID</th></tr>
+        <tr><td>0</td><td class="w">Kiểm lại spike rumqttc v5: response topic, user properties (đã làm ở M1)</td><td>—</td></tr>
+        <tr><td>1</td><td class="w">AGT.ota: state machine với <code>Persisted&lt;_&gt;</code>, SQLite, bollard pull theo digest, verify</td><td>OTA-07, OTA-06</td></tr>
+        <tr><td>2</td><td class="w">Switch giữ image cũ, health check http/exec/ros-topic, rollback tự trị</td><td>OTA-01, OTA-02, OTA-03</td></tr>
+        <tr><td>3</td><td class="w">Boot thấy state dở dang → rollback</td><td>OTA-04, OTA-05 [H]</td></tr>
+        <tr><td>4</td><td class="w">AGT.cmd: expiresAt, một deployment tại một thời điểm</td><td>OTA-08, OTA-10</td></tr>
+        <tr><td>5</td><td class="w">SRV.fleet + DB + DSH: deployment, nhóm, wave, dừng khi fail, UI tiến độ</td><td>OTA-09</td></tr>
+        <tr><td>6</td><td class="w">REG trong compose, docs push image cho vendor; release agent (cargo-dist), cosign ký binary và image</td><td>—</td></tr>
+        <tr><td>7</td><td class="w">Disk gần đầy; toàn ma trận Jetson + Pi</td><td>OTA-11, OTA-12 [H]</td></tr>
+      </table></div>
+      <div class="chips" data-ms-chips="M3">
+        <span class="chip" data-tid="OTA-01">OTA-01</span><span class="chip" data-tid="OTA-02">OTA-02</span><span class="chip" data-tid="OTA-03">OTA-03</span><span class="chip h" data-tid="OTA-04">OTA-04 [H]</span><span class="chip h" data-tid="OTA-05">OTA-05 [H]</span><span class="chip" data-tid="OTA-06">OTA-06</span><span class="chip" data-tid="OTA-07">OTA-07</span><span class="chip" data-tid="OTA-08">OTA-08</span><span class="chip" data-tid="OTA-09">OTA-09</span><span class="chip" data-tid="OTA-10">OTA-10</span><span class="chip h" data-tid="OTA-11">OTA-11 [H]</span><span class="chip h" data-tid="OTA-12">OTA-12 [H]</span>
+      </div>
+      <div class="accept" style="margin-top:12px"><b>Nghiệm thu M3</b>OTA-01..10 [I] xanh · OTA-04, 05, 11, 12 [H] biên bản trên cả Jetson và Pi · demo deploy version lỗi → robot tự về version cũ · design partner ký.</div>
+    </div>
+  </article>
+
+  <!-- M4 -->
+  <article class="ms" data-ms="M4">
+    <div class="side">
+      <div class="id">M4</div>
+      <div class="wk">5 tuần</div>
+      <div class="dates">2027-04-27<br>→ 2027-05-31</div>
+      <div class="mini"><div class="bar"><i></i><b></b></div><div class="n" data-ms-n="M4">0/8</div></div>
+    </div>
+    <div class="body">
+      <h3>Alert và remote log</h3>
+      <p class="goal">Rút mạng robot, Telegram báo trong một phút. Năm mươi robot cùng mất điện không thành năm mươi tin nhắn.</p>
+      <div class="mods">
+        <span class="tag go">SRV.alert</span><span class="tag go">SRV.notifier</span><span class="tag rust">AGT.logs</span><span class="tag cpp">PRB-ROS logs</span><span class="tag ts">DSH alert + log</span>
+      </div>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Việc</th><th>Test ID</th></tr>
+        <tr><td>1</td><td class="w">Rule offline &gt; X, battery &lt; Y, node chết; raised/cleared; cooldown; gộp bão trong cửa sổ 60s</td><td>ALT-01, ALT-02, ALT-03</td></tr>
+        <tr><td>2</td><td class="w">Notifier email SMTP, Telegram, Zalo webhook; retry có giới hạn, lỗi hiện trên dashboard</td><td>ALT-04</td></tr>
+        <tr><td>3</td><td class="w">AGT.logs + probe: logs.start/stop, TTL 15 phút, tải log</td><td>TRM-04</td></tr>
+        <tr><td>4</td><td class="w">DSH: trang alert, cấu hình rule, log viewer</td><td>DoD M4</td></tr>
+      </table></div>
+      <div class="chips" data-ms-chips="M4">
+        <span class="chip" data-tid="ALT-01">ALT-01</span><span class="chip" data-tid="ALT-02">ALT-02</span><span class="chip" data-tid="ALT-03">ALT-03</span><span class="chip" data-tid="ALT-04">ALT-04</span><span class="chip" data-tid="TRM-04">TRM-04</span>
+      </div>
+      <div class="accept" style="margin-top:12px"><b>Nghiệm thu M4</b>ALT-01..04, TRM-04 xanh · rút mạng robot → Telegram trong 1 phút.</div>
+    </div>
+  </article>
+
+  <!-- M5 -->
+  <article class="ms" data-ms="M5">
+    <div class="side">
+      <div class="id">M5</div>
+      <div class="wk">6 tuần</div>
+      <div class="dates">2027-06-01<br>→ 2027-07-12</div>
+      <div class="mini"><div class="bar"><i></i><b></b></div><div class="n" data-ms-n="M5">0/7</div></div>
+    </div>
+    <div class="body">
+      <h3>Terminal, white-label, installer</h3>
+      <p class="goal">Người ngoài team cài được một instance mới trong 30 phút theo docs. Vendor đổi logo và màu không rebuild. Mọi phiên terminal có audit đầy đủ.</p>
+      <div class="mods">
+        <span class="tag rust">AGT.pty</span><span class="tag go">SRV.relay</span><span class="tag go">SRV.audit</span><span class="tag ts">DSH xterm.js + theme</span><span class="tag cfg">DEP install.sh, backup</span>
+      </div>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Việc</th><th>Test ID</th></tr>
+        <tr><td>0</td><td class="w">ADR terminal: PTY qua WebSocket mTLS hay WireGuard. Hoà giải mâu thuẫn spec v2 và dev-plan trước khi code</td><td>—</td></tr>
+        <tr><td>1</td><td class="w">Phiên terminal, audit input/output, chỉ role admin, đóng sạch 30s khi rớt mạng</td><td>TRM-01, TRM-02, TRM-03</td></tr>
+        <tr><td>2</td><td class="w">Theme logo/màu qua cấu hình instance bằng CSS variables (ADR-0017)</td><td>WLB-01</td></tr>
+        <tr><td>3</td><td class="w"><code>install.sh</code> idempotent, backup/restore gồm volume CA, docs cài &lt; 30 phút</td><td>INS-02, INS-03, INS-01 [H]</td></tr>
+      </table></div>
+      <div class="chips" data-ms-chips="M5">
+        <span class="chip" data-tid="TRM-01">TRM-01</span><span class="chip" data-tid="TRM-02">TRM-02</span><span class="chip" data-tid="TRM-03">TRM-03</span><span class="chip" data-tid="WLB-01">WLB-01</span><span class="chip h" data-tid="INS-01">INS-01 [H]</span><span class="chip" data-tid="INS-02">INS-02</span><span class="chip" data-tid="INS-03">INS-03</span>
+      </div>
+      <div class="accept human" style="margin-top:12px"><b>Nghiệm thu M5 · có người ngoài</b>TRM-01..03, WLB-01, INS-02, INS-03 xanh · INS-01 do người ngoài team cài, có biên bản · cài instance mới &lt; 30 phút theo docs.</div>
+    </div>
+  </article>
+
+  <!-- M6 -->
+  <article class="ms" data-ms="M6">
+    <div class="side">
+      <div class="id">M6</div>
+      <div class="wk">8 tuần trở lên</div>
+      <div class="dates">2027-07-13<br>→ 2027-09-06+</div>
+      <div class="mini"><div class="bar"><i></i><b></b></div><div class="n" data-ms-n="M6">0/3</div></div>
+    </div>
+    <div class="body">
+      <h3>Hardening với design partner</h3>
+      <p class="goal">Fleet thật chạy 30 ngày không brick. Năm mươi agent giả lập 72 giờ không mất event QoS 1. Mốc này không có ngày kết thúc cố định: nó kết thúc khi cửa ra Phase 0 mở.</p>
+      <div class="mods">
+        <span class="tag rust">SIM 50 agent</span><span class="tag go">SRV.ingest backpressure</span><span class="tag cfg">DB compression</span><span class="tag cfg">Security pass, SBOM</span>
+      </div>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Việc</th><th>Test ID</th></tr>
+        <tr><td>1</td><td class="w">50 agent giả lập 72h, compression Timescale, dashboard &lt; 2s; bão reconnect sau broker restart</td><td>LOD-01, LOD-02</td></tr>
+        <tr><td>2</td><td class="w">Fleet design partner 30 ngày; rà ACL, rotate cert, review audit</td><td>LOD-03 [H]</td></tr>
+        <tr><td>3</td><td class="w">cargo-deny, govulncheck sạch; SBOM; ký release</td><td>—</td></tr>
+      </table></div>
+      <div class="chips" data-ms-chips="M6">
+        <span class="chip" data-tid="LOD-01">LOD-01</span><span class="chip" data-tid="LOD-02">LOD-02</span><span class="chip h" data-tid="LOD-03">LOD-03 [H]</span>
+      </div>
+      <div class="accept gate" style="margin-top:12px"><b>Cửa ra Phase 0 · quyết định của người</b>49/49 ✅ có evidence · design partner production ≥ 3 tháng · OTA 0 sự cố brick · ≥ 1 vendor trả phí hoặc 2 vendor pipeline nghiêm túc. Chưa đạt thì ở lại hardening, không build Phase 1.</div>
+    </div>
+  </article>
+</section>
+
+<!-- ============ KIẾN TRÚC ============ -->
+<section id="kien-truc">
+  <div class="sec-eyebrow">4 · Kiến trúc và bản đồ module</div>
+  <h2>Ba ngôn ngữ, ba ranh giới tiến trình, một hợp đồng</h2>
+  <p class="note">Chiều phụ thuộc: server → <code>specs/</code> ← agent ← probe. Agent không biết server tồn tại ngoài hợp đồng. Probe không biết MQTT tồn tại. C++ chỉ sống sau một ranh giới tiến trình, không bao giờ trong không gian địa chỉ của agent.</p>
+
+  <div class="arch">
+    <div class="box">
+      <div class="t"><span>Vendor instance · Docker Compose · một node mỗi vendor</span><span class="tag go">Go</span></div>
+      <div class="mod"><span class="nm">DSH</span><span class="ds">Dashboard Next.js, SSE một chiều, TanStack Query, xterm.js, theme CSS variables<small>dashboard/ · ADR-0007, 0017 · <span class="tag ts">TS</span></small></span></div>
+      <div class="mod"><span class="nm">SRV</span><span class="ds">api (REST, SSE hub, JWT/RBAC) · ca (PKI) · ingest (MQTT → Timescale) · fleet (OTA wave) · alert · audit · relay (terminal)<small>server/ · ADR-0007, 0009, 0015, 0016</small></span></div>
+      <div class="mod"><span class="nm">DB</span><span class="ds">PostgreSQL 16 + TimescaleDB: hypertable telemetry (JSONB profiles), compression 7 ngày, aggregate 1 phút giữ 90 ngày<small>server/migrations · sqlc · ADR-0006</small></span></div>
+      <div class="mod"><span class="nm">BRK</span><span class="ds">EMQX 5, một node, mTLS 8883, username = CN, ACL SQL trên cùng DB, max packet 64 KB<small>deploy/emqx · ADR-0003, 0014</small></span></div>
+      <div class="mod"><span class="nm">REG</span><span class="ds">Docker Registry v2, image app ROS 2 của vendor, agent kéo theo digest<small>deploy/ · ADR-0015</small></span></div>
+      <div class="mod"><span class="nm">DEP</span><span class="ds">docker-compose.yml, install.sh idempotent, bootstrap CA, backup/restore gồm volume CA<small>deploy/ · ADR-0010</small></span></div>
+    </div>
+    <div class="box">
+      <div class="t"><span>Robot · Jetson / Pi / IPC · Ubuntu</span><span class="tag rust">Rust</span></div>
+      <div class="mod"><span class="nm">AGT</span><span class="ds">mechops-agent, một binary tĩnh musl, systemd, Apache 2.0, <code>forbid(unsafe_code)</code><small>agent/ · ADR-0005, 0012, 0016</small></span></div>
+      <div class="mod"><span class="nm">· identity</span><span class="ds">key ECDSA tại thiết bị, cert 90 ngày CN=agentId, renew &lt; 30 ngày qua mTLS</span></div>
+      <div class="mod"><span class="nm">· transport</span><span class="ds">trait Publish/Subscribe; impl MQTT 5 rumqttc; LWT; từ chối &gt; 64 KB trước khi publish</span></div>
+      <div class="mod"><span class="nm">· telemetry</span><span class="ds">sysinfo + data từ probe → envelope v/ts/seq/metrics/profiles mỗi 2s</span></div>
+      <div class="mod"><span class="nm">· buffer</span><span class="ds">SQLite offline: events và state đủ, telemetry downsample 30s giữ 24h, replay theo seq</span></div>
+      <div class="mod"><span class="nm">· probe_hub</span><span class="ds">Unix socket NDJSON, N probe, ping 10s, inventory hợp nhất (Mode B)</span></div>
+      <div class="mod"><span class="nm">· ota</span><span class="ds">state machine <code>Persisted&lt;_&gt;</code>, SQLite trước hành động, bollard pull theo digest, health check, rollback tự trị</span></div>
+      <div class="mod"><span class="nm">· cmd / pty / logs</span><span class="ds">dispatcher có expiresAt và chống lặp cmdId · PTY đóng sạch 30s · log tail TTL 15 phút</span></div>
+      <div class="link">Unix socket /run/mechops/agent.sock · NDJSON · Probe API v1</div>
+      <div class="mod"><span class="nm">PRB-ROS</span><span class="ds">ros2-probe C++ rclcpp trong container ROS 2 của robot: node list, topic hz, battery, pose, event ROS_NODE_DOWN<small>probe/ros2 · ADR-0004, 0013 · <span class="tag cpp">C++</span></small></span></div>
+      <div class="mod"><span class="nm">APP</span><span class="ds">Container ROS 2 của vendor, được OTA swap theo digest, image cũ giữ lại <code>keepPreviousHours</code></span></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:22px">Thứ tự phụ thuộc khi xây</h3>
+  <div class="dep">SPEC ──▶ PROTO-GO ──▶ SRV.ca ──▶ SRV.ingest ──▶ SRV.api ──▶ DSH
+  │                      ▲            ▲
+  └────▶ PROTO-RS ──▶ AGT.identity ──▶ AGT.transport ──▶ AGT.telemetry ──▶ AGT.buffer
+                                                  │
+                        PRB-ROS ──▶ AGT.probe_hub ─┘
+                                                  ▼
+                       REG ──▶ AGT.ota ◀── AGT.cmd ◀── SRV.fleet</div>
+</section>
+
+<!-- ============ VÀO / RA ============ -->
+<section id="vao-ra">
+  <div class="sec-eyebrow">5 · Vào / ra từng module Phase 0</div>
+  <h2>Mỗi module trả lời năm câu: nhận gì, phát gì, giữ gì, hỏng thì sao, test nào canh</h2>
+  <p class="note">Cột "Hỏng phải xử" là hành vi bắt buộc có định nghĩa, không phải danh sách mong muốn. Thiếu một dòng ở đó là thiếu một test.</p>
+
+  <details class="io" open>
+    <summary>AGT.identity <span class="tag rust">Rust</span><span class="sub">cert, enroll, renew</span></summary>
+    <div class="grid">
+      <div><b>Vào</b>token từ CLI, cert hiện tại, đồng hồ hệ thống</div>
+      <div><b>Ra</b>CSR tới SRV.ca, cert mới, sự kiện <code>cert.expiring</code></div>
+      <div><b>Giữ</b>key, cert, CA chain tại <code>/var/lib/mechops/identity/</code> quyền 0600</div>
+      <div class="f"><b>Hỏng phải xử</b>token sai hoặc hết hạn: lỗi rõ, thoát · cert hết hạn: in hướng dẫn, exit 78, không crash-loop · renew thất bại: backoff tới hạn</div>
+    </div>
+    <div class="ids chips"><span class="chip" data-tid="PRV-01">PRV-01</span><span class="chip" data-tid="PRV-02">PRV-02</span><span class="chip" data-tid="PRV-03">PRV-03</span><span class="chip" data-tid="PRV-04">PRV-04</span></div>
+  </details>
+
+  <details class="io">
+    <summary>AGT.transport <span class="tag rust">Rust</span><span class="sub">trait + impl MQTT 5</span></summary>
+    <div class="grid">
+      <div><b>Vào</b>cấu hình MQTT, cert; yêu cầu publish/subscribe từ các module khác</div>
+      <div><b>Ra</b>gói MQTT tới BRK; LWT đăng ký lúc CONNECT</div>
+      <div><b>Giữ</b>không</div>
+      <div class="f"><b>Hỏng phải xử</b>mất mạng: reconnect backoff · broker từ chối ACL: log, không retry vô hạn · payload &gt; 64 KB: từ chối trước khi publish</div>
+    </div>
+    <div class="ids chips"><span class="chip" data-tid="ACL-01">ACL-01</span><span class="chip" data-tid="ACL-02">ACL-02</span><span class="chip" data-tid="ACL-03">ACL-03</span><span class="chip" data-tid="ACL-04">ACL-04</span><span class="chip" data-tid="TEL-03">TEL-03</span></div>
+  </details>
+
+  <details class="io">
+    <summary>AGT.telemetry + AGT.buffer <span class="tag rust">Rust</span><span class="sub">envelope và offline-first</span></summary>
+    <div class="grid">
+      <div><b>Vào</b>sysinfo, <code>data</code> từ probe_hub, interval cấu hình; trạng thái kết nối</div>
+      <div><b>Ra</b>telemetry QoS 0 mỗi 2s, <code>state</code> retained khi đổi; replay đúng topic, đúng seq, ts gốc</div>
+      <div><b>Giữ</b>seq monotonic persist; SQLite <code>buffer.db</code></div>
+      <div class="f"><b>Hỏng phải xử</b>probe không có data: chỉ metrics hệ thống · clock lệch &gt; 30s: event <code>agent.clock_skew</code> · disk gần đầy: bỏ telemetry cũ nhất, không bỏ events · DB hỏng: tạo lại + event</div>
+    </div>
+    <div class="ids chips"><span class="chip" data-tid="TEL-01">TEL-01</span><span class="chip" data-tid="TEL-02">TEL-02</span><span class="chip" data-tid="TEL-04">TEL-04</span><span class="chip" data-tid="TEL-05">TEL-05</span><span class="chip" data-tid="TEL-06">TEL-06</span><span class="chip h" data-tid="TEL-07">TEL-07</span></div>
+  </details>
+
+  <details class="io">
+    <summary>AGT.probe_hub <span class="tag rust">Rust</span><span class="sub">Unix socket NDJSON</span></summary>
+    <div class="grid">
+      <div><b>Vào</b>kết nối socket; <code>hello</code>, <code>data</code>, <code>event</code>, <code>pong</code>, <code>cmdRes</code>, <code>logChunk</code></div>
+      <div><b>Ra</b><code>helloAck</code>, <code>ping</code> mỗi 10s, <code>cmd</code>; inventory hợp nhất retained</div>
+      <div><b>Giữ</b>danh sách probe sống và devices của từng probe</div>
+      <div class="f"><b>Hỏng phải xử</b><code>apiVersion</code> lạ: <code>accepted:false</code> + lý do · 3 ping không pong: devices degraded + event · probe reconnect: không nhân đôi inventory</div>
+    </div>
+    <div class="ids chips"><span class="chip" data-tid="PRB-01">PRB-01</span><span class="chip" data-tid="PRB-03">PRB-03</span><span class="chip" data-tid="PRB-04">PRB-04</span><span class="chip" data-tid="PRB-05">PRB-05</span></div>
+  </details>
+
+  <details class="io">
+    <summary>AGT.ota + AGT.cmd <span class="tag rust">Rust</span><span class="sub">state machine, Docker, lệnh</span></summary>
+    <div class="grid">
+      <div><b>Vào</b><code>cmd</code> QoS 1 (manifest có digest, healthCheck, expiresAt); Docker daemon; health endpoint</div>
+      <div><b>Ra</b><code>cmd/res</code>; <code>ota/state</code> retained mỗi chuyển state</div>
+      <div><b>Giữ</b>SQLite: state, current, target, deploymentId; cmdId đã xử</div>
+      <div class="f"><b>Hỏng phải xử</b>digest sai: FAILED, không start · registry không tới: backoff rồi FAILED · health fail hoặc crash-loop: ROLLING_BACK không chờ server · boot thấy DOWNLOADING/SWITCHING: coi là fail, rollback · disk không đủ: fail sạch · lệnh quá hạn: rejected/expired · deploy chồng: từ chối · cmdId trùng: trả kết quả cũ</div>
+    </div>
+    <div class="ids chips"><span class="chip" data-tid="OTA-01">OTA-01</span><span class="chip" data-tid="OTA-02">OTA-02</span><span class="chip" data-tid="OTA-03">OTA-03</span><span class="chip h" data-tid="OTA-04">OTA-04</span><span class="chip h" data-tid="OTA-05">OTA-05</span><span class="chip" data-tid="OTA-06">OTA-06</span><span class="chip" data-tid="OTA-07">OTA-07</span><span class="chip" data-tid="OTA-08">OTA-08</span><span class="chip" data-tid="OTA-10">OTA-10</span><span class="chip h" data-tid="OTA-11">OTA-11</span><span class="chip h" data-tid="OTA-12">OTA-12</span></div>
+  </details>
+
+  <details class="io">
+    <summary>AGT.pty + AGT.logs <span class="tag rust">Rust</span><span class="sub">terminal và log tail</span></summary>
+    <div class="grid">
+      <div><b>Vào</b><code>terminal.open</code>, byte từ relay; <code>logs.start/stop</code>, log từ probe hoặc journald</div>
+      <div><b>Ra</b>byte PTY ra relay qua WebSocket mTLS; <code>logs/{stream}</code> QoS 0</div>
+      <div><b>Giữ</b>TTL phiên</div>
+      <div class="f"><b>Hỏng phải xử</b>rớt mạng 30s: kill PTY, không mồ côi · quên tắt log: tự tắt sau 15 phút</div>
+    </div>
+    <div class="ids chips"><span class="chip" data-tid="TRM-01">TRM-01</span><span class="chip" data-tid="TRM-03">TRM-03</span><span class="chip" data-tid="TRM-04">TRM-04</span></div>
+  </details>
+
+  <details class="io">
+    <summary>PRB-ROS <span class="tag cpp">C++</span><span class="sub">ros2-probe rclcpp</span></summary>
+    <div class="grid">
+      <div><b>Vào</b>ROS graph, <code>/battery_state</code>, <code>/pose</code> hoặc TF, cấu hình profile AMR, <code>cmd</code> từ agent</div>
+      <div><b>Ra</b><code>hello</code>, <code>data</code> mỗi 2s, <code>event</code> ROS_NODE_DOWN ≤ 10s, <code>pong</code>, <code>logChunk</code></div>
+      <div><b>Giữ</b>không, agent giữ</div>
+      <div class="f"><b>Hỏng phải xử</b>socket agent chưa có: thử lại 5s · DDS discovery chậm: báo nodesTotal theo kỳ vọng cấu hình · node biến mất: event một lần, clear khi về · lỗi bộ nhớ: probe chết, agent sống</div>
+    </div>
+    <div class="ids chips"><span class="chip" data-tid="PRB-02">PRB-02</span><span class="chip h" data-tid="PRB-06">PRB-06</span></div>
+  </details>
+
+  <details class="io">
+    <summary>SRV.ca <span class="tag go">Go</span><span class="sub">PKI của instance</span></summary>
+    <div class="grid">
+      <div><b>Vào</b><code>POST /v1/enroll</code> (token, CSR); <code>POST /v1/agents/me/renew</code> qua mTLS</div>
+      <div><b>Ra</b>cert CN=agentId 90 ngày, CA chain, cấu hình MQTT</div>
+      <div><b>Giữ</b><code>enroll_tokens</code> (hash, TTL 24h, dùng một lần), <code>agents</code>, khoá CA trong volume mã hoá bằng passphrase</div>
+      <div class="f"><b>Hỏng phải xử</b>token dùng hai lần cùng lúc: transaction + unique · CSR CN lệch agentId: từ chối · mất khoá CA: restore từ backup INS-03</div>
+    </div>
+    <div class="ids chips"><span class="chip" data-tid="PRV-01">PRV-01</span><span class="chip" data-tid="PRV-02">PRV-02</span><span class="chip" data-tid="PRV-03">PRV-03</span><span class="chip" data-tid="PRV-04">PRV-04</span></div>
+  </details>
+
+  <details class="io">
+    <summary>SRV.ingest + DB <span class="tag go">Go</span><span class="sub">MQTT → Timescale → SSE</span></summary>
+    <div class="grid">
+      <div><b>Vào</b>mọi topic <code>mechops/v1/+/#</code> qua shared subscription</div>
+      <div><b>Ra</b>batch insert <code>telemetry</code> mỗi 1s, upsert <code>device_state</code>, <code>events</code>, online/offline từ status và LWT; phát nội bộ cho SSE hub</div>
+      <div><b>Giữ</b>hypertable telemetry (profiles JSONB), events, device_state, ota_state</div>
+      <div class="f"><b>Hỏng phải xử</b>payload lệch schema: drop + metric, không chết · replay muộn: ghi theo ts gốc · LWT: mọi device của agent → offline · bão reconnect: backpressure</div>
+    </div>
+    <div class="ids chips"><span class="chip" data-tid="TEL-03">TEL-03</span><span class="chip" data-tid="TEL-04">TEL-04</span><span class="chip h" data-tid="TEL-07">TEL-07</span><span class="chip" data-tid="LOD-01">LOD-01</span><span class="chip" data-tid="LOD-02">LOD-02</span></div>
+  </details>
+
+  <details class="io">
+    <summary>SRV.fleet <span class="tag go">Go</span><span class="sub">OTA orchestrator</span></summary>
+    <div class="grid">
+      <div><b>Vào</b>deployment (manifest, nhóm, wave) từ api; <code>ota/state</code> từ ingest</div>
+      <div><b>Ra</b><code>cmd ota.deploy/rollback</code> theo wave với expiresAt; trạng thái wave cho DSH</div>
+      <div><b>Giữ</b><code>deployments</code>, <code>deployment_targets</code>, <code>waves</code></div>
+      <div class="f"><b>Hỏng phải xử</b>agent fail trong wave: dừng mọi wave sau · agent offline quá expiresAt: expired · deploy chồng: từ chối</div>
+    </div>
+    <div class="ids chips"><span class="chip" data-tid="OTA-08">OTA-08</span><span class="chip" data-tid="OTA-09">OTA-09</span><span class="chip" data-tid="OTA-10">OTA-10</span></div>
+  </details>
+
+  <details class="io">
+    <summary>SRV.alert + SRV.api + SRV.audit + SRV.relay <span class="tag go">Go</span><span class="sub">rule engine, REST/SSE, audit, terminal relay</span></summary>
+    <div class="grid">
+      <div><b>Vào</b>device_state, events, online; rule cấu hình · REST từ DSH với JWT · WebSocket từ DSH (admin) và từ AGT (mTLS)</div>
+      <div><b>Ra</b>notification email/Telegram/Zalo, alarms raised/cleared · JSON, dòng SSE theo tenant/device · bản ghi audit append-only · ghép hai luồng byte terminal</div>
+      <div><b>Giữ</b>alert_rules, alarms, notifications · users, sessions · audit_log</div>
+      <div class="f"><b>Hỏng phải xử</b>bão 50 robot: gộp 60s · webhook chết: retry 3 lần, không chặn alert khác · cooldown chống spam · viewer gọi API admin: 403 · ghi audit thất bại: không mở phiên · một đầu terminal rớt: đóng đầu kia ≤ 30s</div>
+    </div>
+    <div class="ids chips"><span class="chip" data-tid="ALT-01">ALT-01</span><span class="chip" data-tid="ALT-02">ALT-02</span><span class="chip" data-tid="ALT-03">ALT-03</span><span class="chip" data-tid="ALT-04">ALT-04</span><span class="chip" data-tid="TRM-01">TRM-01</span><span class="chip" data-tid="TRM-02">TRM-02</span><span class="chip" data-tid="TRM-03">TRM-03</span></div>
+  </details>
+
+  <details class="io">
+    <summary>BRK · REG · DSH · DEP <span class="tag cfg">Cấu hình</span><span class="tag ts">TS</span><span class="sub">broker, registry, dashboard, cài đặt</span></summary>
+    <div class="grid">
+      <div><b>Vào</b>BRK: cert client, CONNECT, PUBLISH/SUBSCRIBE · REG: <code>docker push</code> từ vendor · DSH: REST + SSE, cấu hình theme · DEP: VPS trống, biến môi trường, docs</div>
+      <div><b>Ra</b>BRK: cho/không cho theo ACL SQL, LWT · REG: image theo digest · DSH: giao diện thiết bị, chart, deploy, alert, terminal · DEP: compose 6 service, CA bootstrap, user seed, backup/restore</div>
+      <div><b>Giữ</b>BRK: không (ACL trong DB) · REG: blob image · DEP: volume postgres, ca, registry</div>
+      <div class="f"><b>Hỏng phải xử</b>không cert: từ chối tầng TLS · publish sai topic: disconnect · gói &gt; 64 KB: broker drop · registry tắt giữa pull: AGT retry · SSE rớt: tự reconnect · install chạy lại: idempotent · restore: device reconnect bình thường</div>
+    </div>
+    <div class="ids chips"><span class="chip" data-tid="ACL-01">ACL-01</span><span class="chip" data-tid="ACL-02">ACL-02</span><span class="chip" data-tid="ACL-03">ACL-03</span><span class="chip" data-tid="ACL-04">ACL-04</span><span class="chip" data-tid="OTA-06">OTA-06</span><span class="chip" data-tid="WLB-01">WLB-01</span><span class="chip h" data-tid="INS-01">INS-01</span><span class="chip" data-tid="INS-02">INS-02</span><span class="chip" data-tid="INS-03">INS-03</span></div>
+  </details>
+</section>
+
+<!-- ============ PHASE 1–4 ============ -->
+<section id="phase1-4">
+  <div class="sec-eyebrow">6 · Phase 1–4 theo module</div>
+  <h2>Những gì được thêm, và ranh giới nào không được đụng</h2>
+  <p class="note">Ranh giới giữ xuyên phase: topic layout <code>mechops/v1/{tenant}/…</code> không đổi; agent ngoài đồng không cần update khi vào multi-tenant; mỗi probe mới chỉ là một tiến trình mới nói Probe API v1.</p>
+  <div class="tbl-wrap">
+  <table class="plain">
+    <tr><th>Phase · Module</th><th>Ngôn ngữ</th><th>Vào → Ra</th><th>Nghiệm thu</th><th>Quyết định cần trước</th></tr>
+    <tr><td>P1 · PRB-VDA</td><td><span class="tag rust">Rust</span> hoặc <span class="tag go">Go</span></td><td>MQTT VDA 5050 state/visualization/connection/factsheet → hello/data/event Probe API; bridge chiều ngược order/instantActions sau</td><td>AGV VDA 5050 thật hiện trên dashboard không cài agent; test ID VDA-xx mới</td><td>ADR ngôn ngữ probe VDA</td></tr>
+    <tr><td>P1 · VID-1a</td><td><span class="tag rust">Rust</span> + <span class="tag go">Go</span></td><td>GStreamer H.264 hardware encode → track WebRTC (<code>webrtc</code> crate); signaling qua WS; coturn relay</td><td>Xem camera qua NAT nhà máy; VID-xx</td><td>ADR WebRTC, spike webrtc-rs</td></tr>
+    <tr><td>P1 · Multi-tenant</td><td><span class="tag go">Go</span> + SQL</td><td>tenant_id + RLS; ACL EMQX theo tenant prefix</td><td>Cách ly tenant TNT-xx</td><td>ADR broker SaaS (0014), ADR k3s, ADR Keycloak</td></tr>
+    <tr><td>P1 · CP control plane</td><td><span class="tag go">Go</span></td><td>license, usage từ instance vendor → signup, billing Stripe + VietQR, grace 30 ngày offline</td><td>Instance vendor sống 30 ngày không gọi về được</td><td>—</td></tr>
+    <tr><td>P1 · DSH fleet</td><td><span class="tag ts">TS</span></td><td>vị trí nhiều robot trên floorplan, mission history, health score, Foxglove link-out, bag recorder</td><td>Design partner dùng hằng ngày</td><td>—</td></tr>
+    <tr><td>P1 · VID-1b teleop</td><td><span class="tag rust">Rust</span></td><td>lệnh điều khiển có deadman, watchdog RTT, role teleop, audit</td><td>Chỉ sau 1a ổn định; test không thương lượng</td><td>ADR an toàn teleop</td></tr>
+    <tr><td>P2 · PRB-OPCUA, PRB-MODBUS</td><td><span class="tag rust">Rust</span>/<span class="tag go">Go</span></td><td>address space, register map → profile <code>plc</code>, Mode B gateway</td><td>1 nhà máy thật đọc PLC</td><td>Hợp đồng có chữ ký trước</td></tr>
+    <tr><td>P2 · ALM alarm center</td><td><span class="tag go">Go</span> + <span class="tag ts">TS</span></td><td>alarms robot + PLC → ack, escalation, bàn giao ca</td><td>Đo bằng renew hợp đồng</td><td>—</td></tr>
+    <tr><td>P2 · OTA firmware</td><td>C/C++ bootloader</td><td><code>artifactType: firmware-binary</code> → ESP32/STM32</td><td>Ma trận [H] riêng</td><td>—</td></tr>
+    <tr><td>P3 · DATA tiering, replay, dataset</td><td><span class="tag rust">Rust</span></td><td>Timescale 90 ngày → Parquet/MinIO; timeline telemetry + video + bag</td><td>Truy vấn 1 năm &lt; 10s; tái dựng 1 sự cố thật</td><td>ADR Arrow/DataFusion</td></tr>
+    <tr><td>P4 · AI</td><td>Python/Rust</td><td>đọc từ DATA → insight: anomaly, dự đoán hỏng</td><td>Khách mua "robot 7 sẽ hỏng bánh trong 2 tuần"</td><td>Phase 3 ≥ 1 năm dữ liệu</td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- ============ ADR ============ -->
+<section id="adr">
+  <div class="sec-eyebrow">7 · Quyết định đã ghi</div>
+  <h2>Mười bảy ADR, bất biến. Đổi ý là ADR mới.</h2>
+  <p class="note">Sáu ADR cuối chốt ngày 2026-10-18 cùng kế hoạch này. ADR-0004 và 0009 vẫn hiệu lực với phạm vi thu hẹp, không bị supersede.</p>
+  <div class="adrs">
+    <div><span class="n">0001</span><b>MQTT thay TCP tự xây.</b> Tự chủ ở application protocol trong specs/.</div>
+    <div><span class="n">0002</span><b>Open-core.</b> agent, probe, protocol, specs Apache 2.0; server closed.</div>
+    <div><span class="n">0003</span><b>EMQX thay Mosquitto.</b> ACL qua SQL, MQTT 5 đầy đủ.</div>
+    <div><span class="n">0004</span><b>Probe tách qua Unix socket.</b> Agent sống khi ROS chết. Ngôn ngữ probe: xem 0013.</div>
+    <div><span class="n">0005</span><b>Rollback quyết định tại agent.</b> Ba luật cứng OTA.</div>
+    <div><span class="n">0006</span><b>PostgreSQL + TimescaleDB.</b> Một database, chưa Redis.</div>
+    <div><span class="n">0007</span><b>SSE từ server.</b> Broker không bao giờ ra Internet.</div>
+    <div><span class="n">0008</span><b>Tenant trong topic từ ngày đầu.</b> Phase 1 chỉ đổi ACL.</div>
+    <div><span class="n">0009</span><b>Go thay C++.</b> Phạm vi còn server và protocol; agent xem 0012.</div>
+    <div><span class="n">0010</span><b>Toolchain trong Docker, <code>./mo</code>.</b> Máy trắng chỉ cần Docker.</div>
+    <div><span class="n">0011</span><b>Luật phải có chốt chặn máy.</b> Văn bản không phòng thủ được lúc vội.</div>
+    <div class="new"><span class="n">0012</span><b>Rust cho agent, Go giữ cho server.</b> forbid unsafe, không cgo, gate rút lui 8 tuần.</div>
+    <div class="new"><span class="n">0013</span><b>Probe C++ rclcpp.</b> Ma trận distro × arch, ASan nightly.</div>
+    <div class="new"><span class="n">0014</span><b>EMQX dưới BSL 1.1.</b> Một node cho vendor; quyết lại trước SaaS; có việc pháp lý treo.</div>
+    <div class="new"><span class="n">0015</span><b>OTA tự xây, không wrap Mender.</b> Mượn ba thiết kế: digest, state machine, health trong manifest.</div>
+    <div class="new"><span class="n">0016</span><b>PKI: CA trong server.</b> Token hash một lần 24h, cert 90 ngày, renew mTLS, thu hồi bằng ACL.</div>
+    <div class="new"><span class="n">0017</span><b>Next.js cho dashboard.</b> shadcn + CSS variables cho white-label, một origin.</div>
+  </div>
+  <p class="note" style="margin-top:14px">Chờ viết khi tới việc: ADR terminal (trước M5) · broker SaaS và k3s (trước Phase 1) · WebRTC · Keycloak · Rust cho server (chỉ xét sau M3) · zenoh-probe.</p>
+</section>
+
+<!-- ============ RỦI RO ============ -->
+<section id="rui-ro">
+  <div class="sec-eyebrow">8 · Rủi ro chặn đường và đối sách</div>
+  <h2>Những thứ có thể làm lịch này sai, và đã có đường ra ở đâu</h2>
+  <div class="risks">
+    <div class="risk"><div><b>rumqttc v5 thiếu response topic hoặc user properties</b>chặn AGT.transport và toàn bộ OTA</div><div>Spike tuần 1 của M1. Fallback: đóng <code>cmdId</code> vào payload (spec đã có), không dùng MQTT 5 property.</div><div class="where">ADR-0012</div></div>
+    <div class="risk"><div><b>Team học Rust chậm</b>chặn M1</div><div>Gate rút lui 8 tuần: PRV-01 và TEL-03 chưa xanh thì ADR quay về Go. Mỗi người một ngôn ngữ chính.</div><div class="where">ADR-0012</div></div>
+    <div class="risk"><div><b>EMQX BSL cho SaaS</b>chặn Phase 1</div><div>ADR broker SaaS với số đo LOD-01/02; xác nhận pháp lý trước license đầu tiên.</div><div class="where">ADR-0014</div></div>
+    <div class="risk"><div><b>Mất khoá CA</b>toàn fleet enroll lại</div><div>INS-03 backup gồm volume <code>ca/</code>; passphrase tách khỏi volume.</div><div class="where">ADR-0016</div></div>
+    <div class="risk"><div><b>Design partner không ký</b>M3 trở đi thiếu phần cứng thật</div><div>Jetson + Pi nội bộ cho mọi [H]; "Phase 1 rút gọn" đã có sẵn.</div><div class="where">03-phase-plan</div></div>
+    <div class="risk"><div><b>Founder đi học, nhịp giảm</b>mọi mốc</div><div>Lịch 46 tuần đã tính 15–20 giờ/tuần. Mỗi phiên vào bằng <code>/dev</code>, ra bằng <code>/handoff</code>.</div><div class="where">07-ai-flow</div></div>
+    <div class="risk"><div><b>Bộ công cụ repo phình tiếp</b>mọi mốc</div><div>Đóng băng <code>tools/</code> tới khi TEL-03 xanh. Ngoại lệ duy nhất: parser nextest.</div><div class="where">08-master-plan §2</div></div>
+    <div class="risk"><div><b>Teleop gây sự cố vật lý</b>Phase 1b</div><div>Tách 1a/1b; deadman và watchdog là yêu cầu cứng không thương lượng.</div><div class="where">03-phase-plan</div></div>
+  </div>
+</section>
+
+<!-- ============ TUẦN NÀY ============ -->
+<section id="tuan-nay">
+  <div class="sec-eyebrow">9 · Việc làm ngay</div>
+  <h2>Tuần 2026-10-20</h2>
+  <ol class="now">
+    <li><span><b>Commit bộ ADR 0012–0017</b> và <code>08-master-plan.md</code> với <code>Implements: none</code>. Chạy <code>./mo trace</code> trước.</span></li>
+    <li><span><b>Mở plan M0′</b> bằng <code>./mo steer plan new m0-nen-rust</code> với covers TEL-01, adr 0012, 0013, 0016. Plan <code>m1-contract-v01</code> nhập vào hoặc abandon có lý do, không xoá.</span></li>
+    <li><span><b>Spike rumqttc v5</b> trong <code>agent/spikes/</code>, ghi kết quả vào <code>.steering</code>.</span></li>
+    <li><span><b>Thêm Rust vào <code>dev.Dockerfile</code></b>, <code>track.py</code> đọc nextest, chạy <code>./mo verify</code> để thấy TEL-01 đỏ thật.</span></li>
+    <li><span><b>Điền 8 channel vào <code>asyncapi.yaml</code></b> theo <code>protocol-notes.md</code>, khai qua <code>./mo steer plan contract</code>.</span></li>
+  </ol>
+</section>
+
+<footer>
+  Nguồn: <code>docs/product/08-master-plan.md</code> · <code>docs/product/05-test-catalog.md</code> · <code>docs/adr/</code> · tiến độ từ <code>docs/test-status.json</code>.<br>
+  Trang này là bản đọc của kế hoạch, không phải nguồn sự thật. Sửa kế hoạch ở file markdown, sửa tiến độ bằng <code>./mo verify</code>.
+</footer>
+
+</div>
+
+<script>
+(function(){
+  // Catalog: ID -> [tầng, mô tả, milestone tính burndown]. Đồng bộ với tools/testtrack/track.py.
+  var CAT = {
+    "PRV-01":["I","Enroll token hợp lệ","M1"],"PRV-02":["I","Token đã dùng/hết hạn","M1"],"PRV-03":["I","Cert tự gia hạn <30 ngày","M1"],"PRV-04":["I","Cert hết hạn hoàn toàn","M1"],"PRV-05":["H","Enroll Jetson+Pi <5 phút","M1"],
+    "ACL-01":["I","Agent A publish topic B → từ chối","M1"],"ACL-02":["I","Subscribe wildcard bị giới hạn","M1"],"ACL-03":["I","Không cert → chặn tầng TLS","M1"],"ACL-04":["I","Payload >64KB bị từ chối","M1"],
+    "TEL-01":["U","Test vectors validate đúng","M1"],"TEL-02":["I","24h không leak, seq liền","M1"],"TEL-03":["I","LWT khi rút mạng","M1"],"TEL-04":["I","Replay đúng seq/ts sau reconnect","M1"],"TEL-05":["I","Buffer 24h+ downsample","M1"],"TEL-06":["I","Clock skew >30s có event","M1"],"TEL-07":["H","Field lạ không gây lỗi","M1"],
+    "PRB-01":["U","apiVersion sai → từ chối sạch","M2"],"PRB-02":["I","AMR profile lên dashboard","M2"],"PRB-03":["I","Probe chết → degraded, agent sống","M2"],"PRB-04":["I","Probe restart không nhân đôi","M2"],"PRB-05":["I","2 probe Mode B hợp nhất inventory","M2"],"PRB-06":["H","Kill node ROS thật → alarm ≤10s","M2"],
+    "OTA-01":["I","Deploy pass toàn state machine","M3"],"OTA-02":["I","Health fail → tự rollback","M3"],"OTA-03":["I","Crash-loop → tự rollback","M3"],"OTA-04":["H","Rút điện giữa DOWNLOADING","M3"],"OTA-05":["H","Rút điện giữa SWITCHING","M3"],"OTA-06":["I","Rút mạng giữa download","M3"],"OTA-07":["I","Digest sai → không start","M3"],"OTA-08":["I","Lệnh quá hạn → rejected","M3"],"OTA-09":["I","Staged rollout dừng khi wave fail","M3"],"OTA-10":["I","Deploy chồng → từ chối","M3"],"OTA-11":["H","Disk đầy → fail sạch","M3"],"OTA-12":["H","Ma trận Jetson+Pi đủ OTA-01→05","M3"],
+    "ALT-01":["I","Offline → notify ≤60s","M4"],"ALT-02":["I","Raised/cleared không spam","M4"],"ALT-03":["I","50 robot offline → gộp tin","M4"],"ALT-04":["I","Webhook chết → retry giới hạn","M4"],
+    "TRM-01":["I","PTY + audit log đầy đủ","M4"],"TRM-02":["I","Viewer bị chặn terminal","M4"],"TRM-03":["I","Rớt mạng → phiên đóng sạch","M4"],"TRM-04":["I","Log tail tự tắt theo TTL","M4"],
+    "WLB-01":["I","Theming không cần rebuild","M5"],"INS-01":["H","Người ngoài cài <30 phút","M5"],"INS-02":["I","install.sh idempotent","M5"],"INS-03":["I","Backup/restore Postgres","M5"],
+    "LOD-01":["I","50 agent 72h không mất QoS1","M6"],"LOD-02":["I","Bão reconnect có backpressure","M6"],"LOD-03":["H","30 ngày fleet thật, 0 brick","M6"]
+  };
+  var ORDER = Object.keys(CAT);
+  var MS = ["M1","M2","M3","M4","M5","M6"];
+  var MS_GROUPS = {M1:"PRV, ACL, TEL",M2:"PRB",M3:"OTA",M4:"ALT, TRM",M5:"WLB, INS",M6:"LOD"};
+
+  // Hai bản chụp dưới đây do tools/report/modstatus.py nhúng (./mo status) — không sửa tay.
+  // SNAP = docs/test-status.json rút gọn; MOD = docs/module-status.json.
+  var SNAPSHOT = /*@SNAP*/{"updated":"2026-08-25T19:36:19Z","commit":"86aafdb","tests":{"PRV-01":{"status":"pending","lastRun":null,"commit":null},"PRV-02":{"status":"pending","lastRun":null,"commit":null},"PRV-03":{"status":"pending","lastRun":null,"commit":null},"PRV-04":{"status":"pending","lastRun":null,"commit":null},"PRV-05":{"status":"pending","lastRun":null,"commit":null},"ACL-01":{"status":"pending","lastRun":null,"commit":null},"ACL-02":{"status":"pending","lastRun":null,"commit":null},"ACL-03":{"status":"pending","lastRun":null,"commit":null},"ACL-04":{"status":"pending","lastRun":null,"commit":null},"TEL-01":{"status":"pending","lastRun":null,"commit":null},"TEL-02":{"status":"pending","lastRun":null,"commit":null},"TEL-03":{"status":"pending","lastRun":null,"commit":null},"TEL-04":{"status":"pending","lastRun":null,"commit":null},"TEL-05":{"status":"pending","lastRun":null,"commit":null},"TEL-06":{"status":"pending","lastRun":null,"commit":null},"TEL-07":{"status":"pending","lastRun":null,"commit":null},"PRB-01":{"status":"pending","lastRun":null,"commit":null},"PRB-02":{"status":"pending","lastRun":null,"commit":null},"PRB-03":{"status":"pending","lastRun":null,"commit":null},"PRB-04":{"status":"pending","lastRun":null,"commit":null},"PRB-05":{"status":"pending","lastRun":null,"commit":null},"PRB-06":{"status":"pending","lastRun":null,"commit":null},"OTA-01":{"status":"pending","lastRun":null,"commit":null},"OTA-02":{"status":"pending","lastRun":null,"commit":null},"OTA-03":{"status":"pending","lastRun":null,"commit":null},"OTA-04":{"status":"pending","lastRun":null,"commit":null},"OTA-05":{"status":"pending","lastRun":null,"commit":null},"OTA-06":{"status":"pending","lastRun":null,"commit":null},"OTA-07":{"status":"pending","lastRun":null,"commit":null},"OTA-08":{"status":"pending","lastRun":null,"commit":null},"OTA-09":{"status":"pending","lastRun":null,"commit":null},"OTA-10":{"status":"pending","lastRun":null,"commit":null},"OTA-11":{"status":"pending","lastRun":null,"commit":null},"OTA-12":{"status":"pending","lastRun":null,"commit":null},"ALT-01":{"status":"pending","lastRun":null,"commit":null},"ALT-02":{"status":"pending","lastRun":null,"commit":null},"ALT-03":{"status":"pending","lastRun":null,"commit":null},"ALT-04":{"status":"pending","lastRun":null,"commit":null},"TRM-01":{"status":"pending","lastRun":null,"commit":null},"TRM-02":{"status":"pending","lastRun":null,"commit":null},"TRM-03":{"status":"pending","lastRun":null,"commit":null},"TRM-04":{"status":"pending","lastRun":null,"commit":null},"WLB-01":{"status":"pending","lastRun":null,"commit":null},"INS-01":{"status":"pending","lastRun":null,"commit":null},"INS-02":{"status":"pending","lastRun":null,"commit":null},"INS-03":{"status":"pending","lastRun":null,"commit":null},"LOD-01":{"status":"pending","lastRun":null,"commit":null},"LOD-02":{"status":"pending","lastRun":null,"commit":null},"LOD-03":{"status":"pending","lastRun":null,"commit":null}}}/*@/SNAP*/;
+  var MODSNAP = /*@MOD*/{"schema":1,"generator":"tools/report/modstatus.py","basis":{"commit":"f259019","commitDate":"2026-09-01","branch":"develop","dirty":true,"trackerUpdated":"2026-08-25T19:36:19Z","trackerCommit":"86aafdb"},"summary":{"pass":0,"total":49,"openMilestone":"M1","next":"PRV-01","adr":17,"spec":{"channels":1,"channelsTarget":9,"schemas":1,"vectorsValid":1,"vectorsInvalid":1},"plans":[{"id":"m1-contract-v01","status":"draft","milestone":"M1"}],"states":{"none":5,"skeleton":6,"active":1,"done":0}},"modules":[{"id":"SPEC","name":"Hợp đồng MQTT · Probe API · REST","lang":"cfg","milestone":"M0'","paths":["specs"],"state":"active","label":"đang làm","code":{"files":5,"loc":92,"byLang":{"cfg":88,"doc":4}},"git":{"lastCommit":"5bd89a9","lastDate":"2026-08-25","commits":4},"tests":{"pass":0,"fail":0,"total":1,"ids":["TEL-01"]},"notes":["1/9 channel AsyncAPI · 1 schema"]},{"id":"PROTO-GO","name":"Kiểu Go sinh từ specs (server dùng)","lang":"go","milestone":"M0'","paths":["protocol"],"state":"skeleton","label":"khung","code":{"files":1,"loc":12,"byLang":{"go":12}},"git":{"lastCommit":"0ba35f4","lastDate":"2026-07-15","commits":3},"tests":{"pass":0,"fail":0,"total":0,"ids":[]},"notes":[]},{"id":"PROTO-RS","name":"Crate mechops-protocol (typify)","lang":"rust","milestone":"M0'","paths":["agent/mechops-protocol"],"state":"none","label":"chưa bắt đầu","code":{"files":0,"loc":0,"byLang":{}},"git":{"lastCommit":null,"lastDate":null,"commits":0},"tests":{"pass":0,"fail":0,"total":0,"ids":[]},"notes":[]},{"id":"AGT","name":"mechops-agent","lang":"rust","milestone":"M1","paths":["agent"],"state":"skeleton","label":"khung","code":{"files":1,"loc":2,"byLang":{"go":2}},"git":{"lastCommit":"544e2a4","lastDate":"2026-07-14","commits":2},"tests":{"pass":0,"fail":0,"total":27,"ids":["PRV-01","PRV-02","PRV-03","PRV-04","ACL-04","TEL-02","TEL-03","TEL-04","TEL-05","TEL-06","PRB-01","PRB-03","PRB-04","PRB-05","OTA-01","OTA-02","OTA-03","OTA-04","OTA-05","OTA-06","OTA-07","OTA-08","OTA-11","OTA-12","TRM-01","TRM-03","TRM-04"]},"notes":["còn code go (2 dòng) khác ngôn ngữ đã chốt — chờ thay"]},{"id":"PRB-ROS","name":"ros2-probe","lang":"cpp","milestone":"M2","paths":["probe"],"state":"none","label":"chưa bắt đầu","code":{"files":0,"loc":0,"byLang":{}},"git":{"lastCommit":"e798570","lastDate":"2026-07-14","commits":1},"tests":{"pass":0,"fail":0,"total":3,"ids":["PRB-01","PRB-02","PRB-06"]},"notes":[]},{"id":"SRV","name":"server: ca · ingest · api · fleet · alert · audit · relay","lang":"go","milestone":"M1","paths":["server"],"state":"skeleton","label":"khung","code":{"files":1,"loc":2,"byLang":{"go":2}},"git":{"lastCommit":"544e2a4","lastDate":"2026-07-14","commits":2},"tests":{"pass":0,"fail":0,"total":20,"ids":["PRV-01","PRV-02","PRV-03","PRV-04","TEL-03","TEL-04","TEL-07","OTA-08","OTA-09","OTA-10","ALT-01","ALT-02","ALT-03","ALT-04","TRM-01","TRM-02","TRM-03","WLB-01","LOD-01","LOD-02"]},"notes":[]},{"id":"DB","name":"Migration + query sqlc (Timescale)","lang":"sql","milestone":"M1","paths":["server/migrations","server/queries"],"state":"none","label":"chưa bắt đầu","code":{"files":0,"loc":0,"byLang":{}},"git":{"lastCommit":"e798570","lastDate":"2026-07-14","commits":1},"tests":{"pass":0,"fail":0,"total":2,"ids":["INS-03","LOD-01"]},"notes":[]},{"id":"BRK","name":"EMQX: mTLS, ACL SQL, LWT","lang":"cfg","milestone":"M0'","paths":["deploy/emqx"],"state":"skeleton","label":"khung","code":{"files":1,"loc":1,"byLang":{"sql":1}},"git":{"lastCommit":"e798570","lastDate":"2026-07-14","commits":1},"tests":{"pass":0,"fail":0,"total":4,"ids":["ACL-01","ACL-02","ACL-03","ACL-04"]},"notes":[]},{"id":"REG","name":"Docker Registry v2","lang":"cfg","milestone":"M0'","paths":[],"state":"skeleton","label":"khung","code":{"files":0,"loc":0,"byLang":{}},"git":{"lastCommit":null,"lastDate":null,"commits":0},"tests":{"pass":0,"fail":0,"total":2,"ids":["OTA-06","OTA-07"]},"notes":[]},{"id":"DSH","name":"Dashboard Next.js","lang":"ts","milestone":"M2","paths":["dashboard"],"state":"none","label":"chưa bắt đầu","code":{"files":0,"loc":0,"byLang":{}},"git":{"lastCommit":"e798570","lastDate":"2026-07-14","commits":1},"tests":{"pass":0,"fail":0,"total":2,"ids":["WLB-01","TRM-02"]},"notes":[]},{"id":"DEP","name":"Compose · install.sh · backup/restore","lang":"sh","milestone":"M0'","paths":["deploy"],"state":"skeleton","label":"khung","code":{"files":3,"loc":12,"byLang":{"cfg":7,"sh":4,"sql":1}},"git":{"lastCommit":"544e2a4","lastDate":"2026-07-14","commits":2},"tests":{"pass":0,"fail":0,"total":3,"ids":["INS-01","INS-02","INS-03"]},"notes":[]},{"id":"SIM","name":"Giả lập 50 agent (tải)","lang":"rust","milestone":"M6","paths":["tools/sim"],"state":"none","label":"chưa bắt đầu","code":{"files":0,"loc":0,"byLang":{}},"git":{"lastCommit":null,"lastDate":null,"commits":0},"tests":{"pass":0,"fail":0,"total":2,"ids":["LOD-01","LOD-02"]},"notes":[]}]}/*@/MOD*/;
+  ORDER.forEach(function(id){ if (!SNAPSHOT.tests[id]) SNAPSHOT.tests[id] = {status:"pending"}; });
+
+  function cls(st){
+    if (st === "pass") return "pass";
+    if (st === "fail") return "fail";
+    if (st === "pending" || !st) return "pending";
+    return "warn"; // stale, missing-test, v.v.
+  }
+  function $(id){ return document.getElementById(id); }
+
+  function render(data, srcText, isErr){
+    var tests = (data && data.tests) || {};
+    var pass = 0, fail = 0, perMs = {};
+    MS.forEach(function(m){ perMs[m] = {pass:0, fail:0, total:0}; });
+    ORDER.forEach(function(id){
+      var st = tests[id] ? tests[id].status : "pending";
+      var m = CAT[id][2];
+      perMs[m].total++;
+      if (st === "pass"){ pass++; perMs[m].pass++; }
+      else if (st === "fail"){ fail++; perMs[m].fail++; }
+    });
+
+    // chip màu
+    var chips = document.querySelectorAll("[data-tid]");
+    for (var i = 0; i < chips.length; i++){
+      var c = chips[i], id = c.getAttribute("data-tid");
+      var st = tests[id] ? tests[id].status : "pending";
+      c.classList.remove("pass","fail","pending","warn");
+      c.classList.add(cls(st));
+      var t = tests[id] || {};
+      c.title = id + " · " + CAT[id][1] + (t.lastRun ? " · lần cuối " + t.lastRun : "") + (t.commit ? " · " + t.commit : "");
+    }
+
+    // milestone đang mở = milestone đầu tiên chưa đủ
+    var open = MS.filter(function(m){ return perMs[m].pass < perMs[m].total; })[0] || "Xong";
+    var next = null;
+    for (var k = 0; k < ORDER.length; k++){
+      var tid = ORDER[k], s = tests[tid] ? tests[tid].status : "pending";
+      if (CAT[tid][2] === open && s !== "pass"){ next = tid; break; }
+    }
+
+    $("t-pass").textContent = pass;
+    $("t-pct").textContent = Math.round(pass / ORDER.length * 100) + "% · " + fail + " đỏ";
+    $("t-ms").textContent = open;
+    $("t-ms-sub").textContent = open === "Xong" ? "49/49, Phase 0 chờ cửa ra" : perMs[open].pass + "/" + perMs[open].total + " trong mốc · " + MS_GROUPS[open];
+    $("t-next").textContent = next || "—";
+    $("t-next-sub").textContent = next ? "[" + CAT[next][0] + "] " + CAT[next][1] : "không còn việc [U]/[I]/[H] trong catalog";
+    $("t-upd").textContent = (data.updated || "").slice(0,10) || "—";
+    $("t-commit").textContent = data.commit ? "commit " + data.commit : "";
+
+    // burndown lớn
+    var burn = $("burn"); burn.innerHTML = "";
+    MS.forEach(function(m){
+      var r = perMs[m], row = document.createElement("div"); row.className = "burn-row";
+      var pp = r.total ? r.pass / r.total * 100 : 0, fp = r.total ? r.fail / r.total * 100 : 0;
+      row.innerHTML = '<span class="m' + (m === open ? " open" : "") + '">' + m + (m === open ? " ←" : "") + '</span>'
+        + '<div class="bar"><i style="width:' + pp + '%"></i><b style="width:' + fp + '%;left:' + pp + '%"></b></div>'
+        + '<span class="n">' + r.pass + "/" + r.total + '</span>';
+      burn.appendChild(row);
+    });
+
+    // thanh nhỏ trong từng mốc
+    MS.forEach(function(m){
+      var art = document.querySelector('.ms[data-ms="' + m + '"]'); if (!art) return;
+      var r = perMs[m];
+      var bi = art.querySelector(".mini .bar i"), bb = art.querySelector(".mini .bar b"), n = art.querySelector("[data-ms-n]");
+      if (bi) bi.style.width = (r.total ? r.pass / r.total * 100 : 0) + "%";
+      if (bb){ bb.style.width = (r.total ? r.fail / r.total * 100 : 0) + "%"; bb.style.left = (r.total ? r.pass / r.total * 100 : 0) + "%"; }
+      if (n) n.textContent = r.pass + "/" + r.total + (r.fail ? " · " + r.fail + " đỏ" : "");
+    });
+    // M0' chỉ có TEL-01
+    var m0 = document.querySelector('.ms[data-ms="M0"] .mini .bar i');
+    if (m0) m0.style.width = (tests["TEL-01"] && tests["TEL-01"].status === "pass") ? "100%" : "0%";
+
+    var s = $("src-state"); s.textContent = srcText; s.className = "state" + (isErr ? " err" : "");
+  }
+
+  // ---- Trạng thái module (docs/module-status.json) ----
+  var LANG = {rust:"Rust", go:"Go", cpp:"C++", ts:"TS", sql:"SQL", cfg:"cfg", sh:"sh"};
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  function renderMods(mod, srcText, isErr){
+    var tb = $("modtab-body"), s = $("mod-src");
+    if (!tb) return;
+    if (!mod || !mod.modules){
+      tb.innerHTML = '<tr><td colspan="7" class="empty">Chưa có docs/module-status.json — chạy <code>./mo status</code> để máy đo.</td></tr>';
+      if (s){ s.textContent = srcText || "chưa có dữ liệu"; s.className = "state" + (isErr ? " err" : ""); }
+      return;
+    }
+    var sm = mod.summary || {}, b = mod.basis || {}, sp = sm.spec || {};
+    var plansOpen = (sm.plans || []).filter(function(p){ return !/^(done|merged|abandoned|closed)$/.test(p.status); });
+    $("m-adr").textContent = sm.adr != null ? sm.adr : "—";
+    $("m-spec").textContent = (sp.channels != null ? sp.channels : "—") + "/" + (sp.channelsTarget || 9);
+    $("m-spec-sub").textContent = (sp.schemas || 0) + " schema · " + ((sp.vectorsValid || 0) + (sp.vectorsInvalid || 0)) + " test vector";
+    $("m-plans").textContent = plansOpen.length;
+    $("m-plans-sub").textContent = plansOpen.length ? plansOpen.map(function(p){ return p.id + " (" + p.status + ")"; }).join(", ") : "không có plan mở";
+    $("m-basis").textContent = b.commit || "—";
+    $("m-basis-sub").textContent = (b.branch ? b.branch + " · " : "") + (b.commitDate || "") + (b.dirty ? " · cây làm việc có sửa chưa commit" : "");
+    var st = sm.states || {};
+    $("m-states").textContent = "xong " + (st.done || 0) + " · đang làm " + (st.active || 0) + " · khung " + (st.skeleton || 0) + " · trống " + (st.none || 0);
+
+    tb.innerHTML = "";
+    mod.modules.forEach(function(m){
+      var t = m.tests || {}, c = m.code || {}, g = m.git || {};
+      var pct = t.total ? Math.round(t.pass / t.total * 100) : 0, fpct = t.total ? Math.round(t.fail / t.total * 100) : 0;
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        '<td class="id"><b>' + esc(m.id) + '</b><small>' + esc(m.name) + '</small></td>'
+        + '<td><span class="tag ' + esc(m.lang) + '">' + esc(LANG[m.lang] || m.lang) + '</span></td>'
+        + '<td><span class="st ' + esc(m.state) + '">' + esc(m.label) + '</span>' + (m.notes && m.notes.length ? '<small class="warn-note">' + esc(m.notes.join(" · ")) + '</small>' : '') + '</td>'
+        + '<td class="num">' + (c.files || 0) + ' file<br><small>' + (c.loc || 0) + ' dòng</small></td>'
+        + '<td class="tst">' + (t.total ? '<div class="bar"><i style="width:' + pct + '%"></i><b style="width:' + fpct + '%;left:' + pct + '%"></b></div><small>' + t.pass + '/' + t.total + (t.fail ? ' · ' + t.fail + ' đỏ' : '') + '</small>' : '<small class="dim">không có test ID riêng</small>') + '</td>'
+        + '<td class="num"><span class="mono">' + esc(g.lastDate || "—") + '</span><br><small>' + (g.lastCommit ? esc(g.lastCommit) + ' · ' + (g.commits || 0) + ' commit' : 'chưa có commit') + '</small></td>'
+        + '<td class="num">' + esc(m.milestone) + '</td>';
+      tb.appendChild(tr);
+    });
+    if (s){ s.textContent = srcText; s.className = "state" + (isErr ? " err" : ""); }
+  }
+
+  render(SNAPSHOT, SNAPSHOT.updated ? "bản chụp nhúng · tracker " + SNAPSHOT.updated.slice(0,10) : "bản chụp nhúng (chưa có test-status.json)");
+  renderMods(MODSNAP, MODSNAP && MODSNAP.basis ? "bản chụp nhúng · commit " + (MODSNAP.basis.commit || "?") + " · " + (MODSNAP.basis.commitDate || "") : "chưa nhúng — chạy ./mo status");
+
+  // Tự đọc khi trang được phục vụ qua HTTP từ trong repo (file:// bị trình duyệt chặn fetch).
+  try {
+    if (location.protocol === "http:" || location.protocol === "https:"){
+      fetch("../../test-status.json", {cache:"no-store"}).then(function(r){
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      }).then(function(j){
+        render(j, "docs/test-status.json qua HTTP · " + (j.updated || ""));
+      }).catch(function(){ /* giữ bản chụp, không báo lỗi: đây là chế độ thường khi mở từ artifact */ });
+      fetch("../../module-status.json", {cache:"no-store"}).then(function(r){
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      }).then(function(j){
+        renderMods(j, "docs/module-status.json qua HTTP · commit " + ((j.basis || {}).commit || "?"));
+      }).catch(function(){});
+    }
+  } catch (e) {}
+
+  var inpM = $("f-mod");
+  if (inpM) inpM.addEventListener("change", function(){
+    var f = inpM.files && inpM.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function(){
+      try {
+        var j = JSON.parse(rd.result);
+        if (!j || !Array.isArray(j.modules)) throw new Error("thiếu trường modules");
+        renderMods(j, f.name + " · commit " + ((j.basis || {}).commit || "?"));
+      } catch (e) {
+        renderMods(MODSNAP, "file không đọc được: " + e.message + ". Cần docs/module-status.json do modstatus.py sinh.", true);
+      }
+    };
+    rd.readAsText(f);
+  });
+
+  // Nạp file tay
+  var inp = $("f-status");
+  if (inp) inp.addEventListener("change", function(){
+    var f = inp.files && inp.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function(){
+      try {
+        var j = JSON.parse(rd.result);
+        if (!j || typeof j.tests !== "object") throw new Error("thiếu trường tests");
+        render(j, f.name + " · " + (j.updated || "không có updated"));
+      } catch (e) {
+        render(SNAPSHOT, "file không đọc được: " + e.message + ". Cần docs/test-status.json do track.py sinh.", true);
+      }
+    };
+    rd.readAsText(f);
+  });
+})();
+</script>

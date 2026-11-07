@@ -1,10 +1,17 @@
 # .steering — dòng thời gian
 
 > ⚙️ Sinh bởi `tools/steering/steer.py` — **không sửa tay**. Trạng thái hiện tại: `INDEX.md`.
-> 40 sự việc · plan · cổng chốt · mục nhật ký · ADR, mới nhất trên đầu
+> 47 sự việc · plan · cổng chốt · mục nhật ký · ADR, mới nhất trên đầu
 
 | Mốc (UTC) | Loại | Việc |
 |---|---|---|
+| `2026-10-22T00:00:00Z` | ADR | [ADR-0018: Môi trường mô phỏng ROS 2 trên máy dev = ROS 2 native trong WSL cho việc hằng ngày + container theo distro cho ma trận](../docs/adr/0018-moi-truong-mo-phong-ros2-wsl-container.md) · accepted |
+| `2026-10-18T00:00:00Z` | ADR | [ADR-0012: Rust cho agent trên robot; Go giữ cho server](../docs/adr/0012-rust-cho-agent.md) · accepted |
+| `2026-10-18T00:00:00Z` | ADR | [ADR-0013: ros2-probe viết bằng C++ (rclcpp), không phải Python (rclpy)](../docs/adr/0013-probe-cpp-rclcpp.md) · accepted |
+| `2026-10-18T00:00:00Z` | ADR | [ADR-0014: EMQX dưới BSL 1.1 — giữ cho kênh vendor một node, quyết lại trước SaaS](../docs/adr/0014-emqx-bsl-11-mot-node.md) · accepted |
+| `2026-10-18T00:00:00Z` | ADR | [ADR-0015: OTA app-level tự xây, không wrap Mender / hawkBit / balena](../docs/adr/0015-ota-tu-xay-khong-wrap-mender.md) · accepted |
+| `2026-10-18T00:00:00Z` | ADR | [ADR-0016: PKI thiết bị — CA nằm trong server, cert 90 ngày, enroll token một lần](../docs/adr/0016-pki-ca-trong-server.md) · accepted |
+| `2026-10-18T00:00:00Z` | ADR | [ADR-0017: Next.js + TypeScript cho dashboard](../docs/adr/0017-nextjs-cho-dashboard.md) · accepted |
 | `2026-09-01T06:23:20Z` | decision | đóng [S0014](entries/2026-09-01T062319Z-S0014-decision-dev-moi-vibe-khong-chan-phien-chan-ba-lo-c.md) **kept** → Makefile check-merge + trace.py check_no_skip + trace.py check_deleted_plans + session-start.sh tu bat hook |
 | `2026-09-01T06:23:19Z` | decision | mở [S0014](entries/2026-09-01T062319Z-S0014-decision-dev-moi-vibe-khong-chan-phien-chan-ba-lo-c.md) — Dev moi vibe: khong chan phien, chan ba lo cu the · **quyết định:** Khong dat rao can nao truoc phien vibe. Thay vao do: session-start tu bat git hook, va ba luat chi-nam-trong-van-ban (conflict marker, t.Skip, xoa plan) tro thanh chot chan may. |
 | `2026-09-01T03:56:53Z` | risky | đóng [S0013](entries/2026-09-01T035545Z-S0013-risky-git-checkout----docstest-statusjson-docste.md) **reverted** → none — hook bao dung, day la rm -rf that |

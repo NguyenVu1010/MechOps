@@ -1,5 +1,5 @@
 # ADR-0004: Probe tách khỏi agent, nói chuyện qua Unix socket
-- Status: accepted
+- Status: accepted (kiến trúc giữ nguyên; ngôn ngữ probe thay bởi ADR-0013: C++ rclcpp)
 - Date: 2026-07-15 (hồ sơ hóa từ dev-plan mục 1.5, chốt 2026-07-09)
 - Covers: [PRB-02, PRB-03, PRB-06]
 ## Context
