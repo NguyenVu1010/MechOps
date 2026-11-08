@@ -63,7 +63,7 @@ Tuyển **1 vendor design partner** dùng miễn phí từ tháng 3–4 của Ph
 ## 4. Nguồn lực & ràng buộc (mới)
 
 - Team: founder + 1–2 cộng sự part-time.
-- Founder học Master's tại Pháp từ 09/2026 → Phase 0 phải scope theo quỹ thời gian part-time, không theo lịch full-time.
+- Một thành viên team học Master's tại Pháp từ 09/2026 → Phase 0 phải scope theo quỹ thời gian part-time, không theo lịch full-time.
 - Phần cứng test: Jetson, Raspberry Pi (có sẵn). Chưa có fleet thật → design partner bù khoảng trống này.
 - Nguyên tắc scope: **mọi hạng mục "tự xây" phải trả lời được câu hỏi "vì sao không dùng OSS có sẵn".**
 

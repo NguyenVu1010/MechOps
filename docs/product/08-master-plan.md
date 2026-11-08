@@ -164,6 +164,12 @@ trong milestone đó, không đổi ID thuộc milestone nào (tracker và catal
 Lý do có M0': M0 cũ dừng ở skeleton; hợp đồng mới có một channel và toolchain chưa
 có Rust. Không có M0' thì PRV-01 không có gì để đứng.
 
+**Trước M0': tách repo** (ADR-0019, kế hoạch và nghiệm thu từng bước ở `09-tach-repo.md`,
+khoảng 2,5 tuần). Sau khi tách, việc M0' chia theo repo: SPEC, PROTO-RS và toolchain Rust
+làm ở `mechops-agent`; PROTO-GO, DEP và BRK làm ở `mechops-platform`. Hợp đồng HTTP chia
+hai: enroll và renew vào `specs/agent-http.yaml` (public, agent gọi), còn devices vào
+`api/openapi.yaml` của platform.
+
 | Module | Việc |
 |---|---|
 | SPEC | Điền đủ 8 channel còn `TODO(M0)` vào `asyncapi.yaml`; JSON Schema cho `status`, `inventory`, `cmd`, `cmdRes`, `otaState`, `deviceState`, `event`; `probe-*.schema.json` cho hello/helloAck/data/event/cmd/ping; test vector hợp lệ/không hợp lệ cho mỗi schema; `openapi.yaml` cho enroll/renew/devices. Bảng mã `codes.md`. Giới hạn 64 KB ghi vào spec. |
@@ -174,7 +180,7 @@ có Rust. Không có M0' thì PRV-01 không có gì để đứng.
 | BRK | `deploy/emqx/acl.sql` theo topic layout thật, test bằng `mosquitto_pub` thủ công. |
 
 **Nghiệm thu M0':** `./mo verify` xanh và tick **TEL-01** [U] ở cả Rust và Go (test
-vector validate đúng hai phía) · `./mo trace` OK với 17 ADR · `docker compose up` trên
+vector validate đúng hai phía) · `./mo trace` OK với mọi ADR ở cả repo chính và repo đội · `docker compose up` trên
 máy trắng, đăng nhập dashboard bằng user seed · `./mo doctor` không thiếu gì · `.steering`
 có mục ghi quyết định M0'. Không có test [I] nào ở M0'.
 

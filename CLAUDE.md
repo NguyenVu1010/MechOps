@@ -58,6 +58,9 @@ ngoài Docker (ADR 0010). Gõ `make` trực tiếp sẽ báo "command not found"
 - Thêm thư viện ngoài stack đã chốt mà chưa có ADR.
 - Tick test [H] — chỉ người chạy `./mo hw-test` mới tick được.
 - Merge vào `main` (constitution #9).
+- Ghi công công cụ AI trong commit hoặc PR: không `Co-Authored-By: Claude…`, không
+  `Claude-Session:`, không dòng "Generated with Claude Code". Founder là tác giả duy nhất.
+  `./mo check-commit` (hook và CI) chặn các dòng này.
 
 ## Skill — không nhớ gì cả, gõ `/dev`
 
