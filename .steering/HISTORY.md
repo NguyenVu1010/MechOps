@@ -1,10 +1,13 @@
 # .steering — dòng thời gian
 
 > ⚙️ Sinh bởi `tools/steering/steer.py` — **không sửa tay**. Trạng thái hiện tại: `INDEX.md`.
-> 62 sự việc · plan · cổng chốt · mục nhật ký · ADR, mới nhất trên đầu
+> 65 sự việc · plan · cổng chốt · mục nhật ký · ADR, mới nhất trên đầu
 
 | Mốc (UTC) | Loại | Việc |
 |---|---|---|
+| `2026-11-09T08:03:04Z` | plan | **abandoned** plan [m1-contract-v01](plans/m1-contract-v01/) — Tách repo (ADR-0019): specs/ đã chuyển sang mechops-agent, nên plan hợp đồng không còn làm được ở repo chính. Plan treo ở gate clarify từ 2026-08-24, chưa có câu trả lời nào. Việc hợp đồng v0.1 (TEL-01, TEL-07) làm tiếp bằng plan mới trong mechops-agent, từ tag spec-v0.1.0. |
+| `2026-11-09T08:03:04Z` | decision | mở [S0023](entries/2026-11-09T080304Z-S0023-decision-bo-plan-m1-contract-v01.md) — Bo plan m1-contract-v01 · **quyết định:** Bỏ plan m1-contract-v01; thư mục giữ nguyên với status abandoned; việc chuyển sang ADR-0019 |
+| `2026-11-09T08:03:04Z` | decision | đóng [S0023](entries/2026-11-09T080304Z-S0023-decision-bo-plan-m1-contract-v01.md) **kept** → ADR-0019 |
 | `2026-11-09T08:00:14Z` | risky | đóng [S0022](entries/2026-11-09T075228Z-S0022-risky-set--e-scusersnguyenvdappdatalocaltempclau.md) **kept** → none |
 | `2026-11-09T07:52:28Z` | risky | mở [S0022](entries/2026-11-09T075228Z-S0022-risky-set--e-scusersnguyenvdappdatalocaltempclau.md) — set -e; S=/c/Users/NguyenVD/AppData/Local/Temp/claude/bb657f28194a187 |
 | `2026-11-08T15:52:18Z` | risky | đóng [S0021](entries/2026-11-08T155204Z-S0021-risky-mo-check-commit---range-origindevelophead.md) **kept** → none |

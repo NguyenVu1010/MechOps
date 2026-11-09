@@ -1,0 +1,8 @@
+# Repo này là gì trong hệ MechOps (ADR-0019). Bộ công cụ đọc file này từ bước T3.
+name = "MechOps"
+role = "umbrella"
+adr_prefix = ""                 # ADR-0020, ADR-0021, ...
+submodules = ["repos/platform", "repos/agent", "repos/mobile"]
+catalog = "docs/product/05-test-catalog.md"
+owned_tests = ["PRV-01","PRV-02","PRV-03","PRV-04","PRV-05","TEL-03","TEL-04",
+               "TRM-01","TRM-03","TRM-04","LOD-01","LOD-02","LOD-03"]   # E2E

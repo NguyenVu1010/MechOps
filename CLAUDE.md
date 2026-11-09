@@ -2,6 +2,25 @@
 
 # CLAUDE.md — MechOps
 
+## Repo này là repo chính (umbrella, ADR-0019)
+
+Không có mã sản phẩm ở đây. Mã nằm trong ba repo đội, gắn vào bằng submodule ghim theo tag:
+
+| Thư mục | Repo | Đội |
+|---|---|---|
+| `repos/platform` | `mechops-platform` | web: server, dashboard, deploy |
+| `repos/agent` | `mechops-agent` (public) | robotics: agent, probe, sim, **`specs/`** |
+| `repos/mobile` | `mechops-mobile` | mobile |
+
+Repo chính giữ: constitution, ADR toàn hệ (`ADR-NNNN`), spec sản phẩm và master plan
+(`docs/product/`), lịch sử `.steering`, catalog test, và E2E (`e2e/`).
+
+- Viết code tính năng: mở đúng repo đội, không sửa trong `repos/`.
+- Đổi tag submodule chỉ qua PR, và chỉ merge khi E2E xanh.
+- ADR chạm từ hai repo trở lên viết ở đây; ADR của một đội viết ở repo đội đó.
+- Phần dưới là luật chung của mọi repo MechOps. Mục chạm `specs/`, Go, Rust áp dụng
+  trong repo đội tương ứng.
+
 Luật làm việc trong repo này. Đọc trước khi làm bất kỳ việc gì.
 
 ## Môi trường: mọi lệnh đi qua `./mo`, không phải `make`

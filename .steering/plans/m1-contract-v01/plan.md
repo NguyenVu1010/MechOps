@@ -1,7 +1,7 @@
 ---
 plan: m1-contract-v01
 milestone: M1
-status: draft
+status: abandoned
 covers: [TEL-01, TEL-07]
 adr: [0001]
 requirements:

@@ -1,0 +1,7 @@
+# Mở PR nâng tag submodule trong repos/ mỗi tuần (ADR-0019). PR chỉ merge khi E2E xanh.
+version: 2
+updates:
+  - package-ecosystem: gitsubmodule
+    directory: /
+    schedule:
+      interval: weekly

@@ -1263,6 +1263,10 @@ def cmd_plan_abandon(a):
     path = new_entry(
         kind="decision", area=a.area, plan=a.name,
         title=f"Bo plan {a.name}",
+        # cmd_new bắt buộc `decision` cho kind=decision. Thiếu dòng này thì abandon
+        # đổi status của plan rồi mới chết ở đây: plan đóng mà không có nhật ký.
+        decision=f"Bỏ plan {a.name}; thư mục giữ nguyên với status abandoned"
+                 + (f"; việc chuyển sang {a.next}" if a.next else ""),
         context=f"Plan {a.name} dừng giữa đường. Thư mục vẫn nằm nguyên ở "
                 f".steering/plans/{a.name}/ với status: abandoned — bỏ một hướng đi "
                 f"là quyết định, và quyết định thì phải đọc lại được sáu tháng sau.",

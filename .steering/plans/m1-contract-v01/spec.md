@@ -1,16 +1,16 @@
 ---
 plan: m1-contract-v01
 milestone: M1
-status: draft
+status: abandoned
 created: 2026-08-24T18:30:03Z
 contract: [specs/asyncapi.yaml, specs/schemas/, specs/testvectors/]
 supersedes: []
 branch: feat/ai-flow
 reviewed:
 reviewed_why:
-closed:
-closed_as:
-why_closed:
+closed: 2026-11-09T08:03:04Z
+closed_as: abandoned
+why_closed: "Tách repo (ADR-0019): specs/ đã chuyển sang mechops-agent, nên plan hợp đồng không còn làm được ở repo chính. Plan treo ở gate clarify từ 2026-08-24, chưa có câu trả lời nào. Việc hợp đồng v0.1 (TEL-01, TEL-07) làm tiếp bằng plan mới trong mechops-agent, từ tag spec-v0.1.0."
 covers: [TEL-01, TEL-07]
 adr: [0001]
 requirements:
