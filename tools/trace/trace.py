@@ -406,8 +406,14 @@ def check_plans(adr_st):
         # `contract:` — file hợp đồng plan sẽ chạm. Khai sai đường dẫn thì chốt
         # chặn contract_touch.py sẽ cho qua một file lẽ ra phải chặn, hoặc chặn
         # một file lẽ ra được phép: cả hai đều là chốt chặn nói dối.
+        # Plan đã đóng (frozen/abandoned) không chạm hợp đồng nữa: `contract:` của nó
+        # là lịch sử, và đường dẫn có thể đã rời repo (tách repo, ADR-0019) — chỉ kiểm
+        # tồn tại với plan còn mở.
+        is_closed = bool(fm.get("closed", "").strip())
         for c in re.split(r"[,\s]+", fm.get("contract", "").strip("[]")):
             if not c:
+                continue
+            if is_closed and c.startswith("specs/"):
                 continue
             if not c.startswith("specs/"):
                 errs.append(f"{rel}/spec.md: contract chỉ nhận đường dẫn trong "

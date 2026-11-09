@@ -1,18 +1,21 @@
 # .steering — mục lục
 
 > ⚙️ Sinh bởi `tools/steering/steer.py` — **không sửa tay**. Luật và format: `.steering/README.md`.
-> 1 plan · 21 mục nhật ký · 0 chưa đóng · decision 4 · discovery 1 · risky 14 · wrong 2
+> 1 plan · 22 mục nhật ký · 0 chưa đóng · decision 5 · discovery 1 · risky 14 · wrong 2
 
-## Plan đang mở
+## Plan đã đóng — giữ nguyên, không xoá
+
+> `frozen` = feature xong. `abandoned` = bỏ giữa đường — lý do ở `why_closed:` trong `spec.md` và ở mục nhật ký cùng plan.
 
 | Plan | Milestone | Trạng thái | Covers | ADR | Bị thay bởi | Nhật ký |
 |---|---|---|---|---|---|---|
-| [m1-contract-v01](plans/m1-contract-v01/) | M1 | 0/4 chốt | TEL-01, TEL-07 | 0001 | — | [4 mục](plans/m1-contract-v01/JOURNAL.md) |
+| [m1-contract-v01](plans/m1-contract-v01/) | M1 | **abandoned** · 2026-11-09 | TEL-01, TEL-07 | 0001 | — | [5 mục](plans/m1-contract-v01/JOURNAL.md) |
 
 ## M1
 
 | id | Ngày | Loại | Kết cục | Tầng | Test ID | Đã nâng thành | Tiêu đề |
 |---|---|---|---|---|---|---|---|
+| [S0023](entries/2026-11-09T080304Z-S0023-decision-bo-plan-m1-contract-v01.md) | 2026-11-09 | decision | kept | flow | — | ADR-0019 | Bo plan m1-contract-v01 |
 | [S0022](entries/2026-11-09T075228Z-S0022-risky-set--e-scusersnguyenvdappdatalocaltempclau.md) | 2026-11-09 | risky | kept | infra | — | none | set -e; S=/c/Users/NguyenVD/AppData/Local/Temp/claude/bb657f28194a187 |
 | [S0021](entries/2026-11-08T155204Z-S0021-risky-mo-check-commit---range-origindevelophead.md) | 2026-11-08 | risky | kept | infra | — | none | ./mo check-commit --range origin/develop..HEAD 2>&1 | tail -2; git wor |
 | [S0020](entries/2026-11-08T155123Z-S0020-risky-wmechops-verify-rm--rf-git-worktree-add--q.md) | 2026-11-08 | risky | kept | infra | — | none | W=../mechops-verify && rm -rf  && git worktree add -q  HEAD && cd |

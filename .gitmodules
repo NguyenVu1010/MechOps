@@ -1,0 +1,9 @@
+[submodule "repos/platform"]
+	path = repos/platform
+	url = git@github.com:NguyenVu1010/mechops-platform.git
+[submodule "repos/agent"]
+	path = repos/agent
+	url = git@github.com:NguyenVu1010/mechops-agent.git
+[submodule "repos/mobile"]
+	path = repos/mobile
+	url = git@github.com:NguyenVu1010/mechops-mobile.git

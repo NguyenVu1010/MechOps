@@ -1,7 +1,21 @@
 # MechOps
 
 Hạ tầng vận hành robot, PLC và Industrial IoT.
-Go · MQTT/EMQX · PostgreSQL+TimescaleDB · Next.js · Docker Compose.
+
+Đây là **repo chính**: quyết định, spec sản phẩm, kế hoạch, lịch sử và E2E. Mã nằm trong
+ba repo đội, gắn vào bằng submodule ghim theo tag (ADR-0019):
+
+| Thư mục | Repo | Nội dung |
+|---|---|---|
+| `repos/platform` | `mechops-platform` | server, dashboard, deploy |
+| `repos/agent` | `mechops-agent` | agent, probe, sim, hợp đồng `specs/` (Apache 2.0) |
+| `repos/mobile` | `mechops-mobile` | ứng dụng mobile |
+
+```bash
+git clone --recurse-submodules git@github.com:NguyenVu1010/MechOps.git
+```
+
+Kế hoạch tách và trạng thái: `docs/product/09-tach-repo.md`.
 
 ## Vừa clone về?
 
@@ -30,7 +44,7 @@ nào rồi gọi đúng skill. Không cần thuộc quy trình.
 | `docs/test-status.md` | Việc tiếp theo là gì? | tất cả, mỗi ngày |
 | `docs/adr/` | Vì sao lại làm thế này? | khi định làm khác đi |
 | `.steering/INDEX.md` | Đã thử gì rồi bỏ? | khi thấy một hướng "hiển nhiên" |
-| `specs/` | Hợp đồng MQTT + Probe API | khi chạm giao thức |
+| `repos/agent/specs/` | Hợp đồng MQTT + Probe API | khi chạm giao thức |
 
 ## Ba điều biết trước thì đỡ mất thời gian
 
@@ -54,4 +68,4 @@ nào rồi gọi đúng skill. Không cần thuộc quy trình.
 
 ## Mã nguồn mở
 
-`specs/` (AsyncAPI 3 + JSON Schema), `agent/`, `probe/`, `protocol/`.
+Repo `mechops-agent`: `specs/` (AsyncAPI 3 + JSON Schema), `agent/`, `probe/`, `sim/`.
