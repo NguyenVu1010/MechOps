@@ -1,7 +1,7 @@
 # .steering — mục lục
 
 > ⚙️ Sinh bởi `tools/steering/steer.py` — **không sửa tay**. Luật và format: `.steering/README.md`.
-> 1 plan · 20 mục nhật ký · 0 chưa đóng · decision 4 · discovery 1 · risky 13 · wrong 2
+> 1 plan · 21 mục nhật ký · 0 chưa đóng · decision 4 · discovery 1 · risky 14 · wrong 2
 
 ## Plan đang mở
 
@@ -13,6 +13,7 @@
 
 | id | Ngày | Loại | Kết cục | Tầng | Test ID | Đã nâng thành | Tiêu đề |
 |---|---|---|---|---|---|---|---|
+| [S0022](entries/2026-11-09T075228Z-S0022-risky-set--e-scusersnguyenvdappdatalocaltempclau.md) | 2026-11-09 | risky | kept | infra | — | none | set -e; S=/c/Users/NguyenVD/AppData/Local/Temp/claude/bb657f28194a187 |
 | [S0021](entries/2026-11-08T155204Z-S0021-risky-mo-check-commit---range-origindevelophead.md) | 2026-11-08 | risky | kept | infra | — | none | ./mo check-commit --range origin/develop..HEAD 2>&1 | tail -2; git wor |
 | [S0020](entries/2026-11-08T155123Z-S0020-risky-wmechops-verify-rm--rf-git-worktree-add--q.md) | 2026-11-08 | risky | kept | infra | — | none | W=../mechops-verify && rm -rf  && git worktree add -q  HEAD && cd |
 | [S0019](entries/2026-11-08T052155Z-S0019-risky-scusersnguyenvdappdatalocaltempclaudebb657.md) | 2026-11-08 | risky | kept | infra | — | none | S=C:/Users/NguyenVD/AppData/Local/Temp/claude/bb657f28194a187e/651f69 |

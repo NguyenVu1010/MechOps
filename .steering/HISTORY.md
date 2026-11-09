@@ -1,10 +1,12 @@
 # .steering — dòng thời gian
 
 > ⚙️ Sinh bởi `tools/steering/steer.py` — **không sửa tay**. Trạng thái hiện tại: `INDEX.md`.
-> 60 sự việc · plan · cổng chốt · mục nhật ký · ADR, mới nhất trên đầu
+> 62 sự việc · plan · cổng chốt · mục nhật ký · ADR, mới nhất trên đầu
 
 | Mốc (UTC) | Loại | Việc |
 |---|---|---|
+| `2026-11-09T08:00:14Z` | risky | đóng [S0022](entries/2026-11-09T075228Z-S0022-risky-set--e-scusersnguyenvdappdatalocaltempclau.md) **kept** → none |
+| `2026-11-09T07:52:28Z` | risky | mở [S0022](entries/2026-11-09T075228Z-S0022-risky-set--e-scusersnguyenvdappdatalocaltempclau.md) — set -e; S=/c/Users/NguyenVD/AppData/Local/Temp/claude/bb657f28194a187 |
 | `2026-11-08T15:52:18Z` | risky | đóng [S0021](entries/2026-11-08T155204Z-S0021-risky-mo-check-commit---range-origindevelophead.md) **kept** → none |
 | `2026-11-08T15:52:16Z` | risky | đóng [S0020](entries/2026-11-08T155123Z-S0020-risky-wmechops-verify-rm--rf-git-worktree-add--q.md) **kept** → none |
 | `2026-11-08T15:52:04Z` | risky | mở [S0021](entries/2026-11-08T155204Z-S0021-risky-mo-check-commit---range-origindevelophead.md) — ./mo check-commit --range origin/develop..HEAD 2>&1 | tail -2; git wor |

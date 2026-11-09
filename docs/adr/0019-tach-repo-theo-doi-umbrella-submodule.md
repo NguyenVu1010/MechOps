@@ -87,9 +87,8 @@ Repo điều phối của robotics **không** được đặt tên có chữ "fl
 - **Repo đội đánh số riêng:** `WEB-`, `ROB-`, `MOB-`.
   - ADR của repo đội không được lật một ADR của repo chính. Muốn lật thì phải viết ADR ở repo chính.
   - `./mo trace` của repo chính kiểm luật này qua submodule.
-- **Repo `mechops-agent` là public nên giữ bản sao chỉ-đọc** của những ADR cần cho người ngoài. Danh sách ở `docs/product/09-tach-repo.md`.
+- **Mỗi repo đội giữ bản sao chỉ-đọc của các ADR liên quan tới nó**: ADR toàn hệ cộng ADR của đội đó. Bộ công cụ (`trace`, skill trỏ ADR) cần đọc được ADR ngay trong repo, và repo agent public cần chúng cho người ngoài. Danh sách ở `docs/product/09-tach-repo.md`.
   - CI của repo chính kiểm bản sao khớp bản gốc.
-  - Repo platform và mobile không cần bản sao, vì thành viên ba đội đều đọc được repo chính.
 
 ### Đợt chuẩn hoá ADR trước khi tách
 
@@ -140,4 +139,4 @@ Master plan đóng băng `tools/` cho tới khi TEL-03 xanh. ADR này mở một
 − Một tính năng xuyên đội cần ba đến bốn PR theo thứ tự: spec, rồi hai phía, rồi nâng tag ở repo chính. Ca nặng nhất là M3 (OTA).
 − Bộ công cụ `./mo` phải chạy được ở bốn repo với bốn bộ ngôn ngữ khác nhau. Đây là việc lớn nhất của đợt tách, và là lý do phải mở ngoại lệ đóng băng `tools/`.
 − M0' lùi khoảng hai tuần, vì việc tách được làm trước.
-− CODEOWNERS theo đội cần một GitHub Organization. Repo hiện nằm dưới tài khoản cá nhân, nên phải chuyển sang Organization trước khi tách.
+− CODEOWNERS theo đội cần một GitHub Organization. Bảo vệ nhánh (ruleset) trên repo private cần gói trả phí: GitHub Pro cho tài khoản cá nhân, hoặc gói Team cho Organization. Gói miễn phí chỉ bảo vệ được repo public.

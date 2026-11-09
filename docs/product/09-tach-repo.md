@@ -6,6 +6,27 @@ File này chỉ nói chuyện tổ chức repo. Công nghệ của từng repo (
 
 Trong file, `<org>` là tên GitHub Organization, founder chọn ở mục 10.
 
+## 0. Trạng thái thực hiện (cập nhật 2026-11-09)
+
+Founder yêu cầu tách ngay, trước khi xong T0–T3. Đã làm theo cách thực dụng: mỗi repo đội mang bộ công cụ hiện có, chỉ sửa tối thiểu để `./mo verify` và `./mo trace` xanh. Phần T3 (công cụ đọc `mechops.repo.toml`, gom `--all`, chốt chặn ADR bất biến) vẫn còn phải làm.
+
+| Việc | Trạng thái |
+|---|---|
+| Ba repo trên GitHub | đã tạo **dưới tài khoản `NguyenVu1010`**, chưa có Organization; chuyển vào Organization sau bằng `transfer` |
+| `mechops-agent` | `develop`, tag `v0.0.1`, `spec-v0.1.0`; lịch sử từ `filter-repo`; có `sim/ros2/`, LICENSE Apache 2.0; gitleaks sạch (26 commit); **vẫn private**, founder chuyển public |
+| `mechops-platform` | `develop`, tag `v0.0.1`, `api-v0.0.1`; `specs/` ghim `spec-v0.1.0`; lệnh `./mo spec-sync <tag>` chạy được với repo thật |
+| `mechops-mobile` | `develop`, tag `v0.0.1`; `api/` ghim `api-v0.0.1`; lệnh `./mo api-sync <tag>`; nháp `MOB-0001` |
+| Bản sao ADR | **mỗi repo đội giữ bản sao ADR liên quan**: agent 13, platform 15, mobile 11. Kế hoạch cũ chỉ cho agent giữ, nhưng `trace` và skill cần đọc ADR ngay trong repo |
+| Repo chính thành umbrella (T6) | PR riêng, xếp sau PR này |
+| Bảo vệ nhánh ở ba repo mới | **chưa có**: GitHub từ chối ruleset trên repo private của gói miễn phí. Cần GitHub Pro, gói Team của Organization, hoặc repo public |
+| T2 (cột Repo trong catalog) | chưa làm; tạm thời mỗi repo khai `owned_tests` trong `mechops.repo.toml` |
+| T3 (bộ công cụ biết vai trò repo) | chưa làm |
+| Image dev của platform lên GHCR, compose kéo image ở mobile | chưa làm |
+| Workflow nightly | bỏ ở agent và mobile (nó dựng hạ tầng từ `deploy/` của platform) |
+| T7 (PR thử từng đội) | chưa làm |
+
+**Phát hiện cần founder quyết:** repo `MechOps` hiện đang **public**. Mã server và dashboard, phần đóng theo ADR-0002, đã công khai trong lịch sử. Kế hoạch ghi repo chính là private. Nhưng nếu chuyển sang private trên gói miễn phí thì ruleset của `develop` sẽ mất hiệu lực.
+
 ## 1. Kết quả cuối
 
 ```
@@ -60,7 +81,7 @@ M0' (`08-master-plan.md`) mở lại từ 2026-12-01 trong các repo đội.
 | `.claude/` | cả bốn repo | xem mục 3.3 |
 | `.github/` | cả bốn repo | mỗi repo viết lại CI của mình |
 | `constitution.md` | repo chính | repo đội giữ bản sao chỉ-đọc, CI kiểm khớp |
-| `docs/adr/` | repo chính | agent giữ bản sao 13 ADR, xem mục 5 |
+| `docs/adr/` | repo chính | mỗi repo đội giữ bản sao ADR liên quan: agent 13, platform 15, mobile 11 |
 | `docs/product/`, `docs/evidence/`, `docs/hw-test-runs/` | repo chính | biên bản [H] mới nằm ở repo sở hữu ID đó |
 | `.steering/` | repo chính | lịch sử ở lại nguyên vẹn; repo đội bắt đầu `.steering/` rỗng |
 | `docs/test-status.*`, `docs/PROGRESS.md`, `docs/module-status.json` | mỗi repo tự sinh | repo chính gom bằng `--all` |
@@ -138,7 +159,7 @@ Sau khi tách, mỗi repo đội giữ catalog phần của mình ở `docs/test
 ## 5. ADR sau khi tách
 
 - **19 ADR hiện có nằm nguyên ở repo chính**, không đổi số. Chúng bất biến từ tag `pre-split`.
-- **Repo `mechops-agent` giữ bản sao chỉ-đọc của 13 ADR** (danh sách ở mục 3.2). Đó là các ADR toàn hệ cộng các ADR của robotics. Sáu ADR chỉ thuộc web không ra repo public.
+- **Mỗi repo đội giữ bản sao chỉ-đọc của ADR liên quan**: ADR toàn hệ (0001, 0002, 0005, 0008, 0010, 0011, 0015, 0016, 0019) cộng ADR của đội. Agent thêm 0004, 0012, 0013, 0018 (13 bản). Platform thêm 0003, 0006, 0007, 0009, 0014, 0017 (15 bản). Mobile thêm 0007, 0017 (11 bản). Sáu ADR chỉ thuộc web không ra repo public.
 - **ADR mới chạm từ hai repo trở lên** viết ở repo chính, đánh số từ `ADR-0020`.
 - **ADR của riêng một đội** viết ở repo của đội đó, đánh số `WEB-0001`, `ROB-0001`, `MOB-0001`.
 
