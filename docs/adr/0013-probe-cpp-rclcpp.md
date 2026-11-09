@@ -2,23 +2,21 @@
 - Status: accepted
 - Date: 2026-10-18
 - Covers: [PRB-02, PRB-06]
-- Supersedes: ADR-0004 **phần ngôn ngữ probe** (kiến trúc sidecar + Unix socket + NDJSON giữ nguyên)
 
 ## Context
 
-ADR-0004 chọn sidecar probe nói chuyện với agent qua Unix socket, và ghi probe là
-"Python/rclpy". Lý do kiến trúc (agent không phụ thuộc ROS 2, sống khi stack ROS chết)
-vẫn đúng và không bàn lại ở đây. Chỉ bàn ngôn ngữ của probe.
+ADR-0004 chọn sidecar probe nói chuyện với agent qua Unix socket, để agent không phụ
+thuộc ROS 2 và sống khi stack ROS chết. ADR này chỉ bàn ngôn ngữ của probe.
 
 Hai dữ kiện mới: (1) team có kinh nghiệm C++ và chưa có kinh nghiệm Go/Rust; probe
 là chỗ duy nhất trong hệ thống mà kinh nghiệm đó sinh giá trị ngay từ ngày đầu.
-(2) Việc của probe nặng hơn ADR-0004 hình dung: đo hz nhiều topic đồng thời, đọc
+(2) Việc của probe không nhẹ: đo hz nhiều topic đồng thời, đọc
 `/battery_state`, `/pose`, và ở Phase 1 là pointcloud/image cho bag recorder.
 rclpy đuối ở tần số cao vì GIL và chi phí serialize Python.
 
 ## Options đã cân nhắc
 
-1. **Python rclpy** (ADR-0004). Chạy source-level trên mọi distro, viết nhanh. Yếu ở
+1. **Python rclpy.** Chạy source-level trên mọi distro, viết nhanh. Yếu ở
    tần số cao; kéo theo phiên bản Python của distro.
 2. **C++ rclcpp.** ← chọn. Ngôn ngữ bản địa của ROS 2, team đã biết, hiệu năng đủ cho
    Phase 1–3. Giá: build theo ma trận distro × arch.
@@ -49,3 +47,5 @@ Chốt chặn máy: probe build với `-Wall -Wextra -Werror`, chạy ASan/UBSan
   việc của CI, không phải của người.
 − Hai ngôn ngữ hệ thống nữa trong repo (Rust agent, Go server, C++ probe). Probe là
   thành phần nhỏ nhất và cô lập nhất, nên chi phí thêm là một Dockerfile và một job CI.
+
+_Chuẩn hoá 2026-11-08 trước khi tách repo (ADR-0019): bỏ dòng supersede một phần ADR-0004; ADR-0004 không còn chọn ngôn ngữ probe._

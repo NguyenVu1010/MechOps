@@ -2,13 +2,13 @@
 - Status: accepted
 - Date: 2026-10-18
 - Covers: [OTA-01, OTA-07, OTA-09]
-- Trả nợ constitution #6 cho ADR-0005 (ADR-0005 quyết rollback tại agent nhưng chưa trả lời "vì sao không dùng OSS có sẵn")
+- Liên quan: ADR-0005 (rollback quyết định tại agent)
 
 ## Context
 
 Constitution #6: mọi "tự xây" phải trả lời "vì sao không dùng OSS có sẵn" bằng ADR.
-OTA là phần tự xây lớn nhất của Phase 0, và ADR-0005 chỉ nhắc Mender như "playbook
-tham chiếu" trong ADR-0002. Ba OSS gần nhất:
+OTA là phần tự xây lớn nhất của Phase 0. ADR-0005 quyết luật rollback tại agent; ADR này
+trả lời vì sao tự xây cả cơ chế. Ba OSS gần nhất:
 
 | OSS | Có gì ta cần | Thiếu gì |
 |---|---|---|
@@ -56,3 +56,5 @@ xét `zstd` diff hoặc Mender delta khi có số đo băng thông; firmware ESP
   phát minh.
 − Không có artifact signing ở Phase 0 ngoài digest. Thêm cosign ký image và binary agent
   ở M3 (việc của plan OTA, không cần ADR riêng vì không thêm service).
+
+_Chuẩn hoá 2026-11-08 trước khi tách repo (ADR-0019): bỏ cách diễn đạt "trả nợ" cho ADR-0005; hai ADR là hai quyết định nối tiếp, không phải sửa sai._

@@ -1,15 +1,13 @@
-# ADR-0012: Rust cho agent trên robot; Go giữ cho server
+# ADR-0012: Rust cho agent trên robot
 - Status: accepted
 - Date: 2026-10-18
 - Covers: []
-- Supersedes: ADR-0009 **phần agent** (ADR-0009 vẫn có hiệu lực cho server và `protocol/`)
 
 ## Context
 
-ADR-0009 chọn Go cho cả agent lẫn server, so với C++. Nó chưa so với Rust, và được
-viết khi giả định team sẽ học Go. Tới 2026-10-18 repo có 22 dòng Go, 0/49 test,
-và founder quyết định đầu tư vào Rust làm ngôn ngữ dài hạn. Đây là thời điểm rẻ nhất
-để xét lại: chưa có code agent nào phải viết lại.
+Server viết bằng Go (ADR-0009). Agent cần quyết riêng: tới 2026-10-18 repo có 22 dòng Go,
+0/49 test, team có kinh nghiệm C++, chưa có Go hay Rust, và founder quyết định đầu tư vào
+Rust làm ngôn ngữ dài hạn. Đây là thời điểm rẻ nhất để chọn: chưa có code agent nào.
 
 Agent là phần duy nhất của hệ thống chạy trên thiết bị của khách hàng, với quyền
 cao, nhận lệnh từ mạng (OTA, PTY), và phải sống nhiều năm không restart. Ba lợi thế
@@ -31,7 +29,7 @@ gopcua), tốc độ viết, và khả năng người không chuyên review code
 
 ## Options đã cân nhắc
 
-1. **Go cho cả hai** (ADR-0009). Một toolchain, học nhanh nhất. Nhưng founder đã
+1. **Go cho cả hai**, cùng ngôn ngữ với server. Một toolchain, học nhanh nhất. Nhưng founder đã
    chọn đầu tư vào Rust, và Go không cho state machine kiểu-an-toàn.
 2. **Rust cho cả hai.** Một ngôn ngữ mới duy nhất. Nhưng server không được lợi gì
    và nhân đôi rủi ro học trên team part-time. Có thể xét lại sau M3 bằng ADR mới
@@ -43,8 +41,7 @@ gopcua), tốc độ viết, và khả năng người không chuyên review code
 
 ## Decision
 
-**Agent viết bằng Rust. Server và `protocol/` (Go) giữ theo ADR-0009.** Probe theo
-ADR-0013.
+**Agent viết bằng Rust.** Server theo ADR-0009, probe theo ADR-0013.
 
 Bộ crate chốt cho Phase 0 (thêm crate ngoài danh sách này cần ADR theo constitution #5):
 
@@ -103,3 +100,5 @@ thành Cargo workspace; `track.py` đọc JUnit từ `cargo-nextest`; `Makefile`
   là hẹp.
 − Phase 1 WebRTC phía agent dùng `webrtc` crate (port của Pion), ít chín hơn Pion. Cần
   spike trước khi ký ADR WebRTC.
+
+_Chuẩn hoá 2026-11-08 trước khi tách repo (ADR-0019): bỏ dòng supersede một phần ADR-0009; ADR-0009 nay chỉ nói về server, nên hai ADR không còn chồng lên nhau._

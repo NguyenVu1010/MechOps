@@ -6,7 +6,9 @@ Agent chạy trên robot của khách hàng — vendor sẽ muốn audit code ch
 ## Options đã cân nhắc (mục đánh * là dựng lại khi hồ sơ hóa — không có trong nguồn trích, founder xác nhận khi duyệt)
 1. Open-core (agent + protocol open, server closed) — 2. Toàn bộ closed* — 3. Toàn bộ open + thu tiền hosting/support*
 ## Decision
-Open-core theo bảng spec v2 mục 7: `mechops-agent` Apache 2.0 public GitHub; protocol spec open (license Apache 2.0 đã khai trong `specs/asyncapi.yaml`); ranh giới open gồm `agent/`, `probe/`, `protocol/`, `specs/` (như README ghi từ đầu). Server, dashboard, OTA orchestration, Fleet Manager closed trả phí. Playbook tham chiếu: Mender, balena, Grafana.
+Open-core theo bảng spec v2 mục 7: `mechops-agent` Apache 2.0 public GitHub; protocol spec open (license Apache 2.0 đã khai trong `specs/asyncapi.yaml`); ranh giới open gồm `agent/`, `probe/`, `sim/`, `specs/`, nằm chung repo public `mechops-agent` (ADR-0019). Mã Go sinh từ `specs/` (`protocol/`) thuộc server, vì phần open là hợp đồng chứ không phải một bản implement của nó. Server, dashboard, OTA orchestration, Fleet Manager closed trả phí. Playbook tham chiếu: Mender, balena, Grafana.
 ## Consequences
 + Vendor audit được thứ chạy trên robot của họ → lòng tin; cộng đồng viết adapter trên protocol open; lan truyền ROS 2 miễn phí.
 − Ranh giới open/closed phải giữ kỷ luật từng PR — code server không được rò vào repo public; agent không được import gì từ phần closed.
+
+_Chuẩn hoá 2026-11-08 trước khi tách repo (ADR-0019): danh sách thư mục open bỏ `protocol/`, thêm `sim/`, theo cách chia repo của ADR-0019._

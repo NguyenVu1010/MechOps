@@ -62,5 +62,7 @@ python/jq** — hook bảo vệ repo thì bản thân nó không được phụ 
 + Nâng Go/golangci-lint là sửa một dòng trong Dockerfile, cả team đổi cùng lúc.
 + Hook hết hỏng thầm lặng: `./mo doctor` in ra chính xác thiếu gì.
 − Mỗi lệnh cộng ~200ms (container ấm) hoặc ~1.5s (container nguội).
-− Lần dựng đầu tốn vài phút tải image; cần Docker Desktop chạy nền.
+− Lần dựng đầu tốn vài phút tải image; cần Docker chạy nền (Docker Desktop, hoặc Docker CE trong WSL như máy founder theo ADR-0018).
 − `./mo` là bề mặt mới phải bảo trì. Đổi lại nó xoá được `docs/SETUP-*.md` cho từng OS.
+
+_Chuẩn hoá 2026-11-08 trước khi tách repo (ADR-0019): Docker không bắt buộc là Docker Desktop; sau khi tách, mỗi repo có Dockerfile riêng theo ngôn ngữ của nó (ADR-0019)._

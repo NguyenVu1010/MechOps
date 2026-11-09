@@ -24,6 +24,14 @@ from track import CATALOG  # noqa: E402  (nguồn sự thật duy nhất của d
 
 IMPLEMENTS_RE = re.compile(r"^Implements:\s*(.+?)\s*$", re.MULTILINE)
 ID_RE = re.compile(r"^(PRV|ACL|TEL|PRB|OTA|ALT|TRM|WLB|INS|LOD)-\d{2}$")
+# Founder là tác giả duy nhất của repo: không ghi công công cụ AI trong commit
+# (2026-11-08). Dòng đồng tác giả làm GitHub hiện công cụ như một contributor.
+AI_CREDIT_RE = re.compile(
+    r"^(co-authored-by:.*(claude|anthropic|noreply@anthropic\.com).*"
+    r"|claude-session:.*"
+    r"|.*generated with \[claude code\].*)$",
+    re.MULTILINE | re.IGNORECASE,
+)
 
 
 def check(msg, label):
@@ -33,6 +41,12 @@ def check(msg, label):
 
     if subject.startswith(("Merge ", "Revert ")):
         return []  # commit do git sinh, không phải người khai
+
+    for line in AI_CREDIT_RE.findall(msg):
+        errs.append(
+            f"có dòng ghi công công cụ AI: {line[0].strip()!r}.\n"
+            "    Founder là tác giả duy nhất; xoá dòng này khỏi commit message."
+        )
 
     found = IMPLEMENTS_RE.findall(msg)
     if not found:
@@ -100,7 +114,8 @@ def main():
             print(f"  - {e}", file=sys.stderr)
         print(
             "\n  Vì sao: docs/product/05-test-catalog.md quy tắc #1 — mỗi thay đổi "
-            "phải nói rõ nó chạm test ID nào. Đây là sợi chỉ nối commit với evidence.",
+            "phải nói rõ nó chạm test ID nào. Đây là sợi chỉ nối commit với evidence.\n"
+            "  Dòng ghi công AI: founder là tác giả duy nhất của repo (CLAUDE.md, mục Cấm tuyệt đối).",
             file=sys.stderr,
         )
         return 1

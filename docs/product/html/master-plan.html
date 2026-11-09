@@ -428,6 +428,34 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--rule);font-fa
   <h2>Bảy mốc, mỗi mốc một lát cắt dọc chạy xuyên agent → broker → server → dashboard</h2>
   <p class="note">Thứ tự trong mỗi mốc là thứ tự làm, không đổi ID thuộc mốc nào trong catalog. Thanh nhỏ bên trái và màu chip test ID cập nhật theo tracker. Ngày là dự kiến với 15–20 giờ/tuần cả team.</p>
 
+  <!-- Tách repo -->
+  <article class="ms" data-ms="SPLIT">
+    <div class="side">
+      <div class="id">T</div>
+      <div class="wk">~2,5 tuần</div>
+      <div class="dates">2026-11-09<br>→ 2026-11-30</div>
+    </div>
+    <div class="body">
+      <h3>Tách repo theo đội</h3>
+      <p class="goal">Ba đội web, robotics và mobile làm việc không phải review chéo. Repo hiện tại thành repo chính (umbrella), ghim ba repo đội bằng submodule theo tag. Kế hoạch đầy đủ: <code>docs/product/09-tach-repo.md</code>, quyết định: ADR-0019. M0′ mở lại từ 2026-12-01 trong các repo đội. Ngày của các mốc bên dưới chưa dời theo bước này.</p>
+      <div class="mods">
+        <span class="tag cfg">mechops (umbrella)</span><span class="tag go">mechops-platform</span><span class="tag rust">mechops-agent · public</span><span class="tag ts">mechops-mobile</span>
+      </div>
+      <div class="tbl-wrap"><table>
+        <tr><th>#</th><th>Việc</th><th>Nghiệm thu</th></tr>
+        <tr><td>T0</td><td class="w">Merge ADR-0019 và đợt chuẩn hoá ADR; đưa <code>sim/</code> vào git; triage <code>m1-contract-v01</code>; tag <code>pre-split</code></td><td>trace xanh, không PR mở, triage rỗng</td></tr>
+        <tr><td>T1</td><td class="w">GitHub Organization, ba team, ba repo rỗng có branch protection</td><td>push thẳng <code>develop</code> bị từ chối</td></tr>
+        <tr><td>T2</td><td class="w">Catalog có cột Repo, plan có <code>repo:</code>, CODEOWNERS nháp</td><td>trace chặn ID không có repo hoặc thuộc hai repo</td></tr>
+        <tr><td>T3</td><td class="w"><code>tools/</code> đọc <code>mechops.repo.toml</code>; <code>spec sync</code>, <code>api sync</code>, gom <code>--all</code>; Dockerfile theo repo</td><td>chạy thử filter-repo local, ba repo xanh, gom đủ 49 ID</td></tr>
+        <tr><td>T4</td><td class="w">filter-repo ra platform và agent; gitleaks; agent chuyển public; tag đầu tiên</td><td>CI hai repo xanh, <code>spec sync</code> khớp, gitleaks sạch</td></tr>
+        <tr><td>T5</td><td class="w">Khung repo mobile, <code>MOB-0001</code> nháp, compose kéo image platform</td><td>verify xanh, đăng nhập bằng user seed</td></tr>
+        <tr><td>T6</td><td class="w">Repo chính xoá thư mục đã chuyển, thêm submodule, <code>e2e/</code>, Dependabot</td><td>clone máy trắng, <code>./mo status --all</code> gom đủ 49 ID</td></tr>
+        <tr><td>T7</td><td class="w">Mỗi đội một PR thử; PR thử sửa <code>specs/</code>; PR thử nâng tag</td><td>đúng người duyệt, nâng tag chỉ merge khi E2E xanh</td></tr>
+      </table></div>
+      <div class="accept" style="margin-top:12px"><b>Chia 49 test ID</b>agent 23 · platform 13 · E2E ở repo chính 13. ADR 0001–0019 ở repo chính, bất biến từ tag <code>pre-split</code>; ADR mới của một đội dùng tiền tố <code>WEB-</code>, <code>ROB-</code>, <code>MOB-</code></div>
+    </div>
+  </article>
+
   <!-- M0' -->
   <article class="ms" data-ms="M0">
     <div class="side">
@@ -444,14 +472,14 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--rule);font-fa
       </div>
       <div class="tbl-wrap"><table>
         <tr><th>#</th><th>Việc</th><th>Kết quả</th></tr>
-        <tr><td>1</td><td class="w">Điền 8 channel còn <code>TODO(M0)</code> vào <code>asyncapi.yaml</code>; JSON Schema cho status, inventory, cmd, cmdRes, otaState, deviceState, event; schema Probe API; test vector hợp lệ và không hợp lệ; <code>openapi.yaml</code> enroll/renew/devices; bảng mã <code>codes.md</code></td><td>Hợp đồng đủ để agent và server viết độc lập</td></tr>
+        <tr><td>1</td><td class="w">Điền 8 channel còn <code>TODO(M0)</code> vào <code>asyncapi.yaml</code>; JSON Schema cho status, inventory, cmd, cmdRes, otaState, deviceState, event; schema Probe API; test vector hợp lệ và không hợp lệ; <code>specs/agent-http.yaml</code> cho enroll/renew (public) và <code>api/openapi.yaml</code> của platform cho devices; bảng mã <code>codes.md</code></td><td>Hợp đồng đủ để agent và server viết độc lập</td></tr>
         <tr><td>2</td><td class="w"><code>make gen</code> chạy go-jsonschema và typify từ cùng <code>specs/schemas</code></td><td>CI đỏ nếu file sinh lệch</td></tr>
         <tr><td>3</td><td class="w"><code>dev.Dockerfile</code> thêm Rust stable pinned, cargo-nextest, cargo-deny, sccache, mold; Go lên 1.25; <code>agent/</code> rời <code>go.work</code> thành Cargo workspace; <code>devcontainer.json</code></td><td>Máy trắng chỉ cần Docker vẫn đúng</td></tr>
         <tr><td>4</td><td class="w"><code>track.py</code> đọc JUnit từ cargo-nextest; Makefile tách lint-go / lint-rust / lint-cpp; <code>trace.py</code> kiểm <code>forbid(unsafe_code)</code></td><td>Test Rust tick được</td></tr>
         <tr><td>5</td><td class="w"><code>docker-compose.yml</code> thật: EMQX pin phiên bản, 8883 mTLS, ACL SQL; Timescale; registry; server; dashboard. <code>install.sh</code> bootstrap CA và user seed</td><td><code>docker compose up</code> trên máy trắng</td></tr>
       </table></div>
       <div class="chips"><span class="chip" data-tid="TEL-01">TEL-01 [U]</span></div>
-      <div class="accept" style="margin-top:12px"><b>Nghiệm thu M0′</b><code>./mo verify</code> xanh và tick TEL-01 ở cả Rust và Go · <code>./mo trace</code> OK với 17 ADR · đăng nhập dashboard bằng user seed trên máy trắng · <code>.steering</code> có mục ghi quyết định M0′</div>
+      <div class="accept" style="margin-top:12px"><b>Nghiệm thu M0′</b><code>./mo verify</code> xanh và tick TEL-01 ở cả Rust và Go · <code>./mo trace</code> OK với mọi ADR ở repo chính và repo đội · đăng nhập dashboard bằng user seed trên máy trắng · <code>.steering</code> có mục ghi quyết định M0′</div>
     </div>
   </article>
 
@@ -844,17 +872,17 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--rule);font-fa
 <section id="adr">
   <div class="sec-eyebrow">7 · Quyết định đã ghi</div>
   <h2>Mười bảy ADR, bất biến. Đổi ý là ADR mới.</h2>
-  <p class="note">Sáu ADR cuối chốt ngày 2026-10-18 cùng kế hoạch này. ADR-0004 và 0009 vẫn hiệu lực với phạm vi thu hẹp, không bị supersede.</p>
+  <p class="note">ADR 0012–0017 chốt ngày 2026-10-18 cùng kế hoạch này. Ngày 2026-11-08 cả chuỗi được chuẩn hoá một lần trước khi tách repo: mỗi ADR chỉ giữ một quyết định, không ADR nào supersede một phần ADR khác.</p>
   <div class="adrs">
     <div><span class="n">0001</span><b>MQTT thay TCP tự xây.</b> Tự chủ ở application protocol trong specs/.</div>
-    <div><span class="n">0002</span><b>Open-core.</b> agent, probe, protocol, specs Apache 2.0; server closed.</div>
+    <div><span class="n">0002</span><b>Open-core.</b> agent, probe, sim, specs Apache 2.0 trong repo public; server closed.</div>
     <div><span class="n">0003</span><b>EMQX thay Mosquitto.</b> ACL qua SQL, MQTT 5 đầy đủ.</div>
-    <div><span class="n">0004</span><b>Probe tách qua Unix socket.</b> Agent sống khi ROS chết. Ngôn ngữ probe: xem 0013.</div>
+    <div><span class="n">0004</span><b>Probe tách qua Unix socket.</b> Agent sống khi ROS chết.</div>
     <div><span class="n">0005</span><b>Rollback quyết định tại agent.</b> Ba luật cứng OTA.</div>
     <div><span class="n">0006</span><b>PostgreSQL + TimescaleDB.</b> Một database, chưa Redis.</div>
     <div><span class="n">0007</span><b>SSE từ server.</b> Broker không bao giờ ra Internet.</div>
     <div><span class="n">0008</span><b>Tenant trong topic từ ngày đầu.</b> Phase 1 chỉ đổi ACL.</div>
-    <div><span class="n">0009</span><b>Go thay C++.</b> Phạm vi còn server và protocol; agent xem 0012.</div>
+    <div><span class="n">0009</span><b>Go cho server.</b> Hệ sinh thái sqlc, chi, paho; agent quyết riêng ở 0012.</div>
     <div><span class="n">0010</span><b>Toolchain trong Docker, <code>./mo</code>.</b> Máy trắng chỉ cần Docker.</div>
     <div><span class="n">0011</span><b>Luật phải có chốt chặn máy.</b> Văn bản không phòng thủ được lúc vội.</div>
     <div class="new"><span class="n">0012</span><b>Rust cho agent, Go giữ cho server.</b> forbid unsafe, không cgo, gate rút lui 8 tuần.</div>
@@ -863,6 +891,8 @@ footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--rule);font-fa
     <div class="new"><span class="n">0015</span><b>OTA tự xây, không wrap Mender.</b> Mượn ba thiết kế: digest, state machine, health trong manifest.</div>
     <div class="new"><span class="n">0016</span><b>PKI: CA trong server.</b> Token hash một lần 24h, cert 90 ngày, renew mTLS, thu hồi bằng ACL.</div>
     <div class="new"><span class="n">0017</span><b>Next.js cho dashboard.</b> shadcn + CSS variables cho white-label, một origin.</div>
+    <div class="new"><span class="n">0018</span><b>Môi trường ROS 2 trên máy dev.</b> Jazzy native trong WSL 24.04 hằng ngày, container theo distro cho ma trận.</div>
+    <div class="new"><span class="n">0019</span><b>Tách repo theo đội, umbrella.</b> Platform, agent public, mobile; submodule ghim tag; <code>specs/</code> ở agent. Chuẩn hoá ADR một lần trước khi tách.</div>
   </div>
   <p class="note" style="margin-top:14px">Chờ viết khi tới việc: ADR terminal (trước M5) · broker SaaS và k3s (trước Phase 1) · WebRTC · Keycloak · Rust cho server (chỉ xét sau M3) · zenoh-probe.</p>
 </section>

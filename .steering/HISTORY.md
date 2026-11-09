@@ -1,12 +1,27 @@
 # .steering — dòng thời gian
 
 > ⚙️ Sinh bởi `tools/steering/steer.py` — **không sửa tay**. Trạng thái hiện tại: `INDEX.md`.
-> 47 sự việc · plan · cổng chốt · mục nhật ký · ADR, mới nhất trên đầu
+> 62 sự việc · plan · cổng chốt · mục nhật ký · ADR, mới nhất trên đầu
 
 | Mốc (UTC) | Loại | Việc |
 |---|---|---|
-| `2026-10-22T00:00:00Z` | ADR | [ADR-0018: Môi trường mô phỏng ROS 2 trên máy dev = ROS 2 native trong WSL cho việc hằng ngày + container theo distro cho ma trận](../docs/adr/0018-moi-truong-mo-phong-ros2-wsl-container.md) · accepted |
-| `2026-10-18T00:00:00Z` | ADR | [ADR-0012: Rust cho agent trên robot; Go giữ cho server](../docs/adr/0012-rust-cho-agent.md) · accepted |
+| `2026-11-09T08:00:14Z` | risky | đóng [S0022](entries/2026-11-09T075228Z-S0022-risky-set--e-scusersnguyenvdappdatalocaltempclau.md) **kept** → none |
+| `2026-11-09T07:52:28Z` | risky | mở [S0022](entries/2026-11-09T075228Z-S0022-risky-set--e-scusersnguyenvdappdatalocaltempclau.md) — set -e; S=/c/Users/NguyenVD/AppData/Local/Temp/claude/bb657f28194a187 |
+| `2026-11-08T15:52:18Z` | risky | đóng [S0021](entries/2026-11-08T155204Z-S0021-risky-mo-check-commit---range-origindevelophead.md) **kept** → none |
+| `2026-11-08T15:52:16Z` | risky | đóng [S0020](entries/2026-11-08T155123Z-S0020-risky-wmechops-verify-rm--rf-git-worktree-add--q.md) **kept** → none |
+| `2026-11-08T15:52:04Z` | risky | mở [S0021](entries/2026-11-08T155204Z-S0021-risky-mo-check-commit---range-origindevelophead.md) — ./mo check-commit --range origin/develop..HEAD 2>&1 | tail -2; git wor |
+| `2026-11-08T15:51:23Z` | risky | mở [S0020](entries/2026-11-08T155123Z-S0020-risky-wmechops-verify-rm--rf-git-worktree-add--q.md) — W=../mechops-verify && rm -rf  && git worktree add -q  HEAD && cd |
+| `2026-11-08T05:22:57Z` | risky | đóng [S0019](entries/2026-11-08T052155Z-S0019-risky-scusersnguyenvdappdatalocaltempclaudebb657.md) **kept** → none |
+| `2026-11-08T05:22:55Z` | risky | đóng [S0018](entries/2026-11-08T052132Z-S0018-risky-scusersnguyenvdappdatalocaltempclaudebb657.md) **kept** → dòng CLAUDE.md cấm ghi công AI + tools/checks/commit_msg.py |
+| `2026-11-08T05:22:53Z` | risky | đóng [S0017](entries/2026-11-08T052059Z-S0017-risky-scusersnguyenvdappdatalocaltempclaudebb657.md) **reverted** → none |
+| `2026-11-08T05:22:51Z` | risky | đóng [S0016](entries/2026-11-08T052008Z-S0016-risky-set--e-bcusersnguyenvdwsl-backup-mkdir--p.md) **kept** → none |
+| `2026-11-08T05:21:55Z` | risky | mở [S0019](entries/2026-11-08T052155Z-S0019-risky-scusersnguyenvdappdatalocaltempclaudebb657.md) — S=C:/Users/NguyenVD/AppData/Local/Temp/claude/bb657f28194a187e/651f69 |
+| `2026-11-08T05:21:32Z` | risky | mở [S0018](entries/2026-11-08T052132Z-S0018-risky-scusersnguyenvdappdatalocaltempclaudebb657.md) — S=C:/Users/NguyenVD/AppData/Local/Temp/claude/bb657f28194a187e/651f69 |
+| `2026-11-08T05:20:59Z` | risky | mở [S0017](entries/2026-11-08T052059Z-S0017-risky-scusersnguyenvdappdatalocaltempclaudebb657.md) — S=C:/Users/NguyenVD/AppData/Local/Temp/claude/bb657f28194a187e/651f69 |
+| `2026-11-08T05:20:08Z` | risky | mở [S0016](entries/2026-11-08T052008Z-S0016-risky-set--e-bcusersnguyenvdwsl-backup-mkdir--p.md) — set -e; B=/c/Users/NguyenVD/wsl-backup; mkdir -p  && cd  && rm -rf |
+| `2026-11-08T00:00:00Z` | ADR | [ADR-0019: Tách repo theo đội kỹ năng, repo chính là umbrella ghim submodule theo tag](../docs/adr/0019-tach-repo-theo-doi-umbrella-submodule.md) · accepted |
+| `2026-10-22T00:00:00Z` | ADR | [ADR-0018: Môi trường mô phỏng ROS 2 trên máy dev = ROS 2 Jazzy native trong WSL Ubuntu 24.04 cho việc hằng ngày + container theo distro cho ma trận](../docs/adr/0018-moi-truong-mo-phong-ros2-wsl-container.md) · accepted |
+| `2026-10-18T00:00:00Z` | ADR | [ADR-0012: Rust cho agent trên robot](../docs/adr/0012-rust-cho-agent.md) · accepted |
 | `2026-10-18T00:00:00Z` | ADR | [ADR-0013: ros2-probe viết bằng C++ (rclcpp), không phải Python (rclpy)](../docs/adr/0013-probe-cpp-rclcpp.md) · accepted |
 | `2026-10-18T00:00:00Z` | ADR | [ADR-0014: EMQX dưới BSL 1.1 — giữ cho kênh vendor một node, quyết lại trước SaaS](../docs/adr/0014-emqx-bsl-11-mot-node.md) · accepted |
 | `2026-10-18T00:00:00Z` | ADR | [ADR-0015: OTA app-level tự xây, không wrap Mender / hawkBit / balena](../docs/adr/0015-ota-tu-xay-khong-wrap-mender.md) · accepted |
@@ -50,5 +65,5 @@
 | `2026-07-15T00:00:00Z` | ADR | [ADR-0006: PostgreSQL 16 + TimescaleDB, một database duy nhất](../docs/adr/0006-timescaledb-over-influx.md) · accepted |
 | `2026-07-15T00:00:00Z` | ADR | [ADR-0007: Dashboard realtime qua SSE từ API server, không MQTT-over-WebSocket](../docs/adr/0007-sse-not-mqtt-websocket.md) · accepted |
 | `2026-07-15T00:00:00Z` | ADR | [ADR-0008: `{tenant}` nằm trong topic từ ngày đầu, Phase 0 luôn là `default`](../docs/adr/0008-tenant-in-topic-from-day-one.md) · accepted |
-| `2026-07-15T00:00:00Z` | ADR | [ADR-0009: Go cho agent + server, không dùng C++](../docs/adr/0009-go-not-cpp-for-agent.md) · accepted |
+| `2026-07-15T00:00:00Z` | ADR | [ADR-0009: Go cho server, không dùng C++](../docs/adr/0009-go-cho-server.md) · accepted |
 | `2026-07-09T00:00:00Z` | ADR | [ADR-0001: MQTT làm transport, không tự xây trên TCP](../docs/adr/0001-mqtt-over-custom-tcp.md) · accepted |
