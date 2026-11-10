@@ -10,6 +10,7 @@ ba repo đội, gắn vào bằng submodule ghim theo tag (ADR-0019):
 | `repos/platform` | `mechops-platform` | server, dashboard, deploy |
 | `repos/agent` | `mechops-agent` | agent, probe, sim, hợp đồng `specs/` (Apache 2.0) |
 | `repos/mobile` | `mechops-mobile` | ứng dụng mobile |
+| `repos/robotics-backend` | `mechops-robotics-backend` | điều phối giao thông, phân công nhiệm vụ, bản đồ (ADR-0020) |
 
 ```bash
 git clone --recurse-submodules git@github.com:NguyenVu1010/MechOps.git

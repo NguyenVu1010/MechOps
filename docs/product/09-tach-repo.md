@@ -16,7 +16,8 @@ Founder yêu cầu tách ngay, trước khi xong T0–T3. Đã làm theo cách t
 | `mechops-agent` | `develop`, tag `v0.0.1`, `spec-v0.1.0`; lịch sử từ `filter-repo`; có `sim/ros2/`, LICENSE Apache 2.0; gitleaks sạch (26 commit); **vẫn private**, founder chuyển public |
 | `mechops-platform` | `develop`, tag `v0.0.1`, `api-v0.0.1`; `specs/` ghim `spec-v0.1.0`; lệnh `./mo spec-sync <tag>` chạy được với repo thật |
 | `mechops-mobile` | `develop`, tag `v0.0.1`; `api/` ghim `api-v0.0.1`; lệnh `./mo api-sync <tag>`; nháp `MOB-0001` |
-| Bản sao ADR | **mỗi repo đội giữ bản sao ADR liên quan**: agent 13, platform 15, mobile 11. Kế hoạch cũ chỉ cho agent giữ, nhưng `trace` và skill cần đọc ADR ngay trong repo |
+| `mechops-robotics-backend` | tạo 2026-11-10 theo quyết định của founder (ADR-0019 chuẩn hoá, ADR-0020); `develop`, tag `v0.0.1`; `pinned/specs/` ghim `spec-v0.1.0`, `pinned/platform-api/` ghim `api-v0.0.1`; `api/` chờ `coord.yaml`; nháp `RBE-0001` |
+| Bản sao ADR | **mỗi repo đội giữ bản sao ADR liên quan**: agent 14, platform 16, mobile 12, robotics-backend 13 (tính cả ADR-0020). Kế hoạch cũ chỉ cho agent giữ, nhưng `trace` và skill cần đọc ADR ngay trong repo |
 | Repo chính thành umbrella (T6) | PR riêng, xếp sau PR này |
 | Bảo vệ nhánh ở ba repo mới | **chưa có**: GitHub từ chối ruleset trên repo private của gói miễn phí. Cần GitHub Pro, gói Team của Organization, hoặc repo public |
 | T2 (cột Repo trong catalog) | chưa làm; tạm thời mỗi repo khai `owned_tests` trong `mechops.repo.toml` |
@@ -39,8 +40,8 @@ Founder yêu cầu tách ngay, trước khi xong T0–T3. Đã làm theo cách t
 └── repos/
     ├── platform/  → submodule <org>/mechops-platform @ tag   (đội web)
     ├── agent/     → submodule <org>/mechops-agent    @ tag   (đội robotics, public)
-    └── mobile/    → submodule <org>/mechops-mobile   @ tag   (đội mobile)
-                     (robotics-backend thêm vào đây sau M6)
+    ├── mobile/    → submodule <org>/mechops-mobile   @ tag   (đội mobile)
+    └── robotics-backend/ → submodule <org>/mechops-robotics-backend @ tag (đội robotics-backend)
 ```
 
 Ba quy tắc vận hành:
@@ -81,7 +82,7 @@ M0' (`08-master-plan.md`) mở lại từ 2026-12-01 trong các repo đội.
 | `.claude/` | cả bốn repo | xem mục 3.3 |
 | `.github/` | cả bốn repo | mỗi repo viết lại CI của mình |
 | `constitution.md` | repo chính | repo đội giữ bản sao chỉ-đọc, CI kiểm khớp |
-| `docs/adr/` | repo chính | mỗi repo đội giữ bản sao ADR liên quan: agent 13, platform 15, mobile 11 |
+| `docs/adr/` | repo chính | mỗi repo đội giữ bản sao ADR liên quan: agent 14, platform 16, mobile 12 |
 | `docs/product/`, `docs/evidence/`, `docs/hw-test-runs/` | repo chính | biên bản [H] mới nằm ở repo sở hữu ID đó |
 | `.steering/` | repo chính | lịch sử ở lại nguyên vẹn; repo đội bắt đầu `.steering/` rỗng |
 | `docs/test-status.*`, `docs/PROGRESS.md`, `docs/module-status.json` | mỗi repo tự sinh | repo chính gom bằng `--all` |
@@ -159,7 +160,7 @@ Sau khi tách, mỗi repo đội giữ catalog phần của mình ở `docs/test
 ## 5. ADR sau khi tách
 
 - **19 ADR hiện có nằm nguyên ở repo chính**, không đổi số. Chúng bất biến từ tag `pre-split`.
-- **Mỗi repo đội giữ bản sao chỉ-đọc của ADR liên quan**: ADR toàn hệ (0001, 0002, 0005, 0008, 0010, 0011, 0015, 0016, 0019) cộng ADR của đội. Agent thêm 0004, 0012, 0013, 0018 (13 bản). Platform thêm 0003, 0006, 0007, 0009, 0014, 0017 (15 bản). Mobile thêm 0007, 0017 (11 bản). Sáu ADR chỉ thuộc web không ra repo public.
+- **Mỗi repo đội giữ bản sao chỉ-đọc của ADR liên quan**: ADR toàn hệ (0001, 0002, 0005, 0008, 0010, 0011, 0015, 0016, 0019, 0020) cộng ADR của đội. Agent thêm 0004, 0012, 0013, 0018 (14 bản). Platform thêm 0003, 0006, 0007, 0009, 0014, 0017 (16 bản). Mobile thêm 0007, 0017 (12 bản). Sáu ADR chỉ thuộc web không ra repo public. Robotics-backend giữ bản sao ADR toàn hệ cộng 0003, 0014 (broker) và 0013 (probe) (13 bản). ADR riêng của đội này đánh số `RBE-`.
 - **ADR mới chạm từ hai repo trở lên** viết ở repo chính, đánh số từ `ADR-0020`.
 - **ADR của riêng một đội** viết ở repo của đội đó, đánh số `WEB-0001`, `ROB-0001`, `MOB-0001`.
 
@@ -513,6 +514,7 @@ Trên GitHub, một dòng liệt kê nhiều owner thì chỉ cần **một** ng
 | `vX.Y.Z` | mọi repo | bản phát hành của repo đó; repo chính ghim submodule vào đây |
 | `spec-vX.Y.Z` | agent | phiên bản hợp đồng MQTT, Probe API và HTTP mà agent gọi |
 | `api-vX.Y.Z` | platform | phiên bản API REST/SSE cho dashboard, mobile và robotics-backend |
+| `coord-vX.Y.Z` | robotics-backend | phiên bản Coord API và sự kiện điều phối mà platform dùng (ADR-0020) |
 | `pre-split` | repo chính | điểm quay về trước khi tách; ADR bất biến từ đây |
 
 Hợp đồng theo semver: bản minor chỉ được thêm, bản major cần ADR ở repo chính.

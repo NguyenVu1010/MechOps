@@ -8,7 +8,8 @@
 Founder muốn ba đội làm việc không phải review chéo nhau. Mỗi đội có kỹ năng riêng:
 
 - **web**: Go và TypeScript. Đội này làm server, dashboard và deploy.
-- **robotics**: Rust, C++ và ROS 2. Đội này làm agent, probe, mô phỏng, và sau này cả service điều phối.
+- **robotics**: Rust, C++ và ROS 2. Đội này làm agent, probe và mô phỏng.
+- **robotics-backend**: đội riêng, làm các service điều phối (giao thông, phân công nhiệm vụ, bản đồ). Ngôn ngữ do đội chọn.
 - **mobile**: làm ứng dụng mobile, client của cùng API với dashboard.
 
 Ngày 2026-11-08 repo có rất ít mã:
@@ -48,7 +49,7 @@ Chọn phương án 4.
 | `mechops-platform` | private | web | `server/`, `protocol/` (mã sinh), `dashboard/`, `deploy/`, `api/openapi.yaml` | `WEB-NNNN` | lúc tách |
 | `mechops-agent` | **public**, Apache 2 | robotics | `agent/`, `probe/`, `sim/`, **`specs/`**, `docs/protocol-notes.md` | `ROB-NNNN` | lúc tách |
 | `mechops-mobile` | private | mobile | ứng dụng mobile | `MOB-NNNN` | lúc tách, chỉ có khung |
-| `mechops-robotics-backend` | private | robotics | điều phối giao thông, phân công nhiệm vụ, bản đồ (cargo workspace) | `ROB-NNNN` | sau M6 |
+| `mechops-robotics-backend` | private | robotics-backend | điều phối giao thông, phân công nhiệm vụ, bản đồ | `RBE-NNNN` | 2026-11-10 |
 
 Repo điều phối của robotics **không** được đặt tên có chữ "fleet". Lý do: "Fleet Manager" đã là tên của phần điều phối OTA trong server (ADR-0002, ADR-0015, OTA-09), và phần đó vẫn ở platform.
 
@@ -140,3 +141,5 @@ Master plan đóng băng `tools/` cho tới khi TEL-03 xanh. ADR này mở một
 − Bộ công cụ `./mo` phải chạy được ở bốn repo với bốn bộ ngôn ngữ khác nhau. Đây là việc lớn nhất của đợt tách, và là lý do phải mở ngoại lệ đóng băng `tools/`.
 − M0' lùi khoảng hai tuần, vì việc tách được làm trước.
 − CODEOWNERS theo đội cần một GitHub Organization. Bảo vệ nhánh (ruleset) trên repo private cần gói trả phí: GitHub Pro cho tài khoản cá nhân, hoặc gói Team cho Organization. Gói miễn phí chỉ bảo vệ được repo public.
+
+_Chuẩn hoá 2026-11-10, vẫn trong cửa sửa trước tag `pre-split`: founder tách service điều phối cho một đội riêng (robotics-backend, khác đội robotics) và tạo repo ngay. Bản trước ghi đội robotics, tiền tố `ROB-` chung với agent, cargo workspace, tạo sau M6. Hợp đồng của repo này với platform và robot: ADR-0020._

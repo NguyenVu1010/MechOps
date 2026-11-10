@@ -1,10 +1,13 @@
 # .steering — dòng thời gian
 
 > ⚙️ Sinh bởi `tools/steering/steer.py` — **không sửa tay**. Trạng thái hiện tại: `INDEX.md`.
-> 65 sự việc · plan · cổng chốt · mục nhật ký · ADR, mới nhất trên đầu
+> 68 sự việc · plan · cổng chốt · mục nhật ký · ADR, mới nhất trên đầu
 
 | Mốc (UTC) | Loại | Việc |
 |---|---|---|
+| `2026-11-10T00:00:00Z` | ADR | [ADR-0020: Hợp đồng giữa robotics-backend, platform và robot: lease qua MQTT, lệnh qua REST, không thêm giao thức](../docs/adr/0020-hop-dong-robotics-backend.md) · accepted |
+| `2026-11-09T17:16:39Z` | risky | đóng [S0024](entries/2026-11-09T171513Z-S0024-risky-pcusersnguyenvdappdatalocaltempclaudebb657.md) **kept** → none |
+| `2026-11-09T17:15:13Z` | risky | mở [S0024](entries/2026-11-09T171513Z-S0024-risky-pcusersnguyenvdappdatalocaltempclaudebb657.md) — P=C:/Users/NguyenVD/AppData/Local/Temp/claude/bb657f28194a187e/651f69 |
 | `2026-11-09T08:03:04Z` | plan | **abandoned** plan [m1-contract-v01](plans/m1-contract-v01/) — Tách repo (ADR-0019): specs/ đã chuyển sang mechops-agent, nên plan hợp đồng không còn làm được ở repo chính. Plan treo ở gate clarify từ 2026-08-24, chưa có câu trả lời nào. Việc hợp đồng v0.1 (TEL-01, TEL-07) làm tiếp bằng plan mới trong mechops-agent, từ tag spec-v0.1.0. |
 | `2026-11-09T08:03:04Z` | decision | mở [S0023](entries/2026-11-09T080304Z-S0023-decision-bo-plan-m1-contract-v01.md) — Bo plan m1-contract-v01 · **quyết định:** Bỏ plan m1-contract-v01; thư mục giữ nguyên với status abandoned; việc chuyển sang ADR-0019 |
 | `2026-11-09T08:03:04Z` | decision | đóng [S0023](entries/2026-11-09T080304Z-S0023-decision-bo-plan-m1-contract-v01.md) **kept** → ADR-0019 |
