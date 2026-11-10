@@ -4,13 +4,14 @@
 
 ## Repo này là repo chính (umbrella, ADR-0019)
 
-Không có mã sản phẩm ở đây. Mã nằm trong ba repo đội, gắn vào bằng submodule ghim theo tag:
+Không có mã sản phẩm ở đây. Mã nằm trong bốn repo đội, gắn vào bằng submodule ghim theo tag:
 
 | Thư mục | Repo | Đội |
 |---|---|---|
 | `repos/platform` | `mechops-platform` | web: server, dashboard, deploy |
 | `repos/agent` | `mechops-agent` (public) | robotics: agent, probe, sim, **`specs/`** |
 | `repos/mobile` | `mechops-mobile` | mobile |
+| `repos/robotics-backend` | `mechops-robotics-backend` | robotics-backend: điều phối; hợp đồng ADR-0020 |
 
 Repo chính giữ: constitution, ADR toàn hệ (`ADR-NNNN`), spec sản phẩm và master plan
 (`docs/product/`), lịch sử `.steering`, catalog test, và E2E (`e2e/`).

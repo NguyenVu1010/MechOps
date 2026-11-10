@@ -155,7 +155,7 @@ Các kịch bản chạy trên mô phỏng `mechops-agent/sim`, có cắm lỗi 
 
 - Kịch bản 1, 2, 4 và 9 **phải qua trước khi điều phối chạy trên robot thật.**
 - Kịch bản 10 quyết định MQTT có còn đủ dùng.
-- Các kịch bản cần agent, platform và robotics-backend chạy cùng nhau, nên là test E2E của repo chính (luật Test ID của ADR-0019). Nhóm ID được thêm vào catalog cùng lúc với việc tạo repo robotics-backend.
+- Các kịch bản cần agent, platform và robotics-backend chạy cùng nhau, nên là test E2E của repo chính (luật Test ID của ADR-0019). Nhóm ID được thêm vào catalog trước khi viết bài test đầu tiên của nhóm này.
 
 ## Consequences
 

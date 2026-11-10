@@ -7,3 +7,6 @@
 [submodule "repos/mobile"]
 	path = repos/mobile
 	url = git@github.com:NguyenVu1010/mechops-mobile.git
+[submodule "repos/robotics-backend"]
+	path = repos/robotics-backend
+	url = git@github.com:NguyenVu1010/mechops-robotics-backend.git
