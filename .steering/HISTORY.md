@@ -1,10 +1,12 @@
 # .steering — dòng thời gian
 
 > ⚙️ Sinh bởi `tools/steering/steer.py` — **không sửa tay**. Trạng thái hiện tại: `INDEX.md`.
-> 68 sự việc · plan · cổng chốt · mục nhật ký · ADR, mới nhất trên đầu
+> 70 sự việc · plan · cổng chốt · mục nhật ký · ADR, mới nhất trên đầu
 
 | Mốc (UTC) | Loại | Việc |
 |---|---|---|
+| `2026-11-10T14:27:33Z` | risky | đóng [S0025](entries/2026-11-10T142655Z-S0025-risky-gh-pr-merge-7---squash---delete-branchfals.md) **kept** → none |
+| `2026-11-10T14:26:55Z` | risky | mở [S0025](entries/2026-11-10T142655Z-S0025-risky-gh-pr-merge-7---squash---delete-branchfals.md) — gh pr merge 7 --squash --delete-branch=false 2>&1 | tail -1; gh pr vie |
 | `2026-11-10T00:00:00Z` | ADR | [ADR-0020: Hợp đồng giữa robotics-backend, platform và robot: lease qua MQTT, lệnh qua REST, không thêm giao thức](../docs/adr/0020-hop-dong-robotics-backend.md) · accepted |
 | `2026-11-09T17:16:39Z` | risky | đóng [S0024](entries/2026-11-09T171513Z-S0024-risky-pcusersnguyenvdappdatalocaltempclaudebb657.md) **kept** → none |
 | `2026-11-09T17:15:13Z` | risky | mở [S0024](entries/2026-11-09T171513Z-S0024-risky-pcusersnguyenvdappdatalocaltempclaudebb657.md) — P=C:/Users/NguyenVD/AppData/Local/Temp/claude/bb657f28194a187e/651f69 |

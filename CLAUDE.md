@@ -16,7 +16,8 @@ Không có mã sản phẩm ở đây. Mã nằm trong bốn repo đội, gắn 
 Repo chính giữ: constitution, ADR toàn hệ (`ADR-NNNN`), spec sản phẩm và master plan
 (`docs/product/`), lịch sử `.steering`, catalog test, và E2E (`e2e/`).
 
-- Viết code tính năng: mở đúng repo đội, không sửa trong `repos/`.
+- Viết code tính năng: mở đúng repo đội, ở bản clone cạnh repo chính (`../mechops-<repo>`),
+  không sửa trong `repos/` (bản ghim theo tag). Bố cục: README mục "Bố cục máy dev".
 - Đổi tag submodule chỉ qua PR, và chỉ merge khi E2E xanh.
 - ADR chạm từ hai repo trở lên viết ở đây; ADR của một đội viết ở repo đội đó.
 - Phần dưới là luật chung của mọi repo MechOps. Mục chạm `specs/`, Go, Rust áp dụng

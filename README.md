@@ -3,7 +3,7 @@
 Hạ tầng vận hành robot, PLC và Industrial IoT.
 
 Đây là **repo chính**: quyết định, spec sản phẩm, kế hoạch, lịch sử và E2E. Mã nằm trong
-ba repo đội, gắn vào bằng submodule ghim theo tag (ADR-0019):
+bốn repo đội, gắn vào bằng submodule ghim theo tag (ADR-0019):
 
 | Thư mục | Repo | Nội dung |
 |---|---|---|
@@ -17,6 +17,37 @@ git clone --recurse-submodules git@github.com:NguyenVu1010/MechOps.git
 ```
 
 Kế hoạch tách và trạng thái: `docs/product/09-tach-repo.md`.
+
+## Bố cục máy dev: repo đội clone cạnh repo chính
+
+`repos/` chỉ là **bản ghim theo tag** để repo chính biết những phiên bản nào chạy được
+với nhau. Không code trong đó: thư mục git của submodule nằm trong `.git/modules`, nên
+`./mo` và hook commit chạy trong container không thấy nó. Code ở bản clone đầy đủ đặt
+cạnh repo chính:
+
+```
+workspace/
+├── MechOps/                    repo chính (umbrella)
+│   └── repos/…                 bản ghim, chỉ đọc
+├── mechops-agent/              develop, đội robotics
+├── mechops-platform/           develop, đội web
+├── mechops-mobile/             develop, đội mobile
+├── mechops-robotics-backend/   develop, đội robotics-backend
+└── mechops.code-workspace      VS Code mở cả năm thư mục
+```
+
+```bash
+cd ..
+for r in agent platform mobile robotics-backend; do
+  git clone -b develop git@github.com:NguyenVu1010/mechops-$r.git
+  git -C mechops-$r config core.hooksPath .githooks
+done
+```
+
+- Mỗi đội chỉ cần clone repo của mình.
+- Máy cần làm việc xuyên repo (founder, Claude Code) clone đủ bốn repo.
+- Claude Code của repo chính được mở quyền vào bốn thư mục đó bằng `additionalDirectories` trong `.claude/settings.local.json`. File này là cấu hình riêng của từng máy, không commit.
+- Mỗi repo có compose project riêng (`mechops-<repo>-dev`), nên container dev của các repo không đè nhau.
 
 ## Vừa clone về?
 
