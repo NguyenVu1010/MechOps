@@ -1,7 +1,7 @@
 # .steering — mục lục
 
 > ⚙️ Sinh bởi `tools/steering/steer.py` — **không sửa tay**. Luật và format: `.steering/README.md`.
-> 1 plan · 23 mục nhật ký · 0 chưa đóng · decision 5 · discovery 1 · risky 15 · wrong 2
+> 1 plan · 24 mục nhật ký · 0 chưa đóng · decision 5 · discovery 1 · risky 16 · wrong 2
 
 ## Plan đã đóng — giữ nguyên, không xoá
 
@@ -15,6 +15,7 @@
 
 | id | Ngày | Loại | Kết cục | Tầng | Test ID | Đã nâng thành | Tiêu đề |
 |---|---|---|---|---|---|---|---|
+| [S0025](entries/2026-11-10T142655Z-S0025-risky-gh-pr-merge-7---squash---delete-branchfals.md) | 2026-11-10 | risky | kept | infra | — | none | gh pr merge 7 --squash --delete-branch=false 2>&1 | tail -1; gh pr vie |
 | [S0024](entries/2026-11-09T171513Z-S0024-risky-pcusersnguyenvdappdatalocaltempclaudebb657.md) | 2026-11-09 | risky | kept | infra | — | none | P=C:/Users/NguyenVD/AppData/Local/Temp/claude/bb657f28194a187e/651f69 |
 | [S0023](entries/2026-11-09T080304Z-S0023-decision-bo-plan-m1-contract-v01.md) | 2026-11-09 | decision | kept | flow | — | ADR-0019 | Bo plan m1-contract-v01 |
 | [S0022](entries/2026-11-09T075228Z-S0022-risky-set--e-scusersnguyenvdappdatalocaltempclau.md) | 2026-11-09 | risky | kept | infra | — | none | set -e; S=/c/Users/NguyenVD/AppData/Local/Temp/claude/bb657f28194a187 |

@@ -25,3 +25,6 @@ __pycache__/
 
 # Claude Code — cache phiên (statusline, handoff, danh sách file .go vừa sửa)
 .claude/cache/
+
+# Claude Code — cấu hình riêng từng máy (additionalDirectories trỏ tới repo đội)
+.claude/settings.local.json
